@@ -41,13 +41,14 @@ function toCartItem(p: DBProduct | CartItem): CartItem {
 }
 
 export function CartProvider({ children }: { children: ReactNode }) {
-  const [items, setItems] = useState<CartItem[]>(() => {
-    if (typeof window === "undefined") return [];
+  // Always start empty to avoid SSR/CSR hydration mismatches; load from storage after mount.
+  const [items, setItems] = useState<CartItem[]>([]);
+  useEffect(() => {
     try {
       const raw = window.localStorage.getItem(STORAGE_KEY);
-      return raw ? JSON.parse(raw) : [];
+      if (raw) setItems(JSON.parse(raw));
     } catch {
-      return [];
+      // ignore
     }
   });
   const [isOpen, setIsOpen] = useState(false);
