@@ -1,12 +1,10 @@
-import { Outlet, Link, createRootRoute, HeadContent, Scripts, useLocation } from "@tanstack/react-router";
+import { Outlet, Link, createRootRoute, useLocation } from "@tanstack/react-router";
 import { CartProvider } from "@/lib/cart";
 import { SiteProvider } from "@/lib/site";
 import { AuthProvider, useAuth } from "@/lib/auth";
 import { CartDrawer } from "@/components/site/CartDrawer";
 import { CursorGlow } from "@/components/site/CursorGlow";
 import { Toaster } from "@/components/ui/sonner";
-
-import appCss from "../styles.css?url";
 
 function NotFoundComponent() {
   return (
@@ -31,49 +29,9 @@ function NotFoundComponent() {
 }
 
 export const Route = createRootRoute({
-  head: () => ({
-    meta: [
-      { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "ChristFitz Apparel — Premium Christian Streetwear" },
-      {
-        name: "description",
-        content:
-          "Wear your faith with style. Premium Christian streetwear designed for bold believers — oversized tees, hoodies, and accessories.",
-      },
-      { property: "og:title", content: "ChristFitz Apparel — Premium Christian Streetwear" },
-      { property: "og:description", content: "Faith meets fashion. Premium streetwear for bold believers." },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-    ],
-    links: [
-      { rel: "stylesheet", href: appCss },
-      { rel: "preconnect", href: "https://fonts.googleapis.com" },
-      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
-      {
-        rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap",
-      },
-    ],
-  }),
-  shellComponent: RootShell,
   component: RootComponent,
   notFoundComponent: NotFoundComponent,
 });
-
-function RootShell({ children }: { children: React.ReactNode }) {
-  return (
-    <html lang="en">
-      <head>
-        <HeadContent />
-      </head>
-      <body>
-        {children}
-        <Scripts />
-      </body>
-    </html>
-  );
-}
 
 function RootComponent() {
   return (
