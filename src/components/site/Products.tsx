@@ -2,11 +2,13 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Eye, Plus } from "lucide-react";
 import { products, type Category } from "@/lib/products";
+import { useCart } from "@/lib/cart";
 
 const tabs: ("All" | Category)[] = ["All", "T-Shirts", "Hoodies", "Accessories"];
 
 export function Products() {
   const [active, setActive] = useState<(typeof tabs)[number]>("All");
+  const { addItem, openCart } = useCart();
   const filtered = active === "All" ? products : products.filter((p) => p.category === active);
 
   return (
@@ -71,6 +73,7 @@ export function Products() {
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-cocoa/70 via-transparent to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
                   <button
+                    onClick={() => openCart()}
                     aria-label="Quick view"
                     className="absolute left-1/2 top-1/2 grid h-12 w-12 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full glass-dark text-cream opacity-0 scale-75 transition-all duration-500 group-hover:opacity-100 group-hover:scale-100"
                   >
@@ -79,6 +82,20 @@ export function Products() {
                   <span className="absolute left-3 top-3 rounded-full glass px-2.5 py-1 text-[10px] uppercase tracking-widest text-cocoa">
                     {p.category}
                   </span>
+                </div>
+
+                <div className="flex items-center justify-between gap-3 p-5">
+                  <div className="min-w-0">
+                    <h3 className="truncate font-medium text-cocoa">{p.name}</h3>
+                    <p className="mt-0.5 text-sm text-muted-foreground">${p.price}</p>
+                  </div>
+                  <button
+                    onClick={() => addItem(p)}
+                    aria-label={`Add ${p.name} to cart`}
+                    className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-cocoa text-cream transition-transform hover:rotate-90 hover:bg-coffee"
+                  >
+                    <Plus className="h-4 w-4" />
+                  </button>
                 </div>
 
                 <div className="flex items-center justify-between gap-3 p-5">
