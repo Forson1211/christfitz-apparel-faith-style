@@ -1,12 +1,13 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { Search as SearchIcon, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { products } from "@/lib/products";
+import { useSite, productImage } from "@/lib/site";
 import { useCart } from "@/lib/cart";
 
 export function SearchModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   const [query, setQuery] = useState("");
   const { addItem } = useCart();
+  const { products } = useSite();
 
   useEffect(() => {
     if (!open) return;
@@ -25,7 +26,7 @@ export function SearchModal({ open, onClose }: { open: boolean; onClose: () => v
     return products.filter(
       (p) => p.name.toLowerCase().includes(q) || p.category.toLowerCase().includes(q)
     );
-  }, [query]);
+  }, [query, products]);
 
   return (
     <AnimatePresence>
@@ -71,20 +72,15 @@ export function SearchModal({ open, onClose }: { open: boolean; onClose: () => v
                   {results.map((p) => (
                     <li key={p.id}>
                       <button
-                        onClick={() => {
-                          addItem(p);
-                          onClose();
-                        }}
+                        onClick={() => { addItem(p); onClose(); }}
                         className="flex w-full items-center gap-4 rounded-2xl px-3 py-2.5 text-left transition hover:bg-cocoa/5"
                       >
                         <div className="h-14 w-14 overflow-hidden rounded-xl bg-cocoa/5">
-                          <img src={p.image} alt={p.name} className="h-full w-full object-cover" />
+                          <img src={productImage(p)} alt={p.name} className="h-full w-full object-cover" />
                         </div>
                         <div className="min-w-0 flex-1">
                           <p className="truncate font-medium">{p.name}</p>
-                          <p className="text-xs uppercase tracking-widest text-muted-foreground">
-                            {p.category}
-                          </p>
+                          <p className="text-xs uppercase tracking-widest text-muted-foreground">{p.category}</p>
                         </div>
                         <span className="text-sm tabular-nums">${p.price}</span>
                       </button>
