@@ -1,14 +1,16 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Eye, Plus } from "lucide-react";
-import { products, type Category } from "@/lib/products";
+import { products, type Category, type Product } from "@/lib/products";
 import { useCart } from "@/lib/cart";
+import { ProductDetail } from "./ProductDetail";
 
 const tabs: ("All" | Category)[] = ["All", "T-Shirts", "Hoodies", "Accessories"];
 
 export function Products() {
   const [active, setActive] = useState<(typeof tabs)[number]>("All");
-  const { addItem, openCart } = useCart();
+  const [selected, setSelected] = useState<Product | null>(null);
+  const { addItem } = useCart();
   const filtered = active === "All" ? products : products.filter((p) => p.category === active);
 
   return (
@@ -24,7 +26,7 @@ export function Products() {
           <div>
             <p className="text-xs uppercase tracking-[0.3em] text-coffee">— The Collection</p>
             <h2 className="mt-3 font-display text-4xl sm:text-6xl text-balance">
-              Pieces for the <span className="">faithful</span>.
+              Pieces for the faithful.
             </h2>
           </div>
 
@@ -60,7 +62,8 @@ export function Products() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95 }}
                 transition={{ duration: 0.5, delay: (i % 4) * 0.06 }}
-                className="group relative flex flex-col overflow-hidden rounded-3xl glass shadow-soft transition-all duration-500 hover:-translate-y-2 hover:shadow-luxe"
+                onClick={() => setSelected(p)}
+                className="group relative flex cursor-pointer flex-col overflow-hidden rounded-3xl glass shadow-soft transition-all duration-500 hover:-translate-y-2 hover:shadow-luxe"
               >
                 <div className="relative aspect-square overflow-hidden">
                   <img
@@ -73,8 +76,11 @@ export function Products() {
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-cocoa/70 via-transparent to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
                   <button
-                    onClick={() => openCart()}
-                    aria-label="Quick view"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelected(p);
+                    }}
+                    aria-label={`Quick view ${p.name}`}
                     className="absolute left-1/2 top-1/2 grid h-12 w-12 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full glass-dark text-cream opacity-0 scale-75 transition-all duration-500 group-hover:opacity-100 group-hover:scale-100"
                   >
                     <Eye className="h-4 w-4" />
@@ -86,11 +92,14 @@ export function Products() {
 
                 <div className="flex items-center justify-between gap-3 p-5">
                   <div className="min-w-0">
-                    <h3 className="truncate font-medium text-cocoa">{p.name}</h3>
+                    <h3 className="truncate font-semibold text-cocoa">{p.name}</h3>
                     <p className="mt-0.5 text-sm text-muted-foreground">${p.price}</p>
                   </div>
                   <button
-                    onClick={() => addItem(p)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      addItem(p);
+                    }}
                     aria-label={`Add ${p.name} to cart`}
                     className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-cocoa text-cream transition-transform hover:rotate-90 hover:bg-coffee"
                   >
@@ -102,6 +111,8 @@ export function Products() {
           </AnimatePresence>
         </motion.div>
       </div>
+
+      <ProductDetail product={selected} onClose={() => setSelected(null)} />
     </section>
   );
 }
