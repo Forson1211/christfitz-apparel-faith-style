@@ -50,7 +50,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     } catch {
       // ignore
     }
-  });
+  }, []);
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
