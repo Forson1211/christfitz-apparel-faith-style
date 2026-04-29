@@ -1,9 +1,10 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, ShoppingBag, Menu, X } from "lucide-react";
+import { Search, ShoppingBag, Menu, X, User as UserIcon } from "lucide-react";
 import { useCart } from "@/lib/cart";
 import { useSite } from "@/lib/site";
+import { useAuth } from "@/lib/auth";
 import { SearchModal } from "./SearchModal";
 
 export function Navbar() {
@@ -12,6 +13,7 @@ export function Navbar() {
   const [searchOpen, setSearchOpen] = useState(false);
   const { count, openCart } = useCart();
   const { settings, navLinks } = useSite();
+  const { user } = useAuth();
   const path = useRouterState({ select: (s) => s.location.pathname });
   const onHome = path === "/";
 
@@ -71,6 +73,14 @@ export function Navbar() {
               >
                 <Search className="h-4 w-4" />
               </button>
+              <Link
+                to="/account"
+                aria-label={user ? "Account" : "Sign in"}
+                className="hidden sm:grid h-9 w-9 place-items-center rounded-full hover:bg-cream/10 transition relative"
+              >
+                <UserIcon className="h-4 w-4" />
+                {user && <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-gold" />}
+              </Link>
               <button
                 onClick={openCart}
                 aria-label="Open cart"
@@ -140,6 +150,9 @@ export function Navbar() {
                       </Link>
                     </motion.div>
                   ))}
+                  <Link to="/account" onClick={() => setOpen(false)}>
+                    {user ? "My account" : "Sign in"}
+                  </Link>
                   <button
                     onClick={() => { setOpen(false); setSearchOpen(true); }}
                     className="text-left"
