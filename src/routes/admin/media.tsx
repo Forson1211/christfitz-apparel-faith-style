@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { Copy } from "lucide-react";
 
 export const Route = createFileRoute("/admin/media")({
-  component: AdminMedia;
+  component: AdminMedia,
 });
 
 function AdminMedia() {
