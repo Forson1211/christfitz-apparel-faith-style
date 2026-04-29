@@ -60,8 +60,8 @@ export const defaultSettings: SiteSettings = {
   favicon: { url: "" },
   hero: {
     eyebrow: "Faith · Fashion · Freedom",
-    title: "Wear Your Faith.",
-    titleAccent: "Boldly.",
+    title: "Wear Your Faith",
+    titleAccent: "Boldly",
     subtitle:
       "Premium streetwear designed for the modern believer. Crafted with intention. Worn with conviction.",
     primaryCta: "Shop Collection",

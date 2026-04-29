@@ -167,23 +167,16 @@ export function Footer() {
               </Link>
             ))}
 
-            <div className="flex flex-col justify-center lg:items-end gap-6">
-              <div className="flex items-center gap-3 px-5 py-3 rounded-full bg-green-500/10 border border-green-500/20 text-green-400 text-[11px] font-bold uppercase tracking-widest">
-                <ShieldCheck className="h-4 w-4" /> Verified Merchant
-              </div>
-              <div className="flex items-center gap-6 opacity-90 group-hover:opacity-100 transition-all">
-                <img src={mtnLogo} alt="MTN" className="h-8 w-auto object-contain rounded-lg" title="MTN Mobile Money" />
-                <img src={telecelLogo} alt="Telecel" className="h-8 w-auto object-contain rounded-lg" title="Telecel Cash" />
-                <img src={paystackLogo} alt="Paystack" className="h-8 w-auto object-contain rounded-lg" title="Secure Paystack Payment" />
-              </div>
-            </div>
+            {/* Payment logos and verification removed as requested */}
           </div>
         </div>
 
         {/* Copyright */}
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-[10px] uppercase tracking-[0.2em] text-cream/30 border-t border-white/5">
           <p>{settings.footer.copyright}</p>
-          <p className="font-display text-xs italic">"Built on faith, crafted with intention."</p>
+          <p className="font-display text-[10px] uppercase tracking-[0.2em]">
+            Developed by <a href="https://oflexcreative.vercel.app/" target="_blank" rel="noopener noreferrer" className="hover:text-gold transition-colors">Oflex Creative</a>
+          </p>
         </div>
       </div>
     </footer>

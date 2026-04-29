@@ -198,8 +198,8 @@ export function Navbar() {
                     <X className="h-5 w-5" />
                   </button>
                 </div>
-                <nav className="mt-10 flex flex-col gap-6">
-                  <div className="flex flex-col gap-4 font-display text-3xl">
+                <nav className="mt-8 flex flex-col gap-4">
+                  <div className="flex flex-col gap-2 font-display text-3xl">
                     {navLinks.map((l, i) => (
                       <motion.div
                         key={l.id}
@@ -213,8 +213,8 @@ export function Navbar() {
                       </motion.div>
                     ))}
                   </div>
-
-                  <div className="mt-8 pt-8 border-t border-white/10 space-y-4">
+ 
+                  <div className="mt-6 pt-6 border-t border-white/10 space-y-4">
                     <p className="text-[10px] uppercase tracking-[0.3em] text-cream/40 font-bold px-1">Account & Settings</p>
                     <div className="grid gap-2">
                       {[
@@ -231,7 +231,7 @@ export function Navbar() {
                           <Link
                             to={item.href as any}
                             onClick={() => setOpen(false)}
-                            className="flex items-center gap-3 rounded-2xl bg-white/5 px-5 py-4 text-sm font-medium hover:bg-white/10 transition-all"
+                            className="flex items-center gap-3 rounded-2xl bg-white/5 px-5 py-3 text-sm font-medium hover:bg-white/10 transition-all"
                           >
                             <item.Icon className="h-4 w-4 text-gold" />
                             {item.label}
@@ -239,28 +239,28 @@ export function Navbar() {
                         </motion.div>
                       ))}
                     </div>
-
+ 
                     {!user ? (
                       <Link
                         to="/account"
                         onClick={() => setOpen(false)}
-                        className="flex items-center justify-center w-full rounded-2xl bg-gold py-4 text-sm font-bold uppercase tracking-widest text-cocoa shadow-soft hover:scale-[1.02] transition-all"
+                        className="flex items-center justify-center w-full rounded-2xl bg-gold py-3.5 text-sm font-bold uppercase tracking-widest text-cocoa shadow-soft hover:scale-[1.02] transition-all"
                       >
                         Sign In / Join
                       </Link>
                     ) : (
                       <button
                         onClick={() => { signOut(); setOpen(false); }}
-                        className="flex items-center justify-center gap-2 w-full rounded-2xl bg-white/5 py-4 text-sm font-medium text-red-400 hover:bg-red-400/10 transition-all"
+                        className="flex items-center justify-center gap-2 w-full rounded-2xl bg-white/5 py-3.5 text-sm font-medium text-red-400 hover:bg-red-400/10 transition-all"
                       >
                         <LogOut className="h-4 w-4" /> Sign Out
                       </button>
                     )}
                   </div>
-
+ 
                   <button
                     onClick={() => { setOpen(false); setSearchOpen(true); }}
-                    className="mt-4 flex items-center gap-3 px-5 py-4 text-sm text-cream/60 hover:text-cream transition-all"
+                    className="mt-2 flex items-center gap-3 px-5 py-3 text-sm text-cream/60 hover:text-cream transition-all"
                   >
                     <Search className="h-4 w-4" /> Search the store
                   </button>
