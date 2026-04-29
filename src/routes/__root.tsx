@@ -1,7 +1,7 @@
-import { Outlet, Link, createRootRoute, HeadContent, Scripts, useRouterState } from "@tanstack/react-router";
+import { Outlet, Link, createRootRoute, HeadContent, Scripts, useLocation } from "@tanstack/react-router";
 import { CartProvider } from "@/lib/cart";
 import { SiteProvider } from "@/lib/site";
-import { AuthProvider } from "@/lib/auth";
+import { AuthProvider, useAuth } from "@/lib/auth";
 import { CartDrawer } from "@/components/site/CartDrawer";
 import { CursorGlow } from "@/components/site/CursorGlow";
 import { Toaster } from "@/components/ui/sonner";
@@ -76,19 +76,32 @@ function RootShell({ children }: { children: React.ReactNode }) {
 }
 
 function RootComponent() {
-  const path = useRouterState({ select: (s) => s.location.pathname });
-  const isAdmin = path.startsWith("/admin");
-
   return (
     <AuthProvider>
       <SiteProvider>
         <CartProvider>
-          {!isAdmin && <CursorGlow />}
-          <Outlet />
-          {!isAdmin && <CartDrawer />}
+          <AppContent />
           <Toaster />
         </CartProvider>
       </SiteProvider>
     </AuthProvider>
+  );
+}
+
+function AppContent() {
+  const location = useLocation();
+  const path = location.pathname;
+  const { user } = useAuth();
+  
+  const isAdmin = path.startsWith("/admin");
+  const isAuth = (path === "/account" && !user) || path === "/admin/login";
+  const hideExtras = isAdmin || isAuth;
+
+  return (
+    <>
+      {!hideExtras && <CursorGlow />}
+      <Outlet />
+      {!hideExtras && <CartDrawer />}
+    </>
   );
 }

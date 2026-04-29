@@ -92,7 +92,7 @@ export function ProductDetail({ product, onClose }: Props) {
                       {product.rating} · {product.reviews} reviews
                     </span>
                   </div>
-                  <p className="mt-4 font-display text-3xl">${product.price.toFixed(2)}</p>
+                  <p className="mt-4 font-display text-3xl">GH₵ {product.price.toFixed(2)}</p>
                 </div>
 
                 <p className="text-sm leading-relaxed text-muted-foreground">{product.description}</p>
@@ -144,7 +144,7 @@ export function ProductDetail({ product, onClose }: Props) {
                 <div className="grid grid-cols-3 gap-2 rounded-2xl bg-sand/50 p-3 text-[11px] text-cocoa/70">
                   <div className="flex flex-col items-center gap-1 text-center">
                     <Truck className="h-4 w-4" />
-                    Free over $100
+                    Free over GH₵ 100
                   </div>
                   <div className="flex flex-col items-center gap-1 text-center">
                     <RotateCcw className="h-4 w-4" />

@@ -20,24 +20,15 @@ export function Hero() {
         <img
           src={heroImg}
           alt="Model wearing ChristFitz oversized tee"
-          className="h-full w-full object-cover"
+          className="h-full w-full object-cover object-top sm:object-center"
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-cocoa/40 via-cocoa/55 to-cocoa" />
-        <div className="absolute inset-0 bg-gradient-to-r from-cocoa/80 via-cocoa/30 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-b from-cocoa/20 via-cocoa/40 to-cocoa" />
+        <div className="absolute inset-0 bg-gradient-to-r from-cocoa/60 via-cocoa/20 to-transparent" />
       </motion.div>
 
       <FloatingOrbs variant="dark" />
 
       <div className="relative z-10 mx-auto flex min-h-screen max-w-7xl flex-col justify-center px-5 sm:px-6 pt-32 pb-20">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.4 }}
-          className="inline-flex w-fit items-center gap-2 rounded-full glass-dark px-4 py-1.5 text-[10px] sm:text-xs uppercase tracking-[0.2em]"
-        >
-          <span className="h-1.5 w-1.5 rounded-full bg-gold" />
-          {h.eyebrow}
-        </motion.div>
 
         <motion.h1
           initial={{ opacity: 0, y: 40 }}
@@ -100,20 +91,6 @@ export function Hero() {
         </motion.div>
       </div>
 
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 1.8 }}
-        className="absolute bottom-8 left-1/2 hidden -translate-x-1/2 md:block"
-      >
-        <div className="flex h-10 w-6 items-start justify-center rounded-full border border-cream/40 p-1.5">
-          <motion.div
-            animate={{ y: [0, 12, 0] }}
-            transition={{ duration: 1.8, repeat: Infinity }}
-            className="h-1.5 w-1 rounded-full bg-cream"
-          />
-        </div>
-      </motion.div>
     </section>
   );
 }

@@ -89,7 +89,7 @@ function CartPage() {
                             <Plus className="h-3 w-3" />
                           </button>
                         </div>
-                        <span className="font-medium tabular-nums">${(item.price * item.quantity).toFixed(2)}</span>
+                        <span className="font-medium tabular-nums">₵{(item.price * item.quantity).toFixed(2)}</span>
                       </div>
                     </div>
                   </motion.li>
@@ -110,15 +110,15 @@ function CartPage() {
               <div className="mt-6 space-y-2 text-sm">
                 <div className="flex justify-between text-cream/70">
                   <span>Subtotal</span>
-                  <span className="tabular-nums">${subtotal.toFixed(2)}</span>
+                  <span className="tabular-nums">₵{subtotal.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between text-cream/70">
                   <span>Shipping</span>
-                  <span className="tabular-nums">{shipping === 0 ? "Free" : `$${shipping.toFixed(2)}`}</span>
+                  <span className="tabular-nums">{shipping === 0 ? "Free" : `₵${shipping.toFixed(2)}`}</span>
                 </div>
                 <div className="mt-3 flex justify-between border-t border-cream/15 pt-3 font-display text-xl">
                   <span>Total</span>
-                  <span className="tabular-nums">${total.toFixed(2)}</span>
+                  <span className="tabular-nums">₵{total.toFixed(2)}</span>
                 </div>
               </div>
               <button className="mt-7 inline-flex w-full items-center justify-center gap-2 rounded-full bg-cream px-6 py-4 text-sm font-medium text-cocoa transition hover:scale-[1.02]">
@@ -126,7 +126,7 @@ function CartPage() {
                 <ArrowRight className="h-4 w-4" />
               </button>
               <p className="mt-3 text-center text-[11px] text-cream/60">
-                Secure checkout · Free shipping on orders over $100
+                Secure checkout · Free shipping on orders over ₵100
               </p>
             </div>
           </div>

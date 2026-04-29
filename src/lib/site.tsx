@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "./auth";
 import { resolveImage } from "./assetMap";
 
 export interface DBProduct {
@@ -126,18 +127,20 @@ export function SiteProvider({ children }: { children: ReactNode }) {
     setLoading(false);
   };
 
+  const { user } = useAuth();
+
   useEffect(() => {
     refresh();
-  }, []);
+  }, [user]);
 
-  // Apply theme colors as CSS variables (with hex -> use directly via custom prop)
+  // Apply theme colors as CSS variables
   useEffect(() => {
     const r = document.documentElement;
     const c = settings.colors;
-    r.style.setProperty("--cocoa-hex", c.cocoa);
-    r.style.setProperty("--coffee-hex", c.coffee);
-    r.style.setProperty("--cream-hex", c.cream);
-    r.style.setProperty("--gold-hex", c.gold);
+    r.style.setProperty("--cocoa", c.cocoa);
+    r.style.setProperty("--coffee", c.coffee);
+    r.style.setProperty("--cream", c.cream);
+    r.style.setProperty("--gold", c.gold);
   }, [settings.colors]);
 
   // Apply favicon

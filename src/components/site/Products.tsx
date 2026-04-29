@@ -95,7 +95,7 @@ export function Products({ limit }: ProductsProps) {
                 <div className="flex items-center justify-between gap-3 p-5">
                   <div className="min-w-0">
                     <h3 className="truncate font-semibold text-cocoa">{p.name}</h3>
-                    <p className="mt-0.5 text-sm text-muted-foreground">${p.price}</p>
+                    <p className="mt-0.5 text-sm text-muted-foreground">GH₵ {p.price}</p>
                   </div>
                   <button
                     onClick={(e) => { e.stopPropagation(); addItem(p); }}

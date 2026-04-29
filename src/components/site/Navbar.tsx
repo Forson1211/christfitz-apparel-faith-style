@@ -1,7 +1,7 @@
-import { Link, useRouterState } from "@tanstack/react-router";
+import { Link, useLocation } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, ShoppingBag, Menu, X, User as UserIcon } from "lucide-react";
+import { Search, ShoppingCart, Menu, X, User as UserIcon, Package, Heart, LogOut } from "lucide-react";
 import { useCart } from "@/lib/cart";
 import { useSite } from "@/lib/site";
 import { useAuth } from "@/lib/auth";
@@ -13,8 +13,9 @@ export function Navbar() {
   const [searchOpen, setSearchOpen] = useState(false);
   const { count, openCart } = useCart();
   const { settings, navLinks } = useSite();
-  const { user } = useAuth();
-  const path = useRouterState({ select: (s) => s.location.pathname });
+  const { user, signOut } = useAuth();
+  const location = useLocation();
+  const path = location.pathname;
   const onHome = path === "/";
 
   useEffect(() => {
@@ -36,57 +37,111 @@ export function Navbar() {
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${scrolled ? "py-2 sm:py-3" : "py-4 sm:py-5"}`}
       >
         <div className="mx-auto max-w-7xl px-4 sm:px-5">
-          <div
-            className={`flex items-center justify-between rounded-full px-4 sm:px-5 py-2.5 sm:py-3 transition-all duration-500 ${
-              scrolled || !onHome ? "glass-dark text-cream shadow-soft" : tone
-            }`}
-          >
-            <Link to="/" className="flex items-center gap-2 font-display text-lg sm:text-xl tracking-tight">
-              {settings.logo.url ? (
-                <img src={settings.logo.url} alt={settings.brand.name} className="h-8 w-8 rounded-full object-cover" />
-              ) : (
-                <span className="grid h-8 w-8 place-items-center rounded-full bg-cream text-cocoa font-bold">
-                  {settings.logo.symbol || "✝"}
-                </span>
-              )}
-              <span>{settings.brand.name}</span>
-            </Link>
-
-            <nav className="hidden md:flex items-center gap-7 text-sm">
-              {navLinks.map((l) => (
-                <Link
-                  key={l.id}
-                  to={l.href}
-                  activeOptions={{ exact: l.href === "/" }}
-                  className="relative opacity-85 transition hover:opacity-100 after:absolute after:left-0 after:-bottom-1 after:h-px after:w-0 after:bg-current after:transition-all hover:after:w-full data-[status=active]:opacity-100 data-[status=active]:after:w-full"
-                >
-                  {l.label}
-                </Link>
-              ))}
-            </nav>
+            <div
+              className="flex items-center justify-between rounded-full px-4 sm:px-5 py-2.5 sm:py-3 transition-all duration-500 glass-dark text-cream shadow-soft"
+            >
+              <Link to="/" className="flex items-center gap-2 font-display text-lg sm:text-xl tracking-tight">
+                {settings.logo.url ? (
+                  <img src={settings.logo.url} alt={settings.brand.name} className="h-8 w-8 rounded-full object-cover" />
+                ) : (
+                  <span className="grid h-8 w-8 place-items-center rounded-full bg-cream text-cocoa font-bold">
+                    {settings.logo.symbol || "✝"}
+                  </span>
+                )}
+                <span>{settings.brand.name}</span>
+              </Link>
+  
+              <nav className="hidden md:flex items-center gap-7 text-sm font-medium">
+                {navLinks.map((l) => (
+                  <Link
+                    key={l.id}
+                    to={l.href}
+                    activeOptions={{ exact: l.href === "/" }}
+                    className="relative opacity-70 transition hover:opacity-100 after:absolute after:left-0 after:-bottom-1.5 after:h-[2px] after:w-0 after:bg-gold after:transition-all hover:after:w-full data-[status=active]:opacity-100 data-[status=active]:after:w-full"
+                  >
+                    {l.label}
+                  </Link>
+                ))}
+              </nav>
 
             <div className="flex items-center gap-1 sm:gap-2">
               <button
                 onClick={() => setSearchOpen(true)}
                 aria-label="Search"
-                className="hidden sm:grid h-9 w-9 place-items-center rounded-full hover:bg-cream/10 transition"
+                className="grid h-9 w-9 place-items-center rounded-full hover:bg-cream/10 transition"
               >
                 <Search className="h-4 w-4" />
               </button>
-              <Link
-                to="/account"
-                aria-label={user ? "Account" : "Sign in"}
-                className="hidden sm:grid h-9 w-9 place-items-center rounded-full hover:bg-cream/10 transition relative"
-              >
-                <UserIcon className="h-4 w-4" />
-                {user && <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-gold" />}
-              </Link>
+              <div className="relative hidden sm:block group">
+                <button
+                  className="flex items-center gap-2 h-9 px-3 rounded-full hover:bg-cream/10 transition"
+                >
+                  <UserIcon className="h-4 w-4" />
+                  <span className="text-sm font-medium">Account</span>
+                  <motion.span animate={{ rotate: 0 }} className="text-gold">
+                    <svg width="10" height="6" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M1 1L5 5L9 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  </motion.span>
+                </button>
+
+                <div className="absolute right-0 mt-2 w-64 origin-top-right invisible group-hover:visible opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all duration-300 z-[60]">
+                  <div className="rounded-[2rem] bg-white text-cocoa shadow-luxe overflow-hidden border border-cocoa/5 p-2">
+                    {!user ? (
+                      <div className="p-4">
+                        <Link
+                          to="/account"
+                          className="flex items-center justify-center w-full rounded-2xl bg-gold py-3.5 text-xs font-bold uppercase tracking-widest text-cocoa shadow-soft hover:bg-gold/80 transition-all mb-4"
+                        >
+                          Sign In
+                        </Link>
+                        <div className="h-[1px] bg-cocoa/5 mb-2" />
+                      </div>
+                    ) : (
+                      <div className="p-4 pb-2">
+                        <p className="text-[10px] uppercase tracking-[0.2em] text-cocoa/40 font-bold mb-1">Signed in as</p>
+                        <p className="text-sm font-bold truncate">{user.user_metadata?.full_name || user.email}</p>
+                        <div className="h-[1px] bg-cocoa/5 mt-4 mb-2" />
+                      </div>
+                    )}
+
+                    <div className="space-y-1">
+                      {[
+                        { label: "My Account", href: "/account", Icon: UserIcon },
+                        { label: "Orders", href: "/account", Icon: Package },
+                        { label: "Wishlist", href: "/account", Icon: Heart },
+                      ].map((item) => (
+                        <Link
+                          key={item.label}
+                          to={item.href as any}
+                          className="flex items-center gap-3 w-full rounded-xl px-4 py-3 text-sm font-medium text-cocoa/70 hover:bg-cocoa/5 hover:text-cocoa transition-all"
+                        >
+                          <item.Icon className="h-4 w-4" />
+                          {item.label}
+                        </Link>
+                      ))}
+                    </div>
+
+                    {user && (
+                      <div className="mt-2 pt-2 border-t border-cocoa/5">
+                        <button
+                          onClick={() => signOut()}
+                          className="flex items-center gap-3 w-full rounded-xl px-4 py-3 text-sm font-medium text-red-600 hover:bg-red-50 transition-all"
+                        >
+                          <LogOut className="h-4 w-4" /> Sign Out
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
               <button
                 onClick={openCart}
                 aria-label="Open cart"
                 className="relative grid h-9 w-9 place-items-center rounded-full hover:bg-cream/10 transition"
               >
-                <ShoppingBag className="h-4 w-4" />
+                <ShoppingCart className="h-4 w-4" />
                 <AnimatePresence>
                   {count > 0 && (
                     <motion.span
@@ -128,36 +183,86 @@ export function Navbar() {
                 transition={{ type: "spring", damping: 24 }}
                 className="absolute right-0 top-0 h-full w-80 max-w-[85%] glass-dark p-7 text-cream"
               >
-                <div className="flex justify-end">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 font-display text-xl tracking-tight">
+                    <span className="grid h-8 w-8 place-items-center rounded-full bg-cream text-cocoa font-bold">
+                      ✝
+                    </span>
+                    <span>ChristFitz</span>
+                  </div>
                   <button
                     onClick={() => setOpen(false)}
                     aria-label="Close menu"
-                    className="grid h-9 w-9 place-items-center rounded-full hover:bg-cream/10"
+                    className="grid h-10 w-10 place-items-center rounded-full hover:bg-cream/10"
                   >
-                    <X className="h-4 w-4" />
+                    <X className="h-5 w-5" />
                   </button>
                 </div>
-                <nav className="mt-10 flex flex-col gap-5 font-display text-3xl">
-                  {navLinks.map((l, i) => (
-                    <motion.div
-                      key={l.id}
-                      initial={{ x: 30, opacity: 0 }}
-                      animate={{ x: 0, opacity: 1 }}
-                      transition={{ delay: 0.05 * i }}
-                    >
-                      <Link to={l.href} onClick={() => setOpen(false)}>
-                        {l.label}
+                <nav className="mt-10 flex flex-col gap-6">
+                  <div className="flex flex-col gap-4 font-display text-3xl">
+                    {navLinks.map((l, i) => (
+                      <motion.div
+                        key={l.id}
+                        initial={{ x: 30, opacity: 0 }}
+                        animate={{ x: 0, opacity: 1 }}
+                        transition={{ delay: 0.05 * i }}
+                      >
+                        <Link to={l.href} onClick={() => setOpen(false)} className="hover:text-gold transition-colors">
+                          {l.label}
+                        </Link>
+                      </motion.div>
+                    ))}
+                  </div>
+
+                  <div className="mt-8 pt-8 border-t border-white/10 space-y-4">
+                    <p className="text-[10px] uppercase tracking-[0.3em] text-cream/40 font-bold px-1">Account & Settings</p>
+                    <div className="grid gap-2">
+                      {[
+                        { label: "Profile Settings", href: "/account", Icon: UserIcon },
+                        { label: "Order History", href: "/account", Icon: Package },
+                        { label: "My Wishlist", href: "/account", Icon: Heart },
+                      ].map((item, i) => (
+                        <motion.div
+                          key={item.label}
+                          initial={{ x: 20, opacity: 0 }}
+                          animate={{ x: 0, opacity: 1 }}
+                          transition={{ delay: 0.2 + (0.05 * i) }}
+                        >
+                          <Link
+                            to={item.href as any}
+                            onClick={() => setOpen(false)}
+                            className="flex items-center gap-3 rounded-2xl bg-white/5 px-5 py-4 text-sm font-medium hover:bg-white/10 transition-all"
+                          >
+                            <item.Icon className="h-4 w-4 text-gold" />
+                            {item.label}
+                          </Link>
+                        </motion.div>
+                      ))}
+                    </div>
+
+                    {!user ? (
+                      <Link
+                        to="/account"
+                        onClick={() => setOpen(false)}
+                        className="flex items-center justify-center w-full rounded-2xl bg-gold py-4 text-sm font-bold uppercase tracking-widest text-cocoa shadow-soft hover:scale-[1.02] transition-all"
+                      >
+                        Sign In / Join
                       </Link>
-                    </motion.div>
-                  ))}
-                  <Link to="/account" onClick={() => setOpen(false)}>
-                    {user ? "My account" : "Sign in"}
-                  </Link>
+                    ) : (
+                      <button
+                        onClick={() => { signOut(); setOpen(false); }}
+                        className="flex items-center justify-center gap-2 w-full rounded-2xl bg-white/5 py-4 text-sm font-medium text-red-400 hover:bg-red-400/10 transition-all"
+                      >
+                        <LogOut className="h-4 w-4" /> Sign Out
+                      </button>
+                    )}
+                  </div>
+
                   <button
                     onClick={() => { setOpen(false); setSearchOpen(true); }}
-                    className="text-left"
+                    className="mt-4 flex items-center gap-3 px-5 py-4 text-sm text-cream/60 hover:text-cream transition-all"
                   >
-                    Search
+                    <Search className="h-4 w-4" /> Search the store
                   </button>
                 </nav>
               </motion.div>

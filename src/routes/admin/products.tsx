@@ -66,7 +66,7 @@ function AdminProducts() {
               <tr key={p.id} className="border-t border-cocoa/10">
                 <td className="p-4 font-medium">{p.name}</td>
                 <td className="p-4 text-muted-foreground">{p.category}</td>
-                <td className="p-4 tabular-nums">${p.price}</td>
+                <td className="p-4 tabular-nums">₵{p.price}</td>
                 <td className="p-4">{p.active ? "Yes" : "No"}</td>
                 <td className="p-4 text-right">
                   <button onClick={() => setEditing(p)} className="text-coffee hover:underline mr-3">Edit</button>

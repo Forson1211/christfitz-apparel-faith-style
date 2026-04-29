@@ -1,66 +1,189 @@
-import { Instagram, Twitter, Youtube, Facebook } from "lucide-react";
+import { Instagram, Twitter, Youtube, Facebook, ArrowUpRight, ShieldCheck, ChevronDown } from "lucide-react";
 import { Link } from "@tanstack/react-router";
-import { useSite } from "@/lib/site";
+import { useSite, productImage } from "@/lib/site";
+import { motion, AnimatePresence } from "framer-motion";
+import { useState } from "react";
+import mtnLogo from "@/assets/payments/mtn.png";
+import telecelLogo from "@/assets/payments/telecel.png";
+import paystackLogo from "@/assets/payments/paystack.png";
 
 export function Footer() {
-  const { settings, categories, navLinks } = useSite();
+  const { settings, categories, products } = useSite();
+  const [expandedSection, setExpandedSection] = useState<string | null>(null);
+  const newProducts = products.filter(p => p.active).slice(0, 2);
+
+  const footerLinks = [
+    {
+      title: "Marketplace",
+      links: [
+        { label: "Shop Products", href: "/products" },
+        { label: "Top Rated", href: "/products" },
+        { label: "New Arrivals", href: "/products" },
+        { label: "Collections", href: "/products" },
+        { label: "Gift Cards", href: "/" },
+      ],
+    },
+    {
+      title: "Categories",
+      links: categories.map(c => ({ label: c.name, href: `/products` })),
+    },
+    {
+      title: "My Account",
+      links: [
+        { label: "Profile Settings", href: "/account" },
+        { label: "Order History", href: "/account" },
+        { label: "Wishlist", href: "/account" },
+        { label: "Track Order", href: "/account" },
+      ],
+    },
+    {
+      title: "Company",
+      links: [
+        { label: "Our Mission", href: "/about" },
+        { label: "Story of Faith", href: "/about" },
+        { label: "Contact Us", href: "/#contact" },
+        { label: "Privacy Policy", href: "/" },
+        { label: "Terms of Service", href: "/" },
+      ],
+    },
+    {
+      title: "Support",
+      links: [
+        { label: "Help Center", href: "/" },
+        { label: "FAQs", href: "/" },
+        { label: "Shipping Policy", href: "/" },
+        { label: "Returns", href: "/" },
+        { label: "Community Rules", href: "/" },
+      ],
+    },
+  ];
+
+  const toggleSection = (title: string) => {
+    setExpandedSection(expandedSection === title ? null : title);
+  };
 
   return (
-    <footer className="relative bg-cocoa text-cream">
-      <div className="mx-auto max-w-7xl px-5 sm:px-6 py-16 sm:py-20">
-        <div className="grid gap-10 sm:gap-12 sm:grid-cols-2 md:grid-cols-4">
-          <div className="md:col-span-2">
-            <div className="flex items-center gap-2 font-display text-2xl">
-              {settings.logo.url ? (
-                <img src={settings.logo.url} alt={settings.brand.name} className="h-9 w-9 rounded-full object-cover" />
-              ) : (
-                <span className="grid h-9 w-9 place-items-center rounded-full bg-cream text-cocoa font-bold">
-                  {settings.logo.symbol || "✝"}
-                </span>
-              )}
-              {settings.brand.name}
+    <footer className="relative bg-[#0A0503] text-cream pt-20 pb-10 border-t border-white/5">
+      <div className="mx-auto max-w-7xl px-5 sm:px-6">
+        {/* Top Section: Logo and Socials */}
+        <div className="flex items-center justify-between gap-4 pb-10 border-b border-white/5 md:border-none">
+          <Link to="/" className="flex items-center gap-2.5 font-display text-xl sm:text-2xl group">
+            <div className="grid h-9 w-9 sm:h-10 sm:w-10 place-items-center rounded-xl sm:rounded-2xl bg-gold text-cocoa transition-transform group-hover:rotate-12">
+              <span className="font-bold">✝</span>
             </div>
-            <p className="mt-5 max-w-sm text-cream/70 leading-relaxed">{settings.footer.text}</p>
-            <div className="mt-6 flex gap-3">
-              {[Instagram, Twitter, Youtube, Facebook].map((Icon, i) => (
-                <a
-                  key={i}
-                  href="#"
-                  className="grid h-10 w-10 place-items-center rounded-full glass-dark transition hover:bg-cream hover:text-cocoa"
-                >
-                  <Icon className="h-4 w-4" />
-                </a>
-              ))}
-            </div>
-          </div>
+            <span className="tracking-tight">{settings.brand.name}</span>
+          </Link>
 
-          <div>
-            <h4 className="text-xs uppercase tracking-[0.3em] text-cream/50">Shop</h4>
-            <ul className="mt-5 space-y-3 text-sm text-cream/80">
-              {categories.map((c) => (
-                <li key={c.id}>
-                  <Link to="/products" className="transition hover:text-cream">{c.name}</Link>
-                </li>
-              ))}
-              <li><Link to="/products" className="transition hover:text-cream">All Products</Link></li>
-            </ul>
-          </div>
-
-          <div>
-            <h4 className="text-xs uppercase tracking-[0.3em] text-cream/50">Brand</h4>
-            <ul className="mt-5 space-y-3 text-sm text-cream/80">
-              {navLinks.map((l) => (
-                <li key={l.id}>
-                  <Link to={l.href} className="transition hover:text-cream">{l.label}</Link>
-                </li>
-              ))}
-            </ul>
+          <div className="flex gap-4 sm:gap-6">
+            {[Facebook, Instagram, Twitter, Youtube].map((Icon, i) => (
+              <a
+                key={i}
+                href="#"
+                className="text-cream/50 transition-all hover:text-gold hover:scale-110"
+              >
+                <Icon className="h-5 w-5" />
+              </a>
+            ))}
           </div>
         </div>
 
-        <div className="mt-14 sm:mt-16 flex flex-col items-center justify-between gap-4 border-t border-cream/10 pt-8 text-xs text-cream/50 sm:flex-row">
+        {/* Links Grid / Accordion */}
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-0 lg:gap-10 py-0 lg:py-12 border-b lg:border-y border-white/5">
+          {footerLinks.map((group) => (
+            <div key={group.title} className="border-b border-white/5 lg:border-none">
+              {/* Mobile Trigger */}
+              <button
+                onClick={() => toggleSection(group.title)}
+                className="flex w-full items-center justify-between py-6 lg:hidden"
+              >
+                <span className="text-sm font-bold tracking-widest uppercase text-cream/90">{group.title}</span>
+                <ChevronDown className={`h-4 w-4 text-gold transition-transform duration-300 ${expandedSection === group.title ? "rotate-180" : ""}`} />
+              </button>
+
+              {/* Desktop Header */}
+              <h4 className="hidden lg:block text-[11px] uppercase tracking-[0.25em] text-gold font-bold mb-6">{group.title}</h4>
+              
+              {/* Content: Animated on mobile, always visible on desktop */}
+              <AnimatePresence initial={false}>
+                {expandedSection === group.title && (
+                  <motion.ul
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.3, ease: "easeInOut" }}
+                    className="overflow-hidden space-y-3 pb-6 lg:hidden"
+                  >
+                    {group.links.map((link) => (
+                      <li key={link.label}>
+                        <Link
+                          to={link.href as any}
+                          className="text-sm text-cream/50 hover:text-gold transition-colors block"
+                        >
+                          {link.label}
+                        </Link>
+                      </li>
+                    ))}
+                  </motion.ul>
+                )}
+              </AnimatePresence>
+
+              {/* Static Desktop Links */}
+              <ul className="hidden lg:flex flex-col space-y-3">
+                {group.links.map((link) => (
+                  <li key={link.label}>
+                    <Link
+                      to={link.href as any}
+                      className="text-sm text-cream/50 hover:text-gold transition-colors block"
+                    >
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+
+        {/* New Products Section */}
+        <div className="py-12">
+          <p className="text-[10px] uppercase tracking-[0.3em] text-cream/30 font-bold mb-6">New Products</p>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {newProducts.map((p, i) => (
+              <Link
+                key={i}
+                to="/products"
+                className="group flex items-center gap-4 p-4 rounded-xl glass-dark border border-white/5 transition-all hover:bg-white/5"
+              >
+                <div className="h-16 w-24 shrink-0 overflow-hidden rounded-lg bg-cocoa/20">
+                  <img src={productImage(p)} alt={p.name} className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h5 className="text-sm font-medium text-cream/80 leading-snug line-clamp-2">{p.name}</h5>
+                  <p className="text-[10px] text-gold mt-1 font-bold">GH₵ {p.price}</p>
+                </div>
+                <div className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-white/5 text-cream/40 group-hover:bg-gold group-hover:text-cocoa transition-colors">
+                  <ArrowUpRight className="h-3 w-3" />
+                </div>
+              </Link>
+            ))}
+
+            <div className="flex flex-col justify-center lg:items-end gap-6">
+              <div className="flex items-center gap-3 px-5 py-3 rounded-full bg-green-500/10 border border-green-500/20 text-green-400 text-[11px] font-bold uppercase tracking-widest">
+                <ShieldCheck className="h-4 w-4" /> Verified Merchant
+              </div>
+              <div className="flex items-center gap-6 opacity-90 group-hover:opacity-100 transition-all">
+                <img src={mtnLogo} alt="MTN" className="h-8 w-auto object-contain rounded-lg" title="MTN Mobile Money" />
+                <img src={telecelLogo} alt="Telecel" className="h-8 w-auto object-contain rounded-lg" title="Telecel Cash" />
+                <img src={paystackLogo} alt="Paystack" className="h-8 w-auto object-contain rounded-lg" title="Secure Paystack Payment" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Copyright */}
+        <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-[10px] uppercase tracking-[0.2em] text-cream/30 border-t border-white/5">
           <p>{settings.footer.copyright}</p>
-          <p className="font-display text-sm text-center">"Be bold, be loved, be Christ-fit."</p>
+          <p className="font-display text-xs italic">"Built on faith, crafted with intention."</p>
         </div>
       </div>
     </footer>

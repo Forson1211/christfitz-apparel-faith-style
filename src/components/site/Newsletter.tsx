@@ -39,22 +39,27 @@ export function Newsletter() {
                 e.preventDefault();
                 if (email) setSent(true);
               }}
-              className="mt-8 flex flex-col gap-3 rounded-full glass-dark p-2 sm:flex-row sm:items-center"
+              className="mt-10 flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-2 sm:rounded-full sm:glass-dark sm:p-2"
             >
-              <input
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="your@email.com"
-                className="flex-1 bg-transparent px-5 py-3 text-cream placeholder:text-cream/50 outline-none"
-              />
+              <div className="flex-1 rounded-2xl glass-dark sm:bg-transparent sm:backdrop-blur-none sm:rounded-none sm:border-none">
+                <input
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="your@email.com"
+                  className="w-full bg-transparent px-6 py-4 sm:py-3 text-cream placeholder:text-cream/50 outline-none"
+                />
+              </div>
               <button
                 type="submit"
-                className="group inline-flex items-center justify-center gap-2 rounded-full bg-cream px-6 py-3 text-sm font-medium text-cocoa transition-all hover:scale-[1.03] hover:shadow-luxe"
+                className="group relative inline-flex items-center justify-center gap-2 overflow-hidden rounded-2xl bg-cream px-8 py-4 sm:py-3 text-sm font-bold text-cocoa transition-all hover:scale-[1.02] sm:rounded-full sm:font-medium"
               >
-                {sent ? "Welcome 🤍" : "Subscribe"}
-                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                <span className="relative z-10 flex items-center gap-2">
+                  {sent ? "Welcome 🤍" : "Subscribe"}
+                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                </span>
+                <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-gold/20 to-transparent transition-transform duration-500 group-hover:translate-x-0" />
               </button>
             </form>
           </div>

@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Plus, Minus, Trash2, ShoppingBag, ArrowRight } from "lucide-react";
+import { X, Plus, Minus, Trash2, ShoppingCart, ArrowRight } from "lucide-react";
 import { useEffect } from "react";
 import { Link } from "@tanstack/react-router";
 import { useCart } from "@/lib/cart";
@@ -37,7 +37,7 @@ export function CartDrawer() {
           >
             <div className="flex items-center justify-between border-b border-cocoa/10 px-5 sm:px-6 py-5">
               <div className="flex items-center gap-2">
-                <ShoppingBag className="h-5 w-5" />
+                <ShoppingCart className="h-5 w-5" />
                 <h2 className="font-display text-2xl">Your Cart</h2>
                 <span className="rounded-full bg-cocoa/10 px-2 py-0.5 text-xs">{count}</span>
               </div>
@@ -50,7 +50,7 @@ export function CartDrawer() {
               {items.length === 0 ? (
                 <div className="flex h-full flex-col items-center justify-center text-center">
                   <div className="grid h-20 w-20 place-items-center rounded-full bg-cocoa/5">
-                    <ShoppingBag className="h-8 w-8 text-cocoa/40" />
+                    <ShoppingCart className="h-8 w-8 text-cocoa/40" />
                   </div>
                   <h3 className="mt-5 font-display text-2xl">Your cart is empty</h3>
                   <p className="mt-2 max-w-xs text-sm text-muted-foreground">
@@ -104,7 +104,7 @@ export function CartDrawer() {
                               </button>
                             </div>
                             <span className="text-sm font-medium tabular-nums">
-                              ${(item.price * item.quantity).toFixed(2)}
+                              GH₵ {(item.price * item.quantity).toFixed(2)}
                             </span>
                           </div>
                         </div>
@@ -120,15 +120,15 @@ export function CartDrawer() {
                 <div className="space-y-1.5 text-sm">
                   <div className="flex justify-between text-muted-foreground">
                     <span>Subtotal</span>
-                    <span className="tabular-nums">${subtotal.toFixed(2)}</span>
+                    <span className="tabular-nums">GH₵ {subtotal.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between text-muted-foreground">
                     <span>Shipping</span>
-                    <span className="tabular-nums">{shipping === 0 ? "Free" : `$${shipping.toFixed(2)}`}</span>
+                    <span className="tabular-nums">{shipping === 0 ? "Free" : `GH₵ ${shipping.toFixed(2)}`}</span>
                   </div>
                   <div className="flex justify-between border-t border-cocoa/10 pt-2 font-display text-lg">
                     <span>Total</span>
-                    <span className="tabular-nums">${total.toFixed(2)}</span>
+                    <span className="tabular-nums">GH₵ {total.toFixed(2)}</span>
                   </div>
                 </div>
                 <Link

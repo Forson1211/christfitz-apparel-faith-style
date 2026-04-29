@@ -1,4 +1,4 @@
-import { createFileRoute, Outlet, redirect, Link, useNavigate, useRouterState } from "@tanstack/react-router";
+import { createFileRoute, Outlet, redirect, Link, useNavigate, useLocation } from "@tanstack/react-router";
 import { useAuth } from "@/lib/auth";
 import { LayoutDashboard, Package, FolderTree, Palette, Image as ImageIcon, Type, Navigation as NavIcon, LogOut, Home } from "lucide-react";
 import { useEffect } from "react";
@@ -18,23 +18,66 @@ const items = [
 ];
 
 function AdminLayout() {
-  const { user, isAdmin, loading, signOut } = useAuth();
+  const { user, isAdmin, loading, roleSettled, signOut, bootstrapAdmin } = useAuth();
   const navigate = useNavigate();
-  const path = useRouterState({ select: (s) => s.location.pathname });
+  const location = useLocation();
+  const path = location.pathname;
 
   useEffect(() => {
     if (loading) return;
-    if (!user || !isAdmin) {
+    if (!user) {
       if (path !== "/admin/login") navigate({ to: "/admin/login" });
     }
-  }, [user, isAdmin, loading, path, navigate]);
+  }, [user, loading, path, navigate]);
 
   if (path === "/admin/login") return <Outlet />;
 
-  if (loading) {
-    return <div className="grid min-h-screen place-items-center bg-cream text-cocoa">Loading…</div>;
+  if (loading || !roleSettled) {
+    return (
+      <div className="grid min-h-screen place-items-center bg-cream text-cocoa gap-3">
+        <div className="h-8 w-8 rounded-full border-2 border-cocoa border-t-transparent animate-spin" />
+        <span className="text-sm text-cocoa/60">Verifying access...</span>
+      </div>
+    );
   }
-  if (!user || !isAdmin) return null;
+
+  if (!user) return null;
+
+  if (!isAdmin) {
+    return (
+      <div className="grid min-h-screen place-items-center bg-cream text-cocoa px-5">
+        <div className="w-full max-w-sm text-center rounded-[2.5rem] glass shadow-luxe p-10 border border-white/40">
+          <div className="mx-auto h-16 w-16 rounded-2xl bg-red-500/10 text-red-600 flex items-center justify-center mb-6">
+            <span className="text-2xl font-bold">✕</span>
+          </div>
+          <h1 className="font-display text-3xl">Access Denied</h1>
+          <p className="mt-3 text-sm text-cocoa/60 leading-relaxed">
+            Your account does not have admin permissions. If you are the first user, try to bootstrap admin access.
+          </p>
+          <div className="mt-8 space-y-3">
+            <button
+              onClick={() => bootstrapAdmin().then(success => {
+                if (success) {
+                  window.location.reload();
+                } else {
+                  alert("Bootstrap failed. An admin might already exist or the system is locked.");
+                }
+              })}
+              className="w-full rounded-2xl bg-gold text-cocoa px-6 py-4 text-xs font-bold uppercase tracking-widest hover:bg-gold/80 transition-all shadow-soft"
+            >
+              Try to Bootstrap Admin
+            </button>
+            <button
+              onClick={() => signOut().then(() => navigate({ to: "/admin/login" }))}
+              className="w-full rounded-2xl bg-cocoa/5 text-cocoa/60 px-6 py-4 text-xs font-bold uppercase tracking-widest hover:bg-cocoa/10 transition-all"
+            >
+              Sign out & try another
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen bg-cream text-cocoa">
