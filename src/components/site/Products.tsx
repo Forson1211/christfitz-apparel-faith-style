@@ -1,41 +1,48 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Eye, Plus } from "lucide-react";
-import { products, type Category, type Product } from "@/lib/products";
+import { useSite, type DBProduct, productImage } from "@/lib/site";
 import { useCart } from "@/lib/cart";
 import { ProductDetail } from "./ProductDetail";
 
-const tabs: ("All" | Category)[] = ["All", "T-Shirts", "Hoodies", "Accessories"];
+interface ProductsProps {
+  limit?: number;
+}
 
-export function Products() {
-  const [active, setActive] = useState<(typeof tabs)[number]>("All");
-  const [selected, setSelected] = useState<Product | null>(null);
+export function Products({ limit }: ProductsProps) {
+  const { products, categories } = useSite();
+  const tabs = ["All", ...categories.map((c) => c.name)];
+  const [active, setActive] = useState<string>("All");
+  const [selected, setSelected] = useState<DBProduct | null>(null);
   const { addItem } = useCart();
-  const filtered = active === "All" ? products : products.filter((p) => p.category === active);
+
+  const filtered = (active === "All" ? products : products.filter((p) => p.category === active))
+    .filter((p) => p.active);
+  const display = limit ? filtered.slice(0, limit) : filtered;
 
   return (
-    <section id="products" className="relative py-28 sm:py-36 bg-sand/40">
-      <div className="mx-auto max-w-7xl px-6">
+    <section id="products" className="relative py-20 sm:py-28 md:py-36 bg-sand/40">
+      <div className="mx-auto max-w-7xl px-5 sm:px-6">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-100px" }}
           transition={{ duration: 0.7 }}
-          className="flex flex-col items-start justify-between gap-8 sm:flex-row sm:items-end"
+          className="flex flex-col items-start justify-between gap-6 sm:gap-8 sm:flex-row sm:items-end"
         >
           <div>
             <p className="text-xs uppercase tracking-[0.3em] text-coffee">— The Collection</p>
-            <h2 className="mt-3 font-display text-4xl sm:text-6xl text-balance">
+            <h2 className="mt-3 font-display text-3xl sm:text-5xl md:text-6xl text-balance">
               Pieces for the faithful.
             </h2>
           </div>
 
-          <div className="flex flex-wrap gap-2 rounded-full glass p-1.5">
+          <div className="flex flex-wrap gap-1 sm:gap-2 rounded-full glass p-1.5">
             {tabs.map((t) => (
               <button
                 key={t}
                 onClick={() => setActive(t)}
-                className={`relative rounded-full px-5 py-2 text-sm transition ${
+                className={`relative rounded-full px-3 sm:px-5 py-2 text-xs sm:text-sm transition ${
                   active === t ? "text-cream" : "text-cocoa/70 hover:text-cocoa"
                 }`}
               >
@@ -52,9 +59,9 @@ export function Products() {
           </div>
         </motion.div>
 
-        <motion.div layout className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <motion.div layout className="mt-10 sm:mt-14 grid gap-5 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
           <AnimatePresence mode="popLayout">
-            {filtered.map((p, i) => (
+            {display.map((p, i) => (
               <motion.article
                 key={p.id}
                 layout
@@ -67,19 +74,14 @@ export function Products() {
               >
                 <div className="relative aspect-square overflow-hidden">
                   <img
-                    src={p.image}
+                    src={productImage(p)}
                     alt={p.name}
-                    width={1024}
-                    height={1024}
                     loading="lazy"
                     className="h-full w-full object-cover transition-transform duration-[1200ms] ease-out group-hover:scale-110"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-cocoa/70 via-transparent to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
                   <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setSelected(p);
-                    }}
+                    onClick={(e) => { e.stopPropagation(); setSelected(p); }}
                     aria-label={`Quick view ${p.name}`}
                     className="absolute left-1/2 top-1/2 grid h-12 w-12 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full glass-dark text-cream opacity-0 scale-75 transition-all duration-500 group-hover:opacity-100 group-hover:scale-100"
                   >
@@ -96,10 +98,7 @@ export function Products() {
                     <p className="mt-0.5 text-sm text-muted-foreground">${p.price}</p>
                   </div>
                   <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      addItem(p);
-                    }}
+                    onClick={(e) => { e.stopPropagation(); addItem(p); }}
                     aria-label={`Add ${p.name} to cart`}
                     className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-cocoa text-cream transition-transform hover:rotate-90 hover:bg-coffee"
                   >
