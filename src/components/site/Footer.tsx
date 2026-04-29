@@ -63,17 +63,17 @@ export function Footer() {
   };
 
   return (
-    <footer className="relative bg-[#0A0503] text-cream pt-20 pb-10 border-t border-white/5">
+    <footer className="relative bg-[#0A0503] text-cream pt-12 pb-8 border-t border-white/5">
       <div className="mx-auto max-w-7xl px-5 sm:px-6">
         {/* Top Section: Logo and Socials */}
-        <div className="flex items-center justify-between gap-4 pb-10 border-b border-white/5 md:border-none">
+        <div className="flex items-center justify-between gap-4 pb-8 border-b border-white/5 md:border-none">
           <Link to="/" className="flex items-center gap-2.5 font-display text-xl sm:text-2xl group">
             <div className="grid h-9 w-9 sm:h-10 sm:w-10 place-items-center rounded-xl sm:rounded-2xl bg-gold text-cocoa transition-transform group-hover:rotate-12">
               <span className="font-bold">✝</span>
             </div>
             <span className="tracking-tight">{settings.brand.name}</span>
           </Link>
-
+ 
           <div className="flex gap-4 sm:gap-6">
             {[Facebook, Instagram, Twitter, Youtube].map((Icon, i) => (
               <a
@@ -86,9 +86,9 @@ export function Footer() {
             ))}
           </div>
         </div>
-
+ 
         {/* Links Grid / Accordion */}
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-0 lg:gap-10 py-0 lg:py-12 border-b lg:border-y border-white/5">
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-0 lg:gap-10 py-0 lg:py-8 border-b lg:border-y border-white/5">
           {footerLinks.map((group) => (
             <div key={group.title} className="border-b border-white/5 lg:border-none">
               {/* Mobile Trigger */}
@@ -99,7 +99,7 @@ export function Footer() {
                 <span className="text-sm font-bold tracking-widest uppercase text-cream/90">{group.title}</span>
                 <ChevronDown className={`h-4 w-4 text-gold transition-transform duration-300 ${expandedSection === group.title ? "rotate-180" : ""}`} />
               </button>
-
+ 
               {/* Desktop Header */}
               <h4 className="hidden lg:block text-[11px] uppercase tracking-[0.25em] text-gold font-bold mb-6">{group.title}</h4>
               
@@ -126,7 +126,7 @@ export function Footer() {
                   </motion.ul>
                 )}
               </AnimatePresence>
-
+ 
               {/* Static Desktop Links */}
               <ul className="hidden lg:flex flex-col space-y-3">
                 {group.links.map((link) => (
@@ -143,9 +143,9 @@ export function Footer() {
             </div>
           ))}
         </div>
-
+ 
         {/* New Products Section */}
-        <div className="py-12">
+        <div className="py-8">
           <p className="text-[10px] uppercase tracking-[0.3em] text-cream/30 font-bold mb-6">New Products</p>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
             {newProducts.map((p, i) => (
@@ -166,16 +166,16 @@ export function Footer() {
                 </div>
               </Link>
             ))}
-
+ 
             {/* Payment logos and verification removed as requested */}
           </div>
         </div>
-
+ 
         {/* Copyright */}
-        <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-[10px] uppercase tracking-[0.2em] text-cream/30 border-t border-white/5">
+        <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-[10px] uppercase tracking-[0.2em] text-cream/50 border-t border-white/5">
           <p>{settings.footer.copyright}</p>
           <p className="font-display text-[10px] uppercase tracking-[0.2em]">
-            Developed by <a href="https://oflexcreative.vercel.app/" target="_blank" rel="noopener noreferrer" className="hover:text-gold transition-colors">Oflex Creative</a>
+            Developed by <a href="https://oflexcreative.vercel.app/" target="_blank" rel="noopener noreferrer" className="text-cream/90 hover:text-gold transition-colors">Oflex Creative</a>
           </p>
         </div>
       </div>

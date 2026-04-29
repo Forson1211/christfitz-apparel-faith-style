@@ -52,6 +52,8 @@ function Account() {
   const [newEmail, setNewEmail] = useState("");
   const [newPassword, setNewPassword] = useState("");
 
+  const [authStep, setAuthStep] = useState<"select" | "form">("select");
+ 
   useEffect(() => {
     document.title = "Account · ChristFitz";
     if (user) {
@@ -60,7 +62,7 @@ function Account() {
       setNewEmail(user.email || "");
     }
   }, [user]);
-
+ 
   const onAuthSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setBusy(true);
@@ -76,12 +78,13 @@ function Account() {
       if (needsConfirmation) {
         toast.success("Check your email to confirm your account!");
         setMode("signin");
+        setAuthStep("form");
       } else {
         toast.success("Account created!");
       }
     }
   };
-
+ 
   const handleUpdateProfile = async () => {
     setBusy(true);
     const { error } = await updateProfile({ full_name: newName, phone: newPhone });
@@ -90,7 +93,7 @@ function Account() {
     toast.success("Profile updated successfully");
     setEditMode(false);
   };
-
+ 
   const handleUpdateCredentials = async (type: 'email' | 'password') => {
     setBusy(true);
     let res;
@@ -104,7 +107,7 @@ function Account() {
     toast.success(type === 'email' ? "Verification email sent to new address!" : "Password updated!");
     if (type === 'password') setNewPassword("");
   };
-
+ 
   if (loading) {
     return (
       <main className="min-h-screen grid place-items-center bg-cream text-cocoa">
@@ -112,7 +115,7 @@ function Account() {
       </main>
     );
   }
-
+ 
   if (user) {
     const tabs: { id: Tab; label: string; icon: any }[] = [
       { id: "profile", label: "Profile Settings", icon: UserIcon },
@@ -120,12 +123,12 @@ function Account() {
       { id: "wishlist", label: "Wishlist", icon: Heart },
       { id: "track", label: "Track Order", icon: MapPin },
     ];
-
+ 
     return (
       <main className="min-h-screen bg-cream text-cocoa pt-32 pb-20 px-5 relative overflow-hidden">
         <div className="absolute top-0 right-0 w-96 h-96 bg-gold/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
         <div className="absolute bottom-0 left-0 w-96 h-96 bg-cocoa/5 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" />
-
+ 
         <div className="mx-auto max-w-6xl relative z-10">
           <div className="flex flex-col lg:flex-row gap-8">
             {/* Sidebar */}
@@ -151,7 +154,7 @@ function Account() {
                     </button>
                   ))}
                 </nav>
-
+ 
                 <div className="mt-10 pt-8 border-t border-cocoa/5">
                   {isAdmin && (
                     <Link
@@ -170,7 +173,7 @@ function Account() {
                 </div>
               </div>
             </aside>
-
+ 
             {/* Content Area */}
             <section className="flex-1 min-w-0">
               <AnimatePresence mode="wait">
@@ -213,7 +216,7 @@ function Account() {
                       )}
                     </div>
                   </div>
-
+ 
                   {/* Tab Content */}
                   <div className="p-8 sm:p-12 flex-1 bg-white/40 backdrop-blur-sm">
                     {activeTab === "profile" && (
@@ -256,7 +259,7 @@ function Account() {
                                 <Save className="h-4 w-4" /> Save Profile Changes
                               </button>
                             </div>
-
+ 
                             <div className="space-y-5 pt-10 border-t border-cocoa/5">
                               <h3 className="text-xs uppercase tracking-[0.2em] text-cocoa/40 font-bold">Security Settings</h3>
                               <div className="space-y-1.5">
@@ -278,7 +281,7 @@ function Account() {
                         )}
                       </div>
                     )}
-
+ 
                     {activeTab === "orders" && (
                       <div className="flex flex-col items-center justify-center py-20 text-center">
                         <div className="h-20 w-20 rounded-full bg-cocoa/5 flex items-center justify-center mb-6">
@@ -289,7 +292,7 @@ function Account() {
                         <Link to="/products" className="mt-8 rounded-full bg-cocoa px-8 py-3.5 text-sm font-semibold text-cream hover:bg-coffee transition-all">Browse Collection</Link>
                       </div>
                     )}
-
+ 
                     {activeTab === "wishlist" && (
                       <div className="flex flex-col items-center justify-center py-20 text-center">
                         <div className="h-20 w-20 rounded-full bg-cocoa/5 flex items-center justify-center mb-6">
@@ -300,7 +303,7 @@ function Account() {
                         <Link to="/products" className="mt-8 rounded-full bg-cocoa px-8 py-3.5 text-sm font-semibold text-cream hover:bg-coffee transition-all">Discover Pieces</Link>
                       </div>
                     )}
-
+ 
                     {activeTab === "track" && (
                       <div className="max-w-md">
                         <div className="space-y-6">
@@ -328,112 +331,169 @@ function Account() {
       </main>
     );
   }
-
+ 
   return (
     <main className="min-h-screen bg-cream text-cocoa py-20 px-5 relative flex items-center justify-center">
       <div className="absolute top-1/4 -left-20 w-80 h-80 bg-gold/10 rounded-full blur-3xl animate-float-slow" />
       <div className="absolute bottom-1/4 -right-20 w-80 h-80 bg-cocoa/5 rounded-full blur-3xl animate-float-slower" />
-
+ 
       <div className="mx-auto w-full max-w-[440px] relative z-10">
         <div className="rounded-[2.5rem] glass shadow-luxe overflow-hidden border border-white/40">
-          <div className="bg-cocoa p-10 text-center text-cream">
+          <div className="bg-cocoa p-10 text-center text-cream relative">
+            {authStep === "select" && (
+              <button 
+                onClick={() => navigate({ to: "/" })}
+                className="absolute top-6 left-6 flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-cream/40 hover:text-gold transition-all"
+              >
+                <ArrowLeft className="h-3 w-3" /> Back
+              </button>
+            )}
             <Link to="/" className="inline-grid h-12 w-12 place-items-center rounded-2xl bg-cream/10 border border-cream/20 text-gold mb-6 mx-auto hover:bg-cream/20 transition-colors">
               <span className="text-xl">✝</span>
             </Link>
-            <h1 className="font-display text-3xl tracking-tight">{mode === "signin" ? "Welcome Back" : "Join the Fold"}</h1>
+            <h1 className="font-display text-3xl tracking-tight">
+              {authStep === "select" ? "Join the Fold" : mode === "signin" ? "Welcome Back" : "Create Account"}
+            </h1>
             <p className="mt-2 text-cream/60 text-sm px-4">
-              {mode === "signin" 
-                ? "Sign in to manage your orders and faith-inspired style." 
-                : "Create an account to join the ChristFitz community."}
+              {authStep === "select" 
+                ? "Manage your orders and discover faith-inspired style."
+                : mode === "signin" 
+                  ? "Sign in to manage your orders." 
+                  : "Create an account to join the community."}
             </p>
           </div>
-
-          <form onSubmit={onAuthSubmit} className="p-8 sm:p-10 space-y-5 bg-white/40 backdrop-blur-sm">
-            {mode === "signup" && (
-              <>
+ 
+          <AnimatePresence mode="wait">
+            {authStep === "select" ? (
+              <motion.div 
+                key="select"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="p-8 sm:p-10 space-y-4 bg-white/40 backdrop-blur-sm"
+              >
+                <button
+                  onClick={() => { setMode("signin"); setAuthStep("form"); }}
+                  className="w-full rounded-2xl bg-cocoa py-4 text-sm font-semibold text-cream shadow-soft hover:scale-[1.02] transition-all"
+                >
+                  Sign In to Account
+                </button>
+                <button
+                  onClick={() => { setMode("signup"); setAuthStep("form"); }}
+                  className="w-full rounded-2xl border-2 border-cocoa/10 py-4 text-sm font-semibold text-cocoa hover:bg-cocoa/5 transition-all"
+                >
+                  Create New Account
+                </button>
+                <div className="pt-4 text-center">
+                  <p className="text-[10px] uppercase tracking-widest text-cocoa/40 font-bold">
+                    Wear your faith boldly.
+                  </p>
+                </div>
+              </motion.div>
+            ) : (
+              <motion.form 
+                key="form"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                onSubmit={onAuthSubmit} 
+                className="p-8 sm:p-10 space-y-5 bg-white/40 backdrop-blur-sm"
+              >
+                {mode === "signup" && (
+                  <>
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] uppercase tracking-widest text-cocoa/50 font-bold px-1">Full Name</label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="John Doe"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        className="w-full rounded-2xl border-2 border-cocoa/5 bg-cocoa/5 px-5 py-3.5 text-sm transition-all focus:border-gold/50 focus:bg-white focus:outline-none"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] uppercase tracking-widest text-cocoa/50 font-bold px-1">Telephone</label>
+                      <input
+                        type="tel"
+                        required
+                        placeholder="+1 (555) 000-0000"
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
+                        className="w-full rounded-2xl border-2 border-cocoa/5 bg-cocoa/5 px-5 py-3.5 text-sm transition-all focus:border-gold/50 focus:bg-white focus:outline-none"
+                      />
+                    </div>
+                  </>
+                )}
+ 
                 <div className="space-y-1.5">
-                  <label className="text-[10px] uppercase tracking-widest text-cocoa/50 font-bold px-1">Full Name</label>
+                  <label className="text-[10px] uppercase tracking-widest text-cocoa/50 font-bold px-1">
+                    {mode === "signin" ? "Name or Email" : "Email Address"}
+                  </label>
                   <input
                     type="text"
                     required
-                    placeholder="John Doe"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
+                    placeholder={mode === "signin" ? "Name or Email" : "you@example.com"}
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
                     className="w-full rounded-2xl border-2 border-cocoa/5 bg-cocoa/5 px-5 py-3.5 text-sm transition-all focus:border-gold/50 focus:bg-white focus:outline-none"
                   />
                 </div>
+ 
                 <div className="space-y-1.5">
-                  <label className="text-[10px] uppercase tracking-widest text-cocoa/50 font-bold px-1">Telephone</label>
-                  <input
-                    type="tel"
-                    required
-                    placeholder="+1 (555) 000-0000"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    className="w-full rounded-2xl border-2 border-cocoa/5 bg-cocoa/5 px-5 py-3.5 text-sm transition-all focus:border-gold/50 focus:bg-white focus:outline-none"
-                  />
+                  <label className="text-[10px] uppercase tracking-widest text-cocoa/50 font-bold px-1">Password</label>
+                  <div className="relative">
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      required
+                      placeholder="••••••••"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="w-full rounded-2xl border-2 border-cocoa/5 bg-cocoa/5 pl-5 pr-12 py-3.5 text-sm transition-all focus:border-gold/50 focus:bg-white focus:outline-none"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-cocoa/30 hover:text-cocoa transition-colors"
+                    >
+                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
                 </div>
-              </>
-            )}
-
-            <div className="space-y-1.5">
-              <label className="text-[10px] uppercase tracking-widest text-cocoa/50 font-bold px-1">
-                {mode === "signin" ? "Name or Email" : "Email Address"}
-              </label>
-              <input
-                type="text"
-                required
-                placeholder={mode === "signin" ? "Name or Email" : "you@example.com"}
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full rounded-2xl border-2 border-cocoa/5 bg-cocoa/5 px-5 py-3.5 text-sm transition-all focus:border-gold/50 focus:bg-white focus:outline-none"
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <label className="text-[10px] uppercase tracking-widest text-cocoa/50 font-bold px-1">Password</label>
-              <div className="relative">
-                <input
-                  type={showPassword ? "text" : "password"}
-                  required
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full rounded-2xl border-2 border-cocoa/5 bg-cocoa/5 pl-5 pr-12 py-3.5 text-sm transition-all focus:border-gold/50 focus:bg-white focus:outline-none"
-                />
+ 
                 <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-cocoa/30 hover:text-cocoa transition-colors"
+                  disabled={busy}
+                  type="submit"
+                  className="group relative w-full overflow-hidden rounded-2xl bg-cocoa py-4 text-sm font-semibold text-cream shadow-soft transition-all hover:scale-[1.02] disabled:opacity-50"
                 >
-                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  <span className="relative z-10 flex items-center justify-center gap-2">
+                    {busy ? "Processing..." : (mode === "signin" ? "Sign In" : "Create Account")}
+                  </span>
+                  <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-gold/50 to-transparent transition-transform duration-500 group-hover:translate-x-0" />
                 </button>
-              </div>
-            </div>
-
-            <button
-              disabled={busy}
-              type="submit"
-              className="group relative w-full overflow-hidden rounded-2xl bg-cocoa py-4 text-sm font-semibold text-cream shadow-soft transition-all hover:scale-[1.02] disabled:opacity-50"
-            >
-              <span className="relative z-10 flex items-center justify-center gap-2">
-                {busy ? "Processing..." : (mode === "signin" ? "Sign In" : "Create Account")}
-              </span>
-              <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-gold/50 to-transparent transition-transform duration-500 group-hover:translate-x-0" />
-            </button>
-
-            <div className="pt-4 text-center">
-              <button
-                type="button"
-                onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
-                className="text-sm font-medium text-cocoa/60 hover:text-cocoa transition-colors underline underline-offset-4 decoration-cocoa/20"
-              >
-                {mode === "signin" ? "Don't have an account? Sign up" : "Already have an account? Sign in"}
-              </button>
-            </div>
-          </form>
+ 
+                <div className="pt-4 text-center flex flex-col gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
+                    className="text-sm font-medium text-cocoa/60 hover:text-cocoa transition-colors underline underline-offset-4 decoration-cocoa/20"
+                  >
+                    {mode === "signin" ? "Don't have an account? Sign up" : "Already have an account? Sign in"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setAuthStep("select")}
+                    className="text-xs font-bold uppercase tracking-widest text-gold hover:text-cocoa transition-colors"
+                  >
+                    ← Back to Options
+                  </button>
+                </div>
+              </motion.form>
+            )}
+          </AnimatePresence>
         </div>
       </div>
     </main>
+
   );
 }

@@ -258,12 +258,7 @@ export function Navbar() {
                     )}
                   </div>
  
-                  <button
-                    onClick={() => { setOpen(false); setSearchOpen(true); }}
-                    className="mt-2 flex items-center gap-3 px-5 py-3 text-sm text-cream/60 hover:text-cream transition-all"
-                  >
-                    <Search className="h-4 w-4" /> Search the store
-                  </button>
+                  {/* Search bar removed from mobile menu as requested */}
                 </nav>
               </motion.div>
             </motion.div>
