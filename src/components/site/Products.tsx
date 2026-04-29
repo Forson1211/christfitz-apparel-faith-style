@@ -97,19 +97,6 @@ export function Products() {
                     <Plus className="h-4 w-4" />
                   </button>
                 </div>
-
-                <div className="flex items-center justify-between gap-3 p-5">
-                  <div className="min-w-0">
-                    <h3 className="truncate font-medium text-cocoa">{p.name}</h3>
-                    <p className="mt-0.5 text-sm text-muted-foreground">${p.price}</p>
-                  </div>
-                  <button
-                    aria-label="Add to cart"
-                    className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-cocoa text-cream transition-transform hover:rotate-90 hover:bg-coffee"
-                  >
-                    <Plus className="h-4 w-4" />
-                  </button>
-                </div>
               </motion.article>
             ))}
           </AnimatePresence>
