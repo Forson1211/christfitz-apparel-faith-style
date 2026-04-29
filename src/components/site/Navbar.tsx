@@ -150,6 +150,9 @@ export function Navbar() {
                       </Link>
                     </motion.div>
                   ))}
+                  <Link to="/account" onClick={() => setOpen(false)}>
+                    {user ? "My account" : "Sign in"}
+                  </Link>
                   <button
                     onClick={() => { setOpen(false); setSearchOpen(true); }}
                     className="text-left"
