@@ -9,14 +9,28 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as AdminRouteImport } from './routes/admin'
 import { Route as SiteRouteImport } from './routes/_site'
 import { Route as SiteIndexRouteImport } from './routes/_site/index'
+import { Route as AdminProductsRouteImport } from './routes/admin/products'
+import { Route as AdminNavigationRouteImport } from './routes/admin/navigation'
+import { Route as AdminMediaRouteImport } from './routes/admin/media'
+import { Route as AdminLoginRouteImport } from './routes/admin/login'
+import { Route as AdminDashboardRouteImport } from './routes/admin/dashboard'
+import { Route as AdminContentRouteImport } from './routes/admin/content'
+import { Route as AdminColorsRouteImport } from './routes/admin/colors'
+import { Route as AdminCategoriesRouteImport } from './routes/admin/categories'
 import { Route as SiteProductsRouteImport } from './routes/_site/products'
 import { Route as SiteContactRouteImport } from './routes/_site/contact'
 import { Route as SiteCategoriesRouteImport } from './routes/_site/categories'
 import { Route as SiteCartRouteImport } from './routes/_site/cart'
 import { Route as SiteAboutRouteImport } from './routes/_site/about'
 
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SiteRoute = SiteRouteImport.update({
   id: '/_site',
   getParentRoute: () => rootRouteImport,
@@ -25,6 +39,46 @@ const SiteIndexRoute = SiteIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => SiteRoute,
+} as any)
+const AdminProductsRoute = AdminProductsRouteImport.update({
+  id: '/products',
+  path: '/products',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminNavigationRoute = AdminNavigationRouteImport.update({
+  id: '/navigation',
+  path: '/navigation',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminMediaRoute = AdminMediaRouteImport.update({
+  id: '/media',
+  path: '/media',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminLoginRoute = AdminLoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminDashboardRoute = AdminDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminContentRoute = AdminContentRouteImport.update({
+  id: '/content',
+  path: '/content',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminColorsRoute = AdminColorsRouteImport.update({
+  id: '/colors',
+  path: '/colors',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminCategoriesRoute = AdminCategoriesRouteImport.update({
+  id: '/categories',
+  path: '/categories',
+  getParentRoute: () => AdminRoute,
 } as any)
 const SiteProductsRoute = SiteProductsRouteImport.update({
   id: '/products',
@@ -54,52 +108,126 @@ const SiteAboutRoute = SiteAboutRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof SiteIndexRoute
+  '/admin': typeof AdminRouteWithChildren
   '/about': typeof SiteAboutRoute
   '/cart': typeof SiteCartRoute
   '/categories': typeof SiteCategoriesRoute
   '/contact': typeof SiteContactRoute
   '/products': typeof SiteProductsRoute
+  '/admin/categories': typeof AdminCategoriesRoute
+  '/admin/colors': typeof AdminColorsRoute
+  '/admin/content': typeof AdminContentRoute
+  '/admin/dashboard': typeof AdminDashboardRoute
+  '/admin/login': typeof AdminLoginRoute
+  '/admin/media': typeof AdminMediaRoute
+  '/admin/navigation': typeof AdminNavigationRoute
+  '/admin/products': typeof AdminProductsRoute
 }
 export interface FileRoutesByTo {
+  '/admin': typeof AdminRouteWithChildren
   '/about': typeof SiteAboutRoute
   '/cart': typeof SiteCartRoute
   '/categories': typeof SiteCategoriesRoute
   '/contact': typeof SiteContactRoute
   '/products': typeof SiteProductsRoute
+  '/admin/categories': typeof AdminCategoriesRoute
+  '/admin/colors': typeof AdminColorsRoute
+  '/admin/content': typeof AdminContentRoute
+  '/admin/dashboard': typeof AdminDashboardRoute
+  '/admin/login': typeof AdminLoginRoute
+  '/admin/media': typeof AdminMediaRoute
+  '/admin/navigation': typeof AdminNavigationRoute
+  '/admin/products': typeof AdminProductsRoute
   '/': typeof SiteIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_site': typeof SiteRouteWithChildren
+  '/admin': typeof AdminRouteWithChildren
   '/_site/about': typeof SiteAboutRoute
   '/_site/cart': typeof SiteCartRoute
   '/_site/categories': typeof SiteCategoriesRoute
   '/_site/contact': typeof SiteContactRoute
   '/_site/products': typeof SiteProductsRoute
+  '/admin/categories': typeof AdminCategoriesRoute
+  '/admin/colors': typeof AdminColorsRoute
+  '/admin/content': typeof AdminContentRoute
+  '/admin/dashboard': typeof AdminDashboardRoute
+  '/admin/login': typeof AdminLoginRoute
+  '/admin/media': typeof AdminMediaRoute
+  '/admin/navigation': typeof AdminNavigationRoute
+  '/admin/products': typeof AdminProductsRoute
   '/_site/': typeof SiteIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/about' | '/cart' | '/categories' | '/contact' | '/products'
+  fullPaths:
+    | '/'
+    | '/admin'
+    | '/about'
+    | '/cart'
+    | '/categories'
+    | '/contact'
+    | '/products'
+    | '/admin/categories'
+    | '/admin/colors'
+    | '/admin/content'
+    | '/admin/dashboard'
+    | '/admin/login'
+    | '/admin/media'
+    | '/admin/navigation'
+    | '/admin/products'
   fileRoutesByTo: FileRoutesByTo
-  to: '/about' | '/cart' | '/categories' | '/contact' | '/products' | '/'
+  to:
+    | '/admin'
+    | '/about'
+    | '/cart'
+    | '/categories'
+    | '/contact'
+    | '/products'
+    | '/admin/categories'
+    | '/admin/colors'
+    | '/admin/content'
+    | '/admin/dashboard'
+    | '/admin/login'
+    | '/admin/media'
+    | '/admin/navigation'
+    | '/admin/products'
+    | '/'
   id:
     | '__root__'
     | '/_site'
+    | '/admin'
     | '/_site/about'
     | '/_site/cart'
     | '/_site/categories'
     | '/_site/contact'
     | '/_site/products'
+    | '/admin/categories'
+    | '/admin/colors'
+    | '/admin/content'
+    | '/admin/dashboard'
+    | '/admin/login'
+    | '/admin/media'
+    | '/admin/navigation'
+    | '/admin/products'
     | '/_site/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   SiteRoute: typeof SiteRouteWithChildren
+  AdminRoute: typeof AdminRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_site': {
       id: '/_site'
       path: ''
@@ -113,6 +241,62 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof SiteIndexRouteImport
       parentRoute: typeof SiteRoute
+    }
+    '/admin/products': {
+      id: '/admin/products'
+      path: '/products'
+      fullPath: '/admin/products'
+      preLoaderRoute: typeof AdminProductsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/navigation': {
+      id: '/admin/navigation'
+      path: '/navigation'
+      fullPath: '/admin/navigation'
+      preLoaderRoute: typeof AdminNavigationRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/media': {
+      id: '/admin/media'
+      path: '/media'
+      fullPath: '/admin/media'
+      preLoaderRoute: typeof AdminMediaRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/login': {
+      id: '/admin/login'
+      path: '/login'
+      fullPath: '/admin/login'
+      preLoaderRoute: typeof AdminLoginRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/dashboard': {
+      id: '/admin/dashboard'
+      path: '/dashboard'
+      fullPath: '/admin/dashboard'
+      preLoaderRoute: typeof AdminDashboardRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/content': {
+      id: '/admin/content'
+      path: '/content'
+      fullPath: '/admin/content'
+      preLoaderRoute: typeof AdminContentRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/colors': {
+      id: '/admin/colors'
+      path: '/colors'
+      fullPath: '/admin/colors'
+      preLoaderRoute: typeof AdminColorsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/categories': {
+      id: '/admin/categories'
+      path: '/categories'
+      fullPath: '/admin/categories'
+      preLoaderRoute: typeof AdminCategoriesRouteImport
+      parentRoute: typeof AdminRoute
     }
     '/_site/products': {
       id: '/_site/products'
@@ -172,8 +356,33 @@ const SiteRouteChildren: SiteRouteChildren = {
 
 const SiteRouteWithChildren = SiteRoute._addFileChildren(SiteRouteChildren)
 
+interface AdminRouteChildren {
+  AdminCategoriesRoute: typeof AdminCategoriesRoute
+  AdminColorsRoute: typeof AdminColorsRoute
+  AdminContentRoute: typeof AdminContentRoute
+  AdminDashboardRoute: typeof AdminDashboardRoute
+  AdminLoginRoute: typeof AdminLoginRoute
+  AdminMediaRoute: typeof AdminMediaRoute
+  AdminNavigationRoute: typeof AdminNavigationRoute
+  AdminProductsRoute: typeof AdminProductsRoute
+}
+
+const AdminRouteChildren: AdminRouteChildren = {
+  AdminCategoriesRoute: AdminCategoriesRoute,
+  AdminColorsRoute: AdminColorsRoute,
+  AdminContentRoute: AdminContentRoute,
+  AdminDashboardRoute: AdminDashboardRoute,
+  AdminLoginRoute: AdminLoginRoute,
+  AdminMediaRoute: AdminMediaRoute,
+  AdminNavigationRoute: AdminNavigationRoute,
+  AdminProductsRoute: AdminProductsRoute,
+}
+
+const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   SiteRoute: SiteRouteWithChildren,
+  AdminRoute: AdminRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
