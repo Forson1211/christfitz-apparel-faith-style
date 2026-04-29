@@ -24,6 +24,7 @@ import { Route as SiteProductsRouteImport } from './routes/_site/products'
 import { Route as SiteContactRouteImport } from './routes/_site/contact'
 import { Route as SiteCategoriesRouteImport } from './routes/_site/categories'
 import { Route as SiteCartRouteImport } from './routes/_site/cart'
+import { Route as SiteAccountRouteImport } from './routes/_site/account'
 import { Route as SiteAboutRouteImport } from './routes/_site/about'
 
 const AdminRoute = AdminRouteImport.update({
@@ -100,6 +101,11 @@ const SiteCartRoute = SiteCartRouteImport.update({
   path: '/cart',
   getParentRoute: () => SiteRoute,
 } as any)
+const SiteAccountRoute = SiteAccountRouteImport.update({
+  id: '/account',
+  path: '/account',
+  getParentRoute: () => SiteRoute,
+} as any)
 const SiteAboutRoute = SiteAboutRouteImport.update({
   id: '/about',
   path: '/about',
@@ -110,6 +116,7 @@ export interface FileRoutesByFullPath {
   '/': typeof SiteIndexRoute
   '/admin': typeof AdminRouteWithChildren
   '/about': typeof SiteAboutRoute
+  '/account': typeof SiteAccountRoute
   '/cart': typeof SiteCartRoute
   '/categories': typeof SiteCategoriesRoute
   '/contact': typeof SiteContactRoute
@@ -126,6 +133,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/admin': typeof AdminRouteWithChildren
   '/about': typeof SiteAboutRoute
+  '/account': typeof SiteAccountRoute
   '/cart': typeof SiteCartRoute
   '/categories': typeof SiteCategoriesRoute
   '/contact': typeof SiteContactRoute
@@ -145,6 +153,7 @@ export interface FileRoutesById {
   '/_site': typeof SiteRouteWithChildren
   '/admin': typeof AdminRouteWithChildren
   '/_site/about': typeof SiteAboutRoute
+  '/_site/account': typeof SiteAccountRoute
   '/_site/cart': typeof SiteCartRoute
   '/_site/categories': typeof SiteCategoriesRoute
   '/_site/contact': typeof SiteContactRoute
@@ -165,6 +174,7 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/about'
+    | '/account'
     | '/cart'
     | '/categories'
     | '/contact'
@@ -181,6 +191,7 @@ export interface FileRouteTypes {
   to:
     | '/admin'
     | '/about'
+    | '/account'
     | '/cart'
     | '/categories'
     | '/contact'
@@ -199,6 +210,7 @@ export interface FileRouteTypes {
     | '/_site'
     | '/admin'
     | '/_site/about'
+    | '/_site/account'
     | '/_site/cart'
     | '/_site/categories'
     | '/_site/contact'
@@ -326,6 +338,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SiteCartRouteImport
       parentRoute: typeof SiteRoute
     }
+    '/_site/account': {
+      id: '/_site/account'
+      path: '/account'
+      fullPath: '/account'
+      preLoaderRoute: typeof SiteAccountRouteImport
+      parentRoute: typeof SiteRoute
+    }
     '/_site/about': {
       id: '/_site/about'
       path: '/about'
@@ -338,6 +357,7 @@ declare module '@tanstack/react-router' {
 
 interface SiteRouteChildren {
   SiteAboutRoute: typeof SiteAboutRoute
+  SiteAccountRoute: typeof SiteAccountRoute
   SiteCartRoute: typeof SiteCartRoute
   SiteCategoriesRoute: typeof SiteCategoriesRoute
   SiteContactRoute: typeof SiteContactRoute
@@ -347,6 +367,7 @@ interface SiteRouteChildren {
 
 const SiteRouteChildren: SiteRouteChildren = {
   SiteAboutRoute: SiteAboutRoute,
+  SiteAccountRoute: SiteAccountRoute,
   SiteCartRoute: SiteCartRoute,
   SiteCategoriesRoute: SiteCategoriesRoute,
   SiteContactRoute: SiteContactRoute,
