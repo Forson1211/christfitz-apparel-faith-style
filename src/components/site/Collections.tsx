@@ -24,7 +24,7 @@ export function Collections() {
           <div>
             <p className="text-xs uppercase tracking-[0.3em] text-coffee">— Curated Drops</p>
             <h2 className="mt-3 font-display text-4xl sm:text-6xl text-balance">
-              Collections built<br /><span className="italic">to inspire.</span>
+              Collections built<br /><span className="">to inspire.</span>
             </h2>
           </div>
           <p className="max-w-sm text-muted-foreground">

@@ -45,7 +45,7 @@ export function Hero() {
         >
           Wear Your Faith
           <br />
-          <span className="italic font-light marquee-text">With Style</span>
+          <span className="font-light marquee-text">With Style</span>
         </motion.h1>
 
         <motion.p

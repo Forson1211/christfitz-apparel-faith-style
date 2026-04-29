@@ -27,7 +27,7 @@ export function InstagramGallery() {
         <div className="flex flex-col items-center text-center">
           <p className="text-xs uppercase tracking-[0.3em] text-coffee">— @christfitz</p>
           <h2 className="mt-3 font-display text-4xl sm:text-6xl text-balance">
-            Live the <span className="italic">movement.</span>
+            Live the <span className="">movement.</span>
           </h2>
           <a
             href="#"
