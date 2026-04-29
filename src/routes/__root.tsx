@@ -1,5 +1,10 @@
-import { Outlet, Link, createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
+import { Outlet, Link, createRootRoute, HeadContent, Scripts, useRouterState } from "@tanstack/react-router";
 import { CartProvider } from "@/lib/cart";
+import { SiteProvider } from "@/lib/site";
+import { AuthProvider } from "@/lib/auth";
+import { CartDrawer } from "@/components/site/CartDrawer";
+import { CursorGlow } from "@/components/site/CursorGlow";
+import { Toaster } from "@/components/ui/sonner";
 
 import appCss from "../styles.css?url";
 
@@ -71,9 +76,19 @@ function RootShell({ children }: { children: React.ReactNode }) {
 }
 
 function RootComponent() {
+  const path = useRouterState({ select: (s) => s.location.pathname });
+  const isAdmin = path.startsWith("/admin");
+
   return (
-    <CartProvider>
-      <Outlet />
-    </CartProvider>
+    <AuthProvider>
+      <SiteProvider>
+        <CartProvider>
+          {!isAdmin && <CursorGlow />}
+          <Outlet />
+          {!isAdmin && <CartDrawer />}
+          <Toaster />
+        </CartProvider>
+      </SiteProvider>
+    </AuthProvider>
   );
 }
