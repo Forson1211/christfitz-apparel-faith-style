@@ -53,7 +53,7 @@ export function Footer() {
 
         <div className="mt-16 flex flex-col items-center justify-between gap-4 border-t border-cream/10 pt-8 text-xs text-cream/50 sm:flex-row">
           <p>© 2026 ChristFitz Apparel. All rights reserved.</p>
-          <p className="font-display italic text-sm">"Be bold, be loved, be Christ-fit."</p>
+          <p className="font-display text-sm">"Be bold, be loved, be Christ-fit."</p>
         </div>
       </div>
     </footer>

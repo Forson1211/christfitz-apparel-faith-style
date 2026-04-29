@@ -10,7 +10,6 @@ import { Newsletter } from "@/components/site/Newsletter";
 import { Footer } from "@/components/site/Footer";
 import { CursorGlow } from "@/components/site/CursorGlow";
 import { LoadingScreen } from "@/components/site/LoadingScreen";
-import { CartProvider } from "@/lib/cart";
 import { CartDrawer } from "@/components/site/CartDrawer";
 
 export const Route = createFileRoute("/")({
@@ -19,21 +18,19 @@ export const Route = createFileRoute("/")({
 
 function Index() {
   return (
-    <CartProvider>
-      <main className="relative min-h-screen overflow-x-hidden bg-background text-foreground">
-        <LoadingScreen />
-        <CursorGlow />
-        <Navbar />
-        <Hero />
-        <Collections />
-        <Products />
-        <About />
-        <Testimonials />
-        <InstagramGallery />
-        <Newsletter />
-        <Footer />
-        <CartDrawer />
-      </main>
-    </CartProvider>
+    <main className="relative min-h-screen overflow-x-hidden bg-background text-foreground">
+      <LoadingScreen />
+      <CursorGlow />
+      <Navbar />
+      <Hero />
+      <Collections />
+      <Products />
+      <About />
+      <Testimonials />
+      <InstagramGallery />
+      <Newsletter />
+      <Footer />
+      <CartDrawer />
+    </main>
   );
 }
