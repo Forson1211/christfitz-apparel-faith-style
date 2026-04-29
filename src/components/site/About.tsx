@@ -18,7 +18,7 @@ export function About() {
         >
           <p className="text-xs uppercase tracking-[0.3em] text-coffee">— Our Story</p>
           <h2 className="mt-3 font-display text-4xl sm:text-6xl text-balance">
-            Faith meets <span className="italic">fashion.</span>
+            Faith meets <span className="">fashion.</span>
           </h2>
           <p className="mt-6 text-lg leading-relaxed text-muted-foreground">
             ChristFitz was born from a simple belief: streetwear with purpose.

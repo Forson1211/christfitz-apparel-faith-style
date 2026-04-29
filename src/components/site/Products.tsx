@@ -24,7 +24,7 @@ export function Products() {
           <div>
             <p className="text-xs uppercase tracking-[0.3em] text-coffee">— The Collection</p>
             <h2 className="mt-3 font-display text-4xl sm:text-6xl text-balance">
-              Pieces for the <span className="italic">faithful</span>.
+              Pieces for the <span className="">faithful</span>.
             </h2>
           </div>
 

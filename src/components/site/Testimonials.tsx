@@ -53,7 +53,7 @@ export function Testimonials() {
       <div className="relative mx-auto max-w-5xl px-6 text-center">
         <p className="text-xs uppercase tracking-[0.3em] text-cream/60">— Beloved by believers</p>
         <h2 className="mt-3 font-display text-4xl sm:text-6xl text-balance">
-          Words from the <span className="italic">community.</span>
+          Words from the <span className="">community.</span>
         </h2>
 
         <div className="relative mt-14 h-72 sm:h-60">

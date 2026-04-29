@@ -28,7 +28,7 @@ export function Newsletter() {
           <div className="relative">
             <p className="text-xs uppercase tracking-[0.3em] text-cream/70">— Newsletter</p>
             <h2 className="mt-3 font-display text-4xl sm:text-6xl text-balance">
-              Join the <span className="italic">movement.</span>
+              Join the <span className="">movement.</span>
             </h2>
             <p className="mt-4 max-w-xl text-cream/80">
               Early access to drops, devotional notes, and 10% off your first order.
