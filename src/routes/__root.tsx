@@ -1,8 +1,10 @@
+import { useEffect } from "react";
 import { Outlet, Link, createRootRoute, useLocation } from "@tanstack/react-router";
 import { CartProvider } from "@/lib/cart";
 import { SiteProvider } from "@/lib/site";
 import { AuthProvider, useAuth } from "@/lib/auth";
 import { CartDrawer } from "@/components/site/CartDrawer";
+import { ScrollButton } from "@/components/site/ScrollButton";
 import { CursorGlow } from "@/components/site/CursorGlow";
 import { Toaster } from "@/components/ui/sonner";
 
@@ -50,6 +52,11 @@ function AppContent() {
   const location = useLocation();
   const path = location.pathname;
   const { user } = useAuth();
+
+  // Force scroll to top on refresh and every route change
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [path]);
   
   const isAdmin = path.startsWith("/admin");
   const isAuth = (path === "/account" && !user) || path === "/admin/login";
@@ -60,6 +67,7 @@ function AppContent() {
       {!hideExtras && <CursorGlow />}
       <Outlet />
       {!hideExtras && <CartDrawer />}
+      {!hideExtras && <ScrollButton />}
     </>
   );
 }

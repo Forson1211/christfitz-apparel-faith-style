@@ -1,27 +1,45 @@
 import { motion } from "framer-motion";
 import { ArrowRight, Users, Shirt, Star } from "lucide-react";
 import { Link } from "@tanstack/react-router";
-import heroImg from "@/assets/hero.jpg";
 import { FloatingOrbs } from "./FloatingOrbs";
-import { useSite } from "@/lib/site";
+import { useSite, resolveImage } from "@/lib/site";
+import { useContent } from "@/hooks/useContent";
 
 export function Hero() {
   const { settings } = useSite();
   const h = settings.hero;
+  const { items, loading } = useContent("hero");
+  const heroBackground = items.length > 0 ? items[0].url : "";
+  const isLoadingInitial = loading && items.length === 0;
 
   return (
     <section className="relative min-h-[auto] lg:min-h-screen w-full overflow-hidden text-cream">
+      {/* Background Image/Video with Zoom Effect */}
       <motion.div
         initial={{ scale: 1.15 }}
         animate={{ scale: 1 }}
         transition={{ duration: 2.4, ease: [0.22, 1, 0.36, 1] }}
-        className="absolute inset-0"
+        className="absolute inset-0 bg-cocoa/20"
       >
-        <img
-          src={heroImg}
-          alt="Model wearing ChristFitz oversized tee"
-          className="h-full w-full object-cover object-top sm:object-center"
-        />
+        {isLoadingInitial ? (
+          <div className="h-full w-full bg-cocoa/10 animate-pulse" />
+        ) : heroBackground ? (
+          <img
+            key={heroBackground}
+            src={resolveImage(heroBackground)}
+            alt="Model wearing ChristFitz oversized tee"
+            className="h-full w-full object-cover object-top sm:object-center"
+            loading="eager"
+            // @ts-ignore
+            fetchpriority="high"
+            onError={(e) => {
+              console.error("Hero background failed to load:", e.currentTarget.src);
+              e.currentTarget.style.display = 'none';
+            }}
+          />
+        ) : (
+          <div className="h-full w-full bg-cocoa/10" />
+        )}
         <div className="absolute inset-0 bg-gradient-to-b from-cocoa/20 via-cocoa/40 to-cocoa" />
         <div className="absolute inset-0 bg-gradient-to-r from-cocoa/60 via-cocoa/20 to-transparent" />
       </motion.div>

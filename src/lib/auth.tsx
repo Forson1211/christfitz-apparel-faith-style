@@ -7,6 +7,7 @@ interface AuthContextValue {
   session: Session | null;
   isAdmin: boolean;
   loading: boolean;
+  roleLoading: boolean;
   roleSettled: boolean;
   signIn: (email: string, password: string) => Promise<{ error: string | null }>;
   signUp: (email: string, password: string, metadata: { full_name: string; phone: string }) => Promise<{ error: string | null; needsConfirmation?: boolean }>;
@@ -31,6 +32,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [authLoading, setAuthLoading] = useState(true);
   const [roleLoading, setRoleLoading] = useState(false);
   const mountedRef = useRef(true);
+  const lastCheckedUidRef = useRef<string | null>(null);
 
   // roleSettled is true once we've finished checking for the admin role
   const [roleSettled, setRoleSettled] = useState(() => {
@@ -46,8 +48,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => { mountedRef.current = false; };
   }, []);
 
+  const isCheckingRef = useRef(false);
+
   const checkAdmin = async (uid: string, email?: string) => {
-    if (!mountedRef.current) return;
+    if (!mountedRef.current || isCheckingRef.current) return;
+    
+    // If we've already checked this specific UID successfully, don't re-check immediately
+    if (roleSettled && lastCheckedUidRef.current === uid && !isAdmin && Date.now() % 5000 !== 0) {
+       return; 
+    }
+    
+    // Global Throttle Check
+    const throttleUntil = (window as any)._supabaseThrottleUntil || 0;
+    if (Date.now() < throttleUntil) {
+      console.warn("[Auth] Silence active. Skipping role check.");
+      return;
+    }
+
     console.log("[Auth] Checking admin role for:", uid, email);
     
     setRoleLoading(true);
@@ -60,14 +77,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         .maybeSingle();
       
       if (error) {
-        console.error("[Auth] Role check error:", error);
+        const isServerDown = error.message.includes("503") || error.message.includes("cache") || error.message.includes("client error");
+        console.error("[Auth] Role check error:", error.message);
+        
+        if (isServerDown) {
+          (window as any)._supabaseThrottleUntil = Date.now() + 30000;
+          // IMPORTANT: If server is down, do NOT continue to auto-bootstrap.
+          // Just bail and let the fallback handle it.
+          throw new Error("Server overloaded");
+        }
       }
       
       let isDbAdmin = !!data;
 
-      // Special handling for admin@gmail.com to ensure they get DB rights automatically
-      if (email === "admin@gmail.com" && !isDbAdmin) {
-        console.log("[Auth] Attempting auto-bootstrap for admin@gmail.com");
+      // Special handling for christfitz@gmail.com to ensure they get DB rights automatically
+      if (email === "christfitz@gmail.com" && !isDbAdmin) {
+        console.log("[Auth] Attempting auto-bootstrap for christfitz@gmail.com");
         try {
           const { data: bData } = await supabase.rpc("bootstrap_first_admin");
           if (bData === true) {
@@ -80,7 +105,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       if (mountedRef.current) {
-        const finalStatus = isDbAdmin || email === "admin@gmail.com";
+        const finalStatus = isDbAdmin || email === "christfitz@gmail.com";
         console.log("[Auth] Admin status:", finalStatus, "(DB:", isDbAdmin, ")");
         setIsAdmin(finalStatus);
         
@@ -91,15 +116,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           console.error("[Auth] Cache error:", e);
         }
       }
-    } catch (err) {
-      console.error("[Auth] Role check exception:", err);
+    } catch (err: any) {
+      if (err.message !== "Server overloaded") {
+        console.error("[Auth] Role check exception:", err);
+      }
       if (mountedRef.current) {
-        setIsAdmin(email === "admin@gmail.com");
+        // Fallback for the master admin email even if DB is down
+        setIsAdmin(email === "christfitz@gmail.com");
       }
     } finally {
+      isCheckingRef.current = false;
       if (mountedRef.current) {
         setRoleLoading(false);
         setRoleSettled(true);
+        lastCheckedUidRef.current = uid;
       }
     }
   };
@@ -107,8 +137,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const loading = authLoading;
 
   useEffect(() => {
-    const { data: sub } = supabase.auth.onAuthStateChange(async (_event, sess) => {
+    const { data: sub } = supabase.auth.onAuthStateChange(async (event, sess) => {
       if (!mountedRef.current) return;
+      
+      if (event === "SIGNED_IN") {
+        // Only reset roleSettled if it's a NEW user (prevents re-login loops for same user)
+        // Skip reset entirely for the master admin to ensure instant login
+        if (sess?.user?.id && sess.user.id !== lastCheckedUidRef.current && sess.user.email !== "christfitz@gmail.com") {
+          setRoleSettled(false);
+        }
+      }
+      
       setSession(sess);
       setUser(sess?.user ?? null);
       if (sess?.user) {
@@ -116,6 +155,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       } else {
         setIsAdmin(false);
         setRoleSettled(true);
+        lastCheckedUidRef.current = null;
         localStorage.removeItem("cf_is_admin");
         localStorage.removeItem("cf_role_settled");
       }
@@ -127,20 +167,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(sess?.user ?? null);
       
       if (sess?.user) {
-        // Start role check in background
+        // Always resolve authLoading immediately once session is known.
+        // roleLoading tracks the async role check separately.
         checkAdmin(sess.user.id, sess.user.email);
-        
-        // If we already have a cached role, we can stop loading immediately
-        // Otherwise we wait for the first check to settle
-        if (roleSettled) {
-          setAuthLoading(false);
-        } else {
-          // Fallback to settle loading once check finishes
-          // (This only happens on very first login or if cache cleared)
-          checkAdmin(sess.user.id, sess.user.email).finally(() => {
-            if (mountedRef.current) setAuthLoading(false);
-          });
-        }
+        setAuthLoading(false);
       } else {
         setAuthLoading(false);
         setRoleSettled(true);
@@ -168,7 +198,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     }
 
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    
+    if (data?.user && data.user.email === "christfitz@gmail.com") {
+      setUser(data.user);
+      setSession(data.session);
+      setIsAdmin(true);
+      setRoleSettled(true);
+      try {
+        localStorage.setItem("cf_is_admin", "true");
+        localStorage.setItem("cf_role_settled", "true");
+      } catch (e) {}
+    }
+
     return { error: error?.message ?? null };
   };
 
@@ -195,7 +237,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signOut = async () => {
-    await supabase.auth.signOut();
+    setUser(null);
+    setSession(null);
+    setIsAdmin(false);
+    setRoleSettled(true);
+    localStorage.removeItem("cf_is_admin");
+    localStorage.removeItem("cf_role_settled");
+    try {
+      await supabase.auth.signOut();
+    } catch (e) {}
   };
 
   const bootstrapAdmin = async () => {
@@ -212,9 +262,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (user) await checkAdmin(user.id, user.email);
   };
 
+  console.log("[Auth] State:", { authLoading, roleLoading, roleSettled, user: user?.email, isAdmin });
+
   return (
     <AuthContext.Provider
-      value={{ user, session, isAdmin, loading, roleSettled, signIn, signUp, updateProfile, signOut, bootstrapAdmin, refreshRole }}
+      value={{ user, session, isAdmin, loading, roleLoading, roleSettled, signIn, signUp, updateProfile, signOut, bootstrapAdmin, refreshRole }}
     >
       {children}
     </AuthContext.Provider>

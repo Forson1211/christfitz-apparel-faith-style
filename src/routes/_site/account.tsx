@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
+import { useSite } from "@/lib/site";
 
 export const Route = createFileRoute("/_site/account")({
   component: Account,
@@ -31,6 +32,7 @@ type Tab = "profile" | "orders" | "wishlist" | "track";
 
 function Account() {
   const { user, loading, signIn, signUp, signOut, isAdmin, updateProfile } = useAuth();
+  const { settings } = useSite();
   const navigate = useNavigate();
   
   // Tab State
@@ -333,7 +335,13 @@ function Account() {
   }
  
   return (
-    <main className="min-h-screen bg-cream text-cocoa py-20 px-5 relative flex items-center justify-center">
+    <main className="relative min-h-screen bg-cream text-cocoa py-20 px-5 flex items-center justify-center overflow-hidden">
+      {/* Background Image with Overlay */}
+      <div className="absolute inset-0 z-0">
+        <img src="/auth.png" alt="Background" className="h-full w-full object-cover opacity-20" />
+        <div className="absolute inset-0 bg-gradient-to-tr from-cream/90 via-transparent to-cream/90" />
+      </div>
+
       <div className="absolute top-1/4 -left-20 w-80 h-80 bg-gold/10 rounded-full blur-3xl animate-float-slow" />
       <div className="absolute bottom-1/4 -right-20 w-80 h-80 bg-cocoa/5 rounded-full blur-3xl animate-float-slower" />
  
@@ -348,8 +356,8 @@ function Account() {
                 <ArrowLeft className="h-3 w-3" /> Back
               </button>
             )}
-            <Link to="/" className="inline-grid h-12 w-12 place-items-center rounded-2xl bg-cream/10 border border-cream/20 text-gold mb-6 mx-auto hover:bg-cream/20 transition-colors">
-              <span className="text-xl">✝</span>
+            <Link to="/" className="mb-6 flex justify-center hover:scale-105 transition-transform">
+              <img src="/auth.png" alt="Logo" className="h-20 w-auto object-contain" />
             </Link>
             <h1 className="font-display text-3xl tracking-tight">
               {authStep === "select" ? "Join the Fold" : mode === "signin" ? "Welcome Back" : "Create Account"}

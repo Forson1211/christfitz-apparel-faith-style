@@ -40,15 +40,18 @@ export function Navbar() {
             <div
               className="flex items-center justify-between rounded-full px-4 sm:px-5 py-2.5 sm:py-3 transition-all duration-500 glass-dark text-cream shadow-soft"
             >
-              <Link to="/" className="flex items-center gap-2 font-display text-lg sm:text-xl tracking-tight">
-                {settings.logo.url ? (
-                  <img src={settings.logo.url} alt={settings.brand.name} className="h-8 w-8 rounded-full object-cover" />
+              <Link 
+                to="/" 
+                onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                className="flex items-center gap-2 font-display text-lg sm:text-xl tracking-tight"
+              >
+                {(settings.logo.url || "/logo.png") ? (
+                  <img src={settings.logo.url || "/logo.png"} alt={settings.brand.name} className="h-10 w-auto object-contain" />
                 ) : (
-                  <span className="grid h-8 w-8 place-items-center rounded-full bg-cream text-cocoa font-bold">
+                  <span className="grid h-10 w-10 place-items-center rounded-full bg-cream text-cocoa font-bold">
                     {settings.logo.symbol || "✝"}
                   </span>
                 )}
-                <span>{settings.brand.name}</span>
               </Link>
   
               <nav className="hidden md:flex items-center gap-7 text-sm font-medium">
@@ -56,6 +59,7 @@ export function Navbar() {
                   <Link
                     key={l.id}
                     to={l.href}
+                    onClick={() => l.href === "/" && window.scrollTo({ top: 0, behavior: 'smooth' })}
                     activeOptions={{ exact: l.href === "/" }}
                     className="relative opacity-70 transition hover:opacity-100 after:absolute after:left-0 after:-bottom-1.5 after:h-[2px] after:w-0 after:bg-gold after:transition-all hover:after:w-full data-[status=active]:opacity-100 data-[status=active]:after:w-full"
                   >
@@ -185,10 +189,13 @@ export function Navbar() {
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2 font-display text-xl tracking-tight">
-                    <span className="grid h-8 w-8 place-items-center rounded-full bg-cream text-cocoa font-bold">
-                      ✝
-                    </span>
-                    <span>ChristFitz</span>
+                    {(settings.logo.url || "/logo.png") ? (
+                      <img src={settings.logo.url || "/logo.png"} alt={settings.brand.name} className="h-10 w-auto object-contain" />
+                    ) : (
+                      <span className="grid h-10 w-10 place-items-center rounded-full bg-cream text-cocoa font-bold">
+                        {settings.logo.symbol || "✝"}
+                      </span>
+                    )}
                   </div>
                   <button
                     onClick={() => setOpen(false)}

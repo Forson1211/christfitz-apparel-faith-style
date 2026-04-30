@@ -20,12 +20,12 @@ export function Footer() {
         { label: "Top Rated", href: "/products" },
         { label: "New Arrivals", href: "/products" },
         { label: "Collections", href: "/products" },
-        { label: "Gift Cards", href: "/" },
+        { label: "Gift Cards", href: "/shipping" },
       ],
     },
     {
       title: "Categories",
-      links: categories.map(c => ({ label: c.name, href: `/products` })),
+      links: categories.map(c => ({ label: c.name, href: `/products?category=${c.name}` })),
     },
     {
       title: "My Account",
@@ -41,19 +41,19 @@ export function Footer() {
       links: [
         { label: "Our Mission", href: "/about" },
         { label: "Story of Faith", href: "/about" },
-        { label: "Contact Us", href: "/#contact" },
-        { label: "Privacy Policy", href: "/" },
-        { label: "Terms of Service", href: "/" },
+        { label: "Contact Us", href: "/contact" },
+        { label: "Privacy Policy", href: "/privacy" },
+        { label: "Terms of Service", href: "/terms" },
       ],
     },
     {
       title: "Support",
       links: [
-        { label: "Help Center", href: "/" },
-        { label: "FAQs", href: "/" },
-        { label: "Shipping Policy", href: "/" },
-        { label: "Returns", href: "/" },
-        { label: "Community Rules", href: "/" },
+        { label: "Help Center", href: "/contact" },
+        { label: "FAQs", href: "/faqs" },
+        { label: "Shipping Policy", href: "/shipping" },
+        { label: "Returns", href: "/shipping" },
+        { label: "Community Rules", href: "/privacy" },
       ],
     },
   ];
@@ -67,11 +67,14 @@ export function Footer() {
       <div className="mx-auto max-w-7xl px-5 sm:px-6">
         {/* Top Section: Logo and Socials */}
         <div className="flex items-center justify-between gap-4 pb-8 border-b border-white/5 md:border-none">
-          <Link to="/" className="flex items-center gap-2.5 font-display text-xl sm:text-2xl group">
-            <div className="grid h-9 w-9 sm:h-10 sm:w-10 place-items-center rounded-xl sm:rounded-2xl bg-gold text-cocoa transition-transform group-hover:rotate-12">
-              <span className="font-bold">✝</span>
-            </div>
-            <span className="tracking-tight">{settings.brand.name}</span>
+          <Link to="/" className="flex items-center gap-2.5 group">
+            {(settings.logo.url || "/logo.png") ? (
+              <img src={settings.logo.url || "/logo.png"} alt={settings.brand.name} className="h-12 w-auto object-contain transition-transform group-hover:scale-105" />
+            ) : (
+              <div className="grid h-10 w-10 place-items-center rounded-2xl bg-gold text-cocoa transition-transform group-hover:rotate-12">
+                <span className="font-bold">✝</span>
+              </div>
+            )}
           </Link>
  
           <div className="flex gap-4 sm:gap-6">

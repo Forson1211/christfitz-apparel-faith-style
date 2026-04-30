@@ -121,10 +121,13 @@ function CartPage() {
                   <span className="tabular-nums">₵{total.toFixed(2)}</span>
                 </div>
               </div>
-              <button className="mt-7 inline-flex w-full items-center justify-center gap-2 rounded-full bg-cream px-6 py-4 text-sm font-medium text-cocoa transition hover:scale-[1.02]">
+              <Link 
+                to="/checkout"
+                className="mt-7 inline-flex w-full items-center justify-center gap-2 rounded-full bg-cream px-6 py-4 text-sm font-medium text-cocoa transition hover:scale-[1.02]"
+              >
                 Checkout
                 <ArrowRight className="h-4 w-4" />
-              </button>
+              </Link>
               <p className="mt-3 text-center text-[11px] text-cream/60">
                 Secure checkout · Free shipping on orders over ₵100
               </p>

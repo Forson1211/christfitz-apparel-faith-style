@@ -24,13 +24,23 @@ function AdminColors() {
 
   const save = async (key: string, value: any) => {
     setBusy(true);
-    const { error } = await supabase.from("site_settings").upsert({ 
-      key, 
-      value, 
-      updated_at: new Date().toISOString() 
-    });
+    const { error: updateError, data } = await supabase
+      .from("site_settings")
+      .update({ value })
+      .eq("key", key)
+      .select();
+
+    if (updateError || !data || data.length === 0) {
+      const { error: insertError } = await supabase
+        .from("site_settings")
+        .insert({ key, value });
+        
+      if (insertError) {
+        setBusy(false);
+        return toast.error("Database Error: " + insertError.message);
+      }
+    }
     setBusy(false);
-    if (error) return toast.error(error.message);
     toast.success(`${key.charAt(0).toUpperCase() + key.slice(1)} settings updated`);
     refresh();
   };

@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/lib/auth";
 import { toast } from "sonner";
 import { Mail, Eye, EyeOff } from "lucide-react";
+import { useSite } from "@/lib/site";
 
 export const Route = createFileRoute("/admin/login")({
   component: AdminLogin,
@@ -10,6 +11,7 @@ export const Route = createFileRoute("/admin/login")({
 
 function AdminLogin() {
   const { signIn, signUp, user, isAdmin, bootstrapAdmin, loading, roleSettled, signOut } = useAuth();
+  const { settings } = useSite();
   const navigate = useNavigate();
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
@@ -32,14 +34,17 @@ function AdminLogin() {
             navigate({ to: "/admin/dashboard" });
           } else {
             // Truly not an admin (someone else is already the admin)
-            setDenied(true);
+            signOut().then(() => {
+              toast.error("Access Denied: This account is not an admin.");
+              setDenied(false);
+            });
           }
         });
       }
     } else {
       setDenied(false);
     }
-  }, [user, isAdmin, loading, navigate, bootstrapAdmin]);
+  }, [user, isAdmin, loading, roleSettled, navigate, bootstrapAdmin, signOut]);
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -104,17 +109,21 @@ function AdminLogin() {
   }
 
   return (
-    <div className="grid min-h-screen place-items-center bg-cream text-cocoa px-5 relative overflow-hidden">
-      <div className="absolute top-0 left-0 w-full h-full opacity-40 pointer-events-none" 
+    <div className="relative grid min-h-screen place-items-center bg-cream text-cocoa px-5 overflow-hidden">
+      {/* Background Image with Overlay */}
+      <div className="absolute inset-0 z-0">
+        <img src="/auth.png" alt="Background" className="h-full w-full object-cover opacity-20" />
+        <div className="absolute inset-0 bg-gradient-to-br from-cream/80 via-transparent to-cream/80" />
+      </div>
+
+      <div className="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none z-0" 
            style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, var(--cocoa) 1px, transparent 0)', backgroundSize: '40px 40px' }} />
-      <div className="absolute -top-24 -right-24 w-96 h-96 bg-gold/10 rounded-full blur-3xl" />
-      <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-cocoa/5 rounded-full blur-3xl" />
 
       <div className="w-full max-w-[420px] relative z-10">
         <div className="rounded-[2.5rem] glass shadow-luxe overflow-hidden border border-white/40">
           <div className="bg-cocoa p-10 text-center text-cream">
-            <div className="inline-grid h-12 w-12 place-items-center rounded-2xl bg-cream/10 border border-white/20 text-gold mb-6 font-bold text-xl shadow-inner">
-              ✝
+            <div className="mb-6 flex justify-center">
+              <img src="/auth.png" alt="Logo" className="h-20 w-auto object-contain" />
             </div>
             <h1 className="font-display text-3xl tracking-tight">Admin Portal</h1>
             <p className="mt-2 text-cream/60 text-sm">
@@ -177,12 +186,12 @@ function AdminLogin() {
                 </div>
 
                 <button
-                  disabled={busy || loading}
+                  disabled={busy || (!!user && !roleSettled)}
                   type="submit"
                   className="group relative w-full overflow-hidden rounded-2xl bg-cocoa py-4 text-sm font-semibold text-cream shadow-soft transition-all hover:scale-[1.02] disabled:opacity-50"
                 >
                   <span className="relative z-10">
-                    {busy ? "Authenticating..." : (loading ? "Verifying Permissions..." : (mode === "signin" ? "Unlock Access" : "Initialize Admin"))}
+                    {busy ? "Authenticating..." : ((!!user && !roleSettled) ? "Verifying Permissions..." : (mode === "signin" ? "Unlock Access" : "Initialize Admin"))}
                   </span>
                   <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-gold/50 to-transparent transition-transform duration-500 group-hover:translate-x-0" />
                 </button>

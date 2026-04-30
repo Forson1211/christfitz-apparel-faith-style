@@ -3,6 +3,11 @@ import { Products } from "@/components/site/Products";
 import { Newsletter } from "@/components/site/Newsletter";
 
 export const Route = createFileRoute("/_site/products")({
+  validateSearch: (search: Record<string, unknown>) => {
+    return {
+      category: (search.category as string) || undefined,
+    };
+  },
   head: () => ({
     meta: [
       { title: "Shop — ChristFitz Apparel" },
@@ -13,13 +18,16 @@ export const Route = createFileRoute("/_site/products")({
 });
 
 function ProductsPage() {
+  const { category } = Route.useSearch();
   return (
     <>
       <div className="pt-32 pb-4 text-center">
         <p className="text-xs uppercase tracking-[0.3em] text-coffee">— Shop</p>
-        <h1 className="mt-3 font-display text-5xl sm:text-7xl">All Pieces</h1>
+        <h1 className="mt-3 font-display text-5xl sm:text-7xl">
+          {category ? category : "All Pieces"}
+        </h1>
       </div>
-      <Products />
+      <Products initialCategory={category} />
       <Newsletter />
     </>
   );

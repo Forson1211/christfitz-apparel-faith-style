@@ -1,9 +1,50 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useSite, type DBProduct } from "@/lib/site";
+import { useSite, type DBProduct, productImage } from "@/lib/site";
 import { supabase } from "@/integrations/supabase/client";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Plus, Trash2, Save, X } from "lucide-react";
+import { Plus, Trash2, Save, X, Upload } from "lucide-react";
+
+function ImageUpload({ onUpload }: { onUpload: (url: string) => void }) {
+  const [uploading, setUploading] = useState(false);
+
+  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+    const ext = file.name.split('.').pop() ?? 'jpg';
+    const safeName = `${Date.now()}.${ext}`;
+    const filePath = `uploads/${safeName}`;
+
+    const { error } = await supabase.storage
+      .from('site-assets')
+      .upload(filePath, file);
+
+    if (error) {
+      toast.error("Upload failed: " + error.message);
+      setUploading(false);
+      return;
+    }
+
+    const { data: { publicUrl } } = supabase.storage
+      .from('site-assets')
+      .getPublicUrl(filePath);
+
+    onUpload(publicUrl);
+    setUploading(false);
+    toast.success("Image uploaded!");
+  };
+
+  return (
+    <label className="cursor-pointer shrink-0">
+      <input type="file" className="hidden" accept="image/*" onChange={handleUpload} disabled={uploading} />
+      <div className={`grid h-10 w-10 place-items-center rounded-xl border border-dashed border-cocoa/30 hover:bg-cocoa/5 transition ${uploading ? 'animate-pulse' : ''}`}>
+        <Upload className="h-4 w-4 text-cocoa/40" />
+      </div>
+    </label>
+  );
+}
 
 export const Route = createFileRoute("/admin/products")({
   component: AdminProducts,
@@ -59,11 +100,20 @@ function AdminProducts() {
       <div className="overflow-hidden rounded-3xl glass">
         <table className="w-full text-sm">
           <thead className="text-left text-xs uppercase tracking-widest text-cocoa/60">
-            <tr><th className="p-4">Name</th><th className="p-4">Category</th><th className="p-4">Price</th><th className="p-4">Active</th><th className="p-4"></th></tr>
+            <tr><th className="p-4 w-16">Image</th><th className="p-4">Name</th><th className="p-4">Category</th><th className="p-4">Price</th><th className="p-4">Active</th><th className="p-4"></th></tr>
           </thead>
           <tbody>
             {products.map((p) => (
               <tr key={p.id} className="border-t border-cocoa/10">
+                <td className="p-4">
+                  <div className="h-10 w-10 overflow-hidden rounded-md bg-cocoa/5">
+                    {p.image_url ? (
+                      <img src={productImage(p)} alt={p.name} className="h-full w-full object-cover" />
+                    ) : (
+                      <div className="h-full w-full flex items-center justify-center text-cocoa/20 text-xs">No img</div>
+                    )}
+                  </div>
+                </td>
                 <td className="p-4 font-medium">{p.name}</td>
                 <td className="p-4 text-muted-foreground">{p.category}</td>
                 <td className="p-4 tabular-nums">₵{p.price}</td>
@@ -93,7 +143,12 @@ function AdminProducts() {
                   {categories.map((c) => <option key={c.id} value={c.name}>{c.name}</option>)}
                 </select>
               </Field>
-              <Field label="Image URL or code (e.g. p1.jpg)"><input value={editing.image_url ?? ""} onChange={(e) => setEditing({ ...editing, image_url: e.target.value })} className="input" /></Field>
+              <Field label="Image URL or code (e.g. p1.jpg)">
+                <div className="flex gap-2">
+                  <ImageUpload onUpload={(url) => setEditing({ ...editing, image_url: url })} />
+                  <input value={editing.image_url ?? ""} onChange={(e) => setEditing({ ...editing, image_url: e.target.value })} className="input" />
+                </div>
+              </Field>
               <Field label="Verse"><input value={editing.verse ?? ""} onChange={(e) => setEditing({ ...editing, verse: e.target.value })} className="input" /></Field>
               <Field label="Position"><input type="number" value={editing.position ?? 0} onChange={(e) => setEditing({ ...editing, position: parseInt(e.target.value) })} className="input" /></Field>
               <Field label="Sizes (comma)" full><input value={(editing.sizes ?? []).join(",")} onChange={(e) => setEditing({ ...editing, sizes: e.target.value.split(",").map(s => s.trim()).filter(Boolean) })} className="input" /></Field>

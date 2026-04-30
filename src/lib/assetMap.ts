@@ -25,6 +25,11 @@ const map: Record<string, string> = {
 
 export function resolveImage(url: string | null | undefined): string {
   if (!url) return p1;
-  if (url.startsWith("http://") || url.startsWith("https://") || url.startsWith("data:")) return url;
-  return map[url] ?? url;
+  if (url.startsWith("http://") || url.startsWith("https://") || url.startsWith("data:")) {
+    // console.log("[resolveImage] Found absolute URL:", url);
+    return url;
+  }
+  const resolved = map[url] ?? url;
+  // console.log("[resolveImage] Resolved", url, "to", resolved);
+  return resolved;
 }

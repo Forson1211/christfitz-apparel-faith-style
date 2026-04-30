@@ -1,0 +1,200 @@
+import { supabase } from "@/integrations/supabase/client";
+import { useCallback, useEffect, useState } from "react";
+
+export interface ContentItem {
+  id: string;
+  name: string;
+  url: string;
+  type: "image" | "video";
+  category: string;
+  metadata: any;
+  position: number;
+  is_active: boolean;
+  created_at: string;
+}
+
+/**
+ * useContent Hook — Optimized for ChristFitz Storefront
+ * Implements SWR (Stale-While-Revalidate) caching to handle Supabase 503 errors.
+ */
+export function useContent(category?: string) {
+  const cacheKey = `cf_content_${category || "all"}`;
+  
+  // 1. Initial State from Cache (Lightning Load)
+  const [items, setItems] = useState<ContentItem[]>(() => {
+    try {
+      const cached = localStorage.getItem(cacheKey);
+      return cached ? JSON.parse(cached) : [];
+    } catch {
+      return [];
+    }
+  });
+  
+  const [loading, setLoading] = useState(false);
+
+  // ── Fetch ──────────────────────────────────────────────────────────────
+  const fetchItems = useCallback(async (isInitial = false, force = false) => {
+    // 1. Global Throttle Check: Skip if forced (Admin actions)
+    const throttleUntil = (window as any)._supabaseThrottleUntil || 0;
+    if (!force && Date.now() < throttleUntil) {
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from("content")
+        .select("*")
+        .eq("category", category || "general")
+        .eq("is_active", true)
+        .order("position", { ascending: true })
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        const is503 = (error as any).status === 503 || error.message.includes("503");
+        if (is503) {
+          console.error(`[useContent] 503 Error for ${category}. Silencing for 5s.`);
+          (window as any)._supabaseThrottleUntil = Date.now() + 5000;
+        }
+        throw error;
+      }
+
+      const fetchedItems = (data as ContentItem[]) ?? [];
+      setItems(fetchedItems);
+      localStorage.setItem(cacheKey, JSON.stringify(fetchedItems));
+    } catch (err) {
+      console.error(`[useContent] Error fetching ${category}:`, err);
+    } finally {
+      setLoading(false);
+    }
+  }, [category, cacheKey]);
+
+  // ── Save/Update ────────────────────────────────────────────────────────
+  const saveToDb = useCallback(async (params: {
+    name: string;
+    url: string;
+    filePath: string;
+    type: "image" | "video";
+    category: string;
+    metadata?: any;
+    existingId?: string;
+  }) => {
+    try {
+      // 1. Hyper-Optimistic Update: Inject into local state immediately
+      const tempId = params.existingId || `temp-${Date.now()}`;
+      const tempItem: Partial<ContentItem> = {
+        id: tempId,
+        name: params.name,
+        url: params.url,
+        type: params.type,
+        category: params.category,
+        metadata: params.metadata || {},
+      };
+
+      setItems((prev) => {
+        let next = [...prev];
+        if (params.existingId) {
+          const idx = next.findIndex(x => x.id === params.existingId);
+          if (idx !== -1) {
+            next[idx] = { ...next[idx], ...tempItem } as ContentItem;
+          }
+        } else {
+          const fullTempItem = {
+            ...tempItem,
+            position: 0,
+            is_active: true,
+            created_at: new Date().toISOString()
+          } as ContentItem;
+          next = [fullTempItem, ...prev];
+        }
+        localStorage.setItem(cacheKey, JSON.stringify(next));
+        return next;
+      });
+
+      // 2. Perform DB operation
+      let data, error;
+      if (params.existingId) {
+        const res = await supabase.from("content").update({
+          name: params.name,
+          url: params.url,
+          file_path: params.filePath,
+          type: params.type,
+          metadata: params.metadata || {}
+        }).eq("id", params.existingId).select();
+        data = res.data; error = res.error;
+      } else {
+        const res = await supabase.from("content").insert([{
+          name: params.name,
+          url: params.url,
+          file_path: params.filePath,
+          type: params.type,
+          category: params.category,
+          metadata: params.metadata || {},
+          is_active: true,
+          position: 0
+        }]).select();
+        data = res.data; error = res.error;
+      }
+
+      if (error) {
+        // Simple rollback if new item insertion fails
+        if (!params.existingId) setItems((prev) => prev.filter(x => x.id !== tempId));
+        throw error;
+      }
+      
+      const inserted = data?.[0] ?? null;
+      if (inserted) {
+        // Replace temp with real
+        setItems((prev) => prev.map(x => x.id === tempId ? (inserted as ContentItem) : x));
+        (window as any)._supabaseThrottleUntil = 0;
+      }
+
+      return inserted as ContentItem | null;
+    } catch (err) {
+      console.error("[useContent] Save error:", err);
+      return null;
+    }
+  }, [cacheKey]);
+
+  const deleteItem = useCallback(async (id: string) => {
+    try {
+      const { error } = await supabase.from("content").delete().eq("id", id);
+      if (error) throw error;
+      setItems(prev => prev.filter(i => i.id !== id));
+      return true;
+    } catch (err) {
+      console.error("[useContent] Delete error:", err);
+      return false;
+    }
+  }, []);
+
+  // ── Realtime ───────────────────────────────────────────────────────────
+  useEffect(() => {
+    const channelName = `content_changes_${category || 'all'}`;
+    const channel = supabase
+      .channel(channelName)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "content" },
+        (payload) => {
+          const newItem = (payload.new || payload.old) as any;
+          if (!category || newItem.category === category) {
+            console.log(`[useContent] Realtime pulse for ${category || 'all'}`);
+            fetchItems(false, true); // Force fresh fetch on DB change
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [category, fetchItems]);
+
+  // ── Lifecycle ──────────────────────────────────────────────────────────
+  useEffect(() => {
+    fetchItems(true, true); // Force initial fetch on load
+  }, [fetchItems]);
+
+  return { items, setItems, loading, fetchItems, saveToDb, deleteItem };
+}

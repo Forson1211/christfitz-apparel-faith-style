@@ -1,6 +1,6 @@
 import { createFileRoute, Outlet, redirect, Link, useNavigate, useLocation } from "@tanstack/react-router";
 import { useAuth } from "@/lib/auth";
-import { LayoutDashboard, Package, FolderTree, Palette, Image as ImageIcon, Type, Navigation as NavIcon, LogOut, Home } from "lucide-react";
+import { LayoutDashboard, Package, FolderTree, Palette, Image as ImageIcon, Type, Navigation as NavIcon, LogOut, Home, ShoppingCart, Users, BarChart3, Tag } from "lucide-react";
 import { useEffect } from "react";
 
 export const Route = createFileRoute("/admin")({
@@ -9,8 +9,12 @@ export const Route = createFileRoute("/admin")({
 
 const items = [
   { to: "/admin/dashboard", label: "Overview", Icon: LayoutDashboard },
+  { to: "/admin/analytics", label: "Analytics", Icon: BarChart3 },
+  { to: "/admin/orders", label: "Orders", Icon: ShoppingCart },
   { to: "/admin/products", label: "Products", Icon: Package },
   { to: "/admin/categories", label: "Categories", Icon: FolderTree },
+  { to: "/admin/users", label: "Customers", Icon: Users },
+  { to: "/admin/discounts", label: "Discounts", Icon: Tag },
   { to: "/admin/content", label: "Content", Icon: Type },
   { to: "/admin/colors", label: "Colors & Logo", Icon: Palette },
   { to: "/admin/navigation", label: "Navigation", Icon: NavIcon },
@@ -18,7 +22,7 @@ const items = [
 ];
 
 function AdminLayout() {
-  const { user, isAdmin, loading, roleSettled, signOut, bootstrapAdmin } = useAuth();
+  const { user, isAdmin, loading, roleLoading, roleSettled, signOut, bootstrapAdmin } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const path = location.pathname;
@@ -32,7 +36,8 @@ function AdminLayout() {
 
   if (path === "/admin/login") return <Outlet />;
 
-  if (loading || !roleSettled) {
+  // Show spinner while session is loading, or while role check is in progress (if we don't already have a cached answer)
+  if (loading || (roleLoading && !roleSettled)) {
     return (
       <div className="grid min-h-screen place-items-center bg-cream text-cocoa gap-3">
         <div className="h-8 w-8 rounded-full border-2 border-cocoa border-t-transparent animate-spin" />
@@ -81,9 +86,9 @@ function AdminLayout() {
 
   return (
     <div className="flex min-h-screen bg-cream text-cocoa">
-      <aside className="hidden md:flex w-64 shrink-0 flex-col border-r border-cocoa/10 bg-cream/60 backdrop-blur-xl">
-        <Link to="/admin/dashboard" className="flex items-center gap-2 px-6 py-6 font-display text-xl">
-          <span className="grid h-8 w-8 place-items-center rounded-full bg-cocoa text-cream">✝</span>
+      <aside className="hidden md:flex w-60 shrink-0 flex-col border-r border-cocoa/10 bg-cream/60 backdrop-blur-xl">
+        <Link to="/admin/dashboard" className="flex items-center gap-2 px-5 py-5 font-display text-xl">
+          <span className="grid h-7 w-7 place-items-center rounded-lg bg-cocoa text-cream text-sm">✝</span>
           ChristFitz · Admin
         </Link>
         <nav className="flex-1 space-y-1 px-3">
@@ -93,8 +98,8 @@ function AdminLayout() {
               <Link
                 key={to}
                 to={to}
-                className={`flex items-center gap-3 rounded-2xl px-4 py-2.5 text-sm transition ${
-                  active ? "bg-cocoa text-cream" : "text-cocoa/70 hover:bg-cocoa/5 hover:text-cocoa"
+                className={`flex items-center gap-3 rounded-xl px-3 py-2 text-sm transition ${
+                  active ? "bg-cocoa text-cream font-medium" : "text-cocoa/70 hover:bg-cocoa/5 hover:text-cocoa"
                 }`}
               >
                 <Icon className="h-4 w-4" />
@@ -104,12 +109,12 @@ function AdminLayout() {
           })}
         </nav>
         <div className="space-y-1 border-t border-cocoa/10 p-3">
-          <Link to="/" className="flex items-center gap-3 rounded-2xl px-4 py-2.5 text-sm text-cocoa/70 hover:bg-cocoa/5 hover:text-cocoa">
+          <Link to="/" className="flex items-center gap-3 rounded-xl px-3 py-2 text-sm text-cocoa/70 hover:bg-cocoa/5 hover:text-cocoa">
             <Home className="h-4 w-4" /> Visit site
           </Link>
           <button
             onClick={() => signOut().then(() => navigate({ to: "/admin/login" }))}
-            className="flex w-full items-center gap-3 rounded-2xl px-4 py-2.5 text-sm text-cocoa/70 hover:bg-cocoa/5 hover:text-cocoa"
+            className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm text-cocoa/70 hover:bg-cocoa/5 hover:text-cocoa"
           >
             <LogOut className="h-4 w-4" /> Sign out
           </button>
@@ -133,7 +138,7 @@ function AdminLayout() {
             );
           })}
         </nav>
-        <main className="p-5 sm:p-8 max-w-6xl mx-auto">
+        <main className="p-5 sm:p-6 max-w-7xl mx-auto">
           <Outlet />
         </main>
       </div>

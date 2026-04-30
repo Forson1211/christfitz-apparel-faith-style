@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Eye, Plus } from "lucide-react";
 import { useSite, type DBProduct, productImage } from "@/lib/site";
@@ -7,14 +7,19 @@ import { ProductDetail } from "./ProductDetail";
 
 interface ProductsProps {
   limit?: number;
+  initialCategory?: string;
 }
 
-export function Products({ limit }: ProductsProps) {
+export function Products({ limit, initialCategory }: ProductsProps) {
   const { products, categories } = useSite();
   const tabs = ["All", ...categories.map((c) => c.name)];
-  const [active, setActive] = useState<string>("All");
+  const [active, setActive] = useState<string>(initialCategory || "All");
   const [selected, setSelected] = useState<DBProduct | null>(null);
   const { addItem } = useCart();
+
+  useEffect(() => {
+    if (initialCategory) setActive(initialCategory);
+  }, [initialCategory]);
 
   const filtered = (active === "All" ? products : products.filter((p) => p.category === active))
     .filter((p) => p.active);

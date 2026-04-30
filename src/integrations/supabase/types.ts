@@ -164,6 +164,114 @@ export type Database = {
         }
         Relationships: []
       }
+      orders: {
+        Row: {
+          id: string
+          user_id: string | null
+          customer_name: string
+          customer_email: string
+          status: string
+          total: number
+          items: Json
+          shipping_address: Json | null
+          notes: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id?: string | null
+          customer_name: string
+          customer_email: string
+          status?: string
+          total?: number
+          items?: Json
+          shipping_address?: Json | null
+          notes?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string | null
+          customer_name?: string
+          customer_email?: string
+          status?: string
+          total?: number
+          items?: Json
+          shipping_address?: Json | null
+          notes?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      content: {
+        Row: {
+          category: string
+          created_at: string
+          file_path: string | null
+          id: string
+          is_active: boolean | null
+          metadata: Json
+          name: string
+          position: number | null
+          type: string
+          updated_at: string
+          url: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          file_path?: string | null
+          id?: string
+          is_active?: boolean | null
+          metadata?: Json
+          name: string
+          position?: number | null
+          type?: string
+          updated_at?: string
+          url: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          file_path?: string | null
+          id?: string
+          is_active?: boolean | null
+          metadata?: Json
+          name?: string
+          position?: number | null
+          type?: string
+          updated_at?: string
+          url?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          id: string
+          full_name: string | null
+          phone: string | null
+          email: string | null
+          updated_at: string
+        }
+        Insert: {
+          id: string
+          full_name?: string | null
+          phone?: string | null
+          email?: string | null
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          full_name?: string | null
+          phone?: string | null
+          email?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -176,6 +284,36 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      save_content_item: {
+        Args: {
+          p_name: string
+          p_url: string
+          p_file_path: string | null
+          p_type: string
+          p_category: string
+          p_metadata: Json
+        }
+        Returns: {
+          id: string
+          name: string
+          url: string
+          file_path: string | null
+          type: string
+          category: string
+          metadata: Json
+          position: number | null
+          is_active: boolean | null
+          created_at: string
+          updated_at: string
+        }[]
+      }
+      save_site_setting: {
+        Args: {
+          p_key: string
+          p_value: Json
+        }
+        Returns: undefined
       }
     }
     Enums: {
