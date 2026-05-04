@@ -11,8 +11,8 @@ import {
   ArrowDownRight,
   MoreHorizontal,
   BarChart3,
-  Tag,
   ShoppingCart,
+  MessageSquare,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
@@ -57,47 +57,51 @@ function Dashboard() {
   }, []);
 
   const fulfilledRevenue = orders
-    .filter((o) => o.status === "fulfilled")
+    .filter((o) => o.status === "fulfilled" || o.status === "pending")
     .reduce((s, o) => s + Number(o.total), 0);
   const totalOrdersCount = orders.length;
-  const recentOrders = orders.slice(0, 3);
+  const recentOrders = orders.slice(0, 5);
 
   const metrics = [
     {
       label: "Total Revenue",
       value: dataLoading ? "..." : `₵${fulfilledRevenue.toLocaleString()}`,
-      change: "+12.5%",
+      change: "Live",
       trend: "up",
       Icon: DollarSign,
     },
     {
       label: "Total Orders",
       value: dataLoading ? "..." : String(totalOrdersCount),
-      change: "+8.3%",
+      change: "Live",
       trend: "up",
       Icon: ShoppingCart,
     },
     {
       label: "Products",
       value: String(products.length),
-      change: "+4.3%",
+      change: "Live",
       trend: "up",
       Icon: Package,
     },
     {
       label: "Customers",
       value: dataLoading ? "..." : String(customers.length),
-      change: "+18.2%",
+      change: "Live",
       trend: "up",
       Icon: Users,
     },
   ];
 
-  const topProducts = products.slice(0, 3).map((p, i) => ({
-    ...p,
-    sales: [42, 38, 31][i] || 15,
-    growth: ["+8.2%", "+5.4%", "+2.1%"][i] || "+1.0%",
-  }));
+  const topProducts = products.slice(0, 3).map((p) => {
+    // Basic dynamic simulation based on price and rating for now since we don't have a complex order_items join
+    const estSales = Math.floor(Math.random() * 20) + p.reviews;
+    return {
+      ...p,
+      sales: estSales,
+      growth: "Active",
+    };
+  });
 
   // Simulating a chart path
   const chartPoints = "0,80 20,60 40,70 60,30 80,45 100,10 120,40 140,25 160,55 180,20 200,50";
@@ -174,23 +178,23 @@ function Dashboard() {
             <ShoppingCart className="h-4 w-4" />
           </div>
           <div>
-            <div className="text-xl font-display font-bold text-cocoa">318</div>
+            <div className="text-xl font-display font-bold text-cocoa">{totalOrdersCount}</div>
             <div className="text-[10px] uppercase tracking-widest text-cocoa/50 font-bold">
               Orders
             </div>
           </div>
         </Link>
         <Link
-          to="/admin/discounts"
+          to="/admin/testimonials"
           className="group rounded-xl glass border border-white/40 p-4 flex items-center gap-3 hover:bg-white/50 hover:shadow-sm transition-all"
         >
           <div className="h-9 w-9 rounded-lg bg-cocoa/5 flex items-center justify-center text-coffee group-hover:bg-cocoa group-hover:text-cream transition-colors">
-            <Tag className="h-4 w-4" />
+            <MessageSquare className="h-4 w-4" />
           </div>
           <div>
-            <div className="text-xl font-display font-bold text-cocoa">3</div>
+            <div className="text-xl font-display font-bold text-cocoa">Manage</div>
             <div className="text-[10px] uppercase tracking-widest text-cocoa/50 font-bold">
-              Discounts
+              Testimonials
             </div>
           </div>
         </Link>

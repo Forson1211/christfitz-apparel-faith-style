@@ -125,8 +125,8 @@ function AdminProducts() {
         </button>
       </div>
 
-      <div className="overflow-hidden rounded-3xl glass">
-        <table className="w-full text-sm">
+      <div className="overflow-x-auto rounded-3xl glass">
+        <table className="w-full text-sm min-w-[600px]">
           <thead className="text-left text-xs uppercase tracking-widest text-cocoa/60">
             <tr>
               <th className="p-4 w-16">Image</th>
