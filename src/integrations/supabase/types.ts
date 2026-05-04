@@ -266,6 +266,42 @@ export type Database = {
         };
         Relationships: [];
       };
+      testimonials: {
+        Row: {
+          active: boolean;
+          avatar_url: string | null;
+          created_at: string;
+          id: string;
+          name: string;
+          position: number;
+          rating: number;
+          role: string | null;
+          text: string;
+        };
+        Insert: {
+          active?: boolean;
+          avatar_url?: string | null;
+          created_at?: string;
+          id?: string;
+          name: string;
+          position?: number;
+          rating?: number;
+          role?: string | null;
+          text: string;
+        };
+        Update: {
+          active?: boolean;
+          avatar_url?: string | null;
+          created_at?: string;
+          id?: string;
+          name?: string;
+          position?: number;
+          rating?: number;
+          role?: string | null;
+          text?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       [_ in never]: never;

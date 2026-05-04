@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { Database } from "@/integrations/supabase/types";
 import { toast } from "sonner";
 import { Plus, Trash2, Save, GripVertical, Star, User } from "lucide-react";
 import { motion, Reorder } from "framer-motion";
@@ -9,16 +10,7 @@ export const Route = createFileRoute("/admin/testimonials")({
   component: AdminTestimonials,
 });
 
-interface Testimonial {
-  id: string;
-  name: string;
-  role: string | null;
-  text: string;
-  rating: number;
-  avatar_url: string | null;
-  position: number;
-  active: boolean;
-}
+type Testimonial = Database["public"]["Tables"]["testimonials"]["Row"];
 
 function AdminTestimonials() {
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
@@ -27,9 +19,9 @@ function AdminTestimonials() {
 
   const fetchTestimonials = async () => {
     setLoading(true);
-    const { data, error } = await supabase
-      .from("testimonials")
-      .select("*")
+    const { data, error } = await (supabase
+      .from("testimonials" as any)
+      .select("*") as any)
       .order("position");
 
     if (error) {
@@ -45,7 +37,7 @@ function AdminTestimonials() {
   }, []);
 
   const handleAdd = () => {
-    const newTestimonial: Testimonial = {
+    const newTestimonial: any = {
       id: `temp-${Date.now()}`,
       name: "New Believer",
       role: "Member",
@@ -54,6 +46,7 @@ function AdminTestimonials() {
       avatar_url: null,
       position: testimonials.length,
       active: true,
+      created_at: new Date().toISOString(),
     };
     setTestimonials([...testimonials, newTestimonial]);
   };
@@ -66,7 +59,7 @@ function AdminTestimonials() {
 
     if (!confirm("Are you sure you want to delete this testimonial?")) return;
 
-    const { error } = await supabase.from("testimonials").delete().eq("id", id);
+    const { error } = await supabase.from("testimonials" as any).delete().eq("id", id);
     if (error) {
       toast.error("Failed to delete testimonial");
     } else {
@@ -86,7 +79,7 @@ function AdminTestimonials() {
       };
     });
 
-    const { error } = await supabase.from("testimonials").upsert(toUpdate);
+    const { error } = await supabase.from("testimonials" as any).upsert(toUpdate as any);
 
     if (error) {
       toast.error("Failed to save changes: " + error.message);

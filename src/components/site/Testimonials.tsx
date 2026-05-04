@@ -3,13 +3,9 @@ import { Star } from "lucide-react";
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { Database } from "@/integrations/supabase/types";
 
-interface Testimonial {
-  name: string;
-  role: string;
-  text: string;
-  rating: number;
-}
+type Testimonial = Database["public"]["Tables"]["testimonials"]["Row"];
 
 export function Testimonials() {
   const [reviews, setReviews] = useState<Testimonial[]>([]);
@@ -17,9 +13,9 @@ export function Testimonials() {
 
   useEffect(() => {
     const fetchReviews = async () => {
-      const { data } = await supabase
-        .from("testimonials")
-        .select("*")
+      const { data } = await (supabase
+        .from("testimonials" as any)
+        .select("*") as any)
         .eq("active", true)
         .order("position");
       
