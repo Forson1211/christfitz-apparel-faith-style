@@ -27,11 +27,16 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks(id) {
-          // React core — smallest possible critical chunk
-          if (id.includes("node_modules/react/") || id.includes("node_modules/react-dom/")) {
+          // React core and its critical internal dependencies
+          if (
+            id.includes("node_modules/react/") ||
+            id.includes("node_modules/react-dom/") ||
+            id.includes("node_modules/scheduler/") ||
+            id.includes("node_modules/object-assign/")
+          ) {
             return "vendor-react";
           }
-          // Radix UI primitives (many small packages, bundle together)
+          // Radix UI primitives
           if (id.includes("node_modules/@radix-ui/")) {
             return "vendor-radix";
           }
@@ -39,11 +44,15 @@ export default defineConfig({
           if (id.includes("node_modules/@supabase/")) {
             return "vendor-supabase";
           }
-          // Charts (recharts + d3 deps) — heavy, rarely changes
-          if (id.includes("node_modules/recharts") || id.includes("node_modules/d3-") || id.includes("node_modules/victory-")) {
+          // Charts (recharts + d3 deps)
+          if (
+            id.includes("node_modules/recharts") ||
+            id.includes("node_modules/d3-") ||
+            id.includes("node_modules/victory-")
+          ) {
             return "vendor-charts";
           }
-          // Framer Motion — animation library
+          // Framer Motion
           if (id.includes("node_modules/framer-motion")) {
             return "vendor-motion";
           }
@@ -51,11 +60,11 @@ export default defineConfig({
           if (id.includes("node_modules/@tanstack/")) {
             return "vendor-tanstack";
           }
-          // Lucide icons — large icon set
+          // Lucide icons
           if (id.includes("node_modules/lucide-react")) {
             return "vendor-icons";
           }
-          // Everything else in node_modules goes to a shared vendor chunk
+          // Everything else in node_modules
           if (id.includes("node_modules/")) {
             return "vendor-misc";
           }
