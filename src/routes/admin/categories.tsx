@@ -1,8 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useSite } from "@/lib/site";
+import { useSite, resolveImage } from "@/lib/site";
 import { supabase } from "@/integrations/supabase/client";
 import { useState } from "react";
 import { toast } from "sonner";
+import { Upload, X } from "lucide-react";
 
 export const Route = createFileRoute("/admin/categories")({
   component: AdminCategories,
@@ -12,6 +13,7 @@ function AdminCategories() {
   const { categories, refresh } = useSite();
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
+  const [uploading, setUploading] = useState<string | null>(null);
 
   const add = async () => {
     if (!name || !slug) return toast.error("Name & slug required");
@@ -23,66 +25,139 @@ function AdminCategories() {
     setSlug("");
     refresh();
   };
+
   const update = async (id: string, patch: any) => {
     const { error } = await supabase.from("categories").update(patch).eq("id", id);
     if (error) return toast.error(error.message);
     refresh();
   };
+
   const remove = async (id: string) => {
     if (!confirm("Delete?")) return;
     await supabase.from("categories").delete().eq("id", id);
     refresh();
   };
 
+  const handleUpload = async (id: string, file: File) => {
+    setUploading(id);
+    const ext = file.name.split(".").pop();
+    const path = `categories/${id}-${Date.now()}.${ext}`;
+
+    const { error: uploadError } = await supabase.storage.from("site-assets").upload(path, file);
+    if (uploadError) {
+      toast.error(uploadError.message);
+      setUploading(null);
+      return;
+    }
+
+    const { data: { publicUrl } } = supabase.storage.from("site-assets").getPublicUrl(path);
+    await update(id, { image_url: publicUrl });
+    setUploading(null);
+    toast.success("Image uploaded!");
+  };
+
   return (
     <div className="space-y-6">
       <h1 className="font-display text-3xl">Categories</h1>
+      
       <div className="rounded-3xl glass p-5 flex flex-col sm:flex-row gap-3">
         <input
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="Name (e.g. Hats)"
-          className="flex-1 rounded-full border border-cocoa/15 bg-cream/60 px-4 py-2.5"
+          className="flex-1 rounded-full border border-cocoa/15 bg-cream/60 px-4 py-2.5 outline-none"
         />
         <input
           value={slug}
           onChange={(e) => setSlug(e.target.value)}
           placeholder="slug (e.g. hats)"
-          className="flex-1 rounded-full border border-cocoa/15 bg-cream/60 px-4 py-2.5"
+          className="flex-1 rounded-full border border-cocoa/15 bg-cream/60 px-4 py-2.5 outline-none"
         />
         <button
           onClick={add}
           className="rounded-full bg-cocoa px-5 py-2.5 text-sm text-cream hover:bg-coffee"
         >
-          Add
+          Add Category
         </button>
       </div>
-      <div className="space-y-3">
+
+      <div className="grid gap-4">
         {categories.map((c) => (
           <div
             key={c.id}
-            className="rounded-2xl glass p-4 flex flex-col sm:flex-row gap-3 items-stretch sm:items-center"
+            className="rounded-3xl glass p-6 space-y-4 border border-cocoa/5"
           >
-            <input
-              defaultValue={c.name}
-              onBlur={(e) => e.target.value !== c.name && update(c.id, { name: e.target.value })}
-              className="flex-1 rounded-full border border-cocoa/15 bg-cream/60 px-4 py-2"
-            />
-            <input
-              defaultValue={c.description ?? ""}
-              placeholder="Description"
-              onBlur={(e) => update(c.id, { description: e.target.value })}
-              className="flex-[2] rounded-full border border-cocoa/15 bg-cream/60 px-4 py-2"
-            />
-            <input
-              defaultValue={c.image_url ?? ""}
-              placeholder="Image (URL or filename)"
-              onBlur={(e) => update(c.id, { image_url: e.target.value })}
-              className="flex-1 rounded-full border border-cocoa/15 bg-cream/60 px-4 py-2"
-            />
-            <button onClick={() => remove(c.id)} className="text-destructive text-sm">
-              Delete
-            </button>
+            <div className="flex flex-col md:flex-row gap-6 items-start">
+              {/* Image Preview / Upload */}
+              <div className="relative h-32 w-32 shrink-0 overflow-hidden rounded-2xl bg-cocoa/5 border border-cocoa/10">
+                {c.image_url ? (
+                  <>
+                    <img
+                      src={resolveImage(c.image_url)}
+                      alt=""
+                      className="h-full w-full object-cover"
+                    />
+                    <button 
+                      onClick={() => update(c.id, { image_url: null })}
+                      className="absolute top-1 right-1 h-6 w-6 grid place-items-center rounded-full bg-destructive text-white shadow-lg"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </>
+                ) : (
+                  <label className="flex h-full w-full cursor-pointer flex-col items-center justify-center gap-2 text-cocoa/30 hover:bg-cocoa/5 transition">
+                    <input
+                      type="file"
+                      className="hidden"
+                      accept="image/*"
+                      onChange={(e) => e.target.files?.[0] && handleUpload(c.id, e.target.files[0])}
+                    />
+                    <Upload className={`h-6 w-6 ${uploading === c.id ? "animate-bounce" : ""}`} />
+                    <span className="text-[10px] uppercase font-bold tracking-widest">
+                      {uploading === c.id ? "Uploading..." : "Upload"}
+                    </span>
+                  </label>
+                )}
+              </div>
+
+              {/* Fields */}
+              <div className="flex-1 grid gap-4 w-full">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-[10px] uppercase tracking-[0.2em] text-cocoa/50 font-bold ml-1">Name</label>
+                    <input
+                      defaultValue={c.name}
+                      onBlur={(e) => e.target.value !== c.name && update(c.id, { name: e.target.value })}
+                      className="mt-1 w-full rounded-2xl border border-cocoa/15 bg-cream/60 px-4 py-2 outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] uppercase tracking-[0.2em] text-cocoa/50 font-bold ml-1">Marketing Tag (e.g. LIMITED)</label>
+                    <input
+                      defaultValue={c.tag || ""}
+                      placeholder="Daily Wear, Bestseller..."
+                      onBlur={(e) => update(c.id, { tag: e.target.value })}
+                      className="mt-1 w-full rounded-2xl border border-cocoa/15 bg-cream/60 px-4 py-2 outline-none"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="text-[10px] uppercase tracking-[0.2em] text-cocoa/50 font-bold ml-1">Description</label>
+                  <input
+                    defaultValue={c.description || ""}
+                    placeholder="Short description for SEO or internal use"
+                    onBlur={(e) => update(c.id, { description: e.target.value })}
+                    className="mt-1 w-full rounded-2xl border border-cocoa/15 bg-cream/60 px-4 py-2 outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="flex flex-row md:flex-col gap-2">
+                 <button onClick={() => remove(c.id)} className="h-10 px-4 rounded-xl border border-destructive/20 text-destructive text-xs font-bold uppercase tracking-widest hover:bg-destructive hover:text-white transition-colors">
+                  Delete
+                </button>
+              </div>
+            </div>
           </div>
         ))}
       </div>

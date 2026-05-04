@@ -63,7 +63,7 @@ export function Collections() {
 
                   <div className="absolute left-5 top-5">
                     <span className="rounded-full glass-dark px-3 py-1 text-[10px] uppercase tracking-widest text-cream">
-                      {tags[i] ?? "Collection"}
+                      {cat.tag || "Collection"}
                     </span>
                   </div>
 
