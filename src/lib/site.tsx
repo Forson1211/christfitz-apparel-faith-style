@@ -193,20 +193,11 @@ export function SiteProvider({ children }: { children: ReactNode }) {
         supabase.from("nav_links").select("*").order("position"),
       ]);
 
-      // Check if any request failed with a server overload
-      const errors = [s.error, p.error, c.error, n.error];
-      const has503 = errors.some((e) => e?.message.includes("503") || e?.message.includes("cache"));
-
-      if (has503) {
-        (window as any)._supabaseThrottleUntil = Date.now() + 30000;
-        console.error("[Site] SERVER OVERLOAD. Engaging 30s silence.");
-        setTimeout(refresh, 35000);
-        return;
-      }
-
-      if (s.data) {
+      // 1. Process Settings
+      const s = results[0];
+      if (s.status === "fulfilled" && s.value.data) {
         const nextSettings = { ...defaultSettings };
-        s.data?.forEach((row: any) => {
+        s.value.data.forEach((row: any) => {
           const parts = row.key.split(".");
           if (
             parts.length === 2 &&
@@ -216,13 +207,14 @@ export function SiteProvider({ children }: { children: ReactNode }) {
             (nextSettings as any)[parts[0]][parts[1]] = row.value;
           }
         });
-
         setSettings(nextSettings);
         localStorage.setItem("cf_site_settings", JSON.stringify(nextSettings));
       }
 
-      if (p.data) {
-        const formattedProducts = p.data.map((row: any) => ({
+      // 2. Process Products
+      const p = results[1];
+      if (p.status === "fulfilled" && p.value.data) {
+        const formattedProducts = p.value.data.map((row: any) => ({
           ...row,
           price: Number(row.price),
           rating: Number(row.rating),
@@ -233,13 +225,17 @@ export function SiteProvider({ children }: { children: ReactNode }) {
         localStorage.setItem("cf_products", JSON.stringify(formattedProducts));
       }
 
-      if (c.data) {
-        setCategories(c.data as any);
-        localStorage.setItem("cf_categories", JSON.stringify(c.data));
+      // 3. Process Categories
+      const c = results[2];
+      if (c.status === "fulfilled" && c.value.data) {
+        setCategories(c.value.data as any);
+        localStorage.setItem("cf_categories", JSON.stringify(c.value.data));
       }
 
-      if (n.data) {
-        const visibleLinks = (n.data as any).filter((l: DBNavLink) => l.visible);
+      // 4. Process Nav Links
+      const n = results[3];
+      if (n.status === "fulfilled" && n.value.data) {
+        const visibleLinks = (n.value.data as any).filter((l: DBNavLink) => l.visible);
         setNavLinks(visibleLinks);
         localStorage.setItem("cf_nav_links", JSON.stringify(visibleLinks));
       }
