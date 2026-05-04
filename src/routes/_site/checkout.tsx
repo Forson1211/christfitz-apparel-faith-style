@@ -212,9 +212,13 @@ function CheckoutPage() {
                   <input
                     type="tel"
                     value={formData.phone}
-                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                    onChange={(e) => {
+                      const val = e.target.value.replace(/[^0-9]/g, "");
+                      setFormData({ ...formData, phone: val });
+                    }}
+                    inputMode="numeric"
                     className="w-full rounded-2xl border border-cocoa/10 bg-white px-5 py-3.5 outline-none focus:border-gold transition-colors"
-                    placeholder="024 123 4567"
+                    placeholder="0241234567"
                   />
                 </div>
 
