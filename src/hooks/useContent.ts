@@ -101,12 +101,13 @@ export function useContent(category?: string) {
         };
 
         setItems((prev: ContentItem[]) => {
-          let next = [...prev];
           if (params.existingId) {
-            const idx = next.findIndex((x) => x.id === params.existingId);
-            if (idx !== -1) {
-              next[idx] = { ...next[idx], ...tempItem } as ContentItem;
-            }
+            // Update existing item in-place
+            const next = prev.map((x) =>
+              x.id === params.existingId ? { ...x, ...tempItem } as ContentItem : x
+            );
+            localStorage.setItem(cacheKey, JSON.stringify(next));
+            return next;
           } else {
             const fullTempItem = {
               ...tempItem,
@@ -114,11 +115,16 @@ export function useContent(category?: string) {
               is_active: true,
               created_at: new Date().toISOString(),
             } as ContentItem;
-            next = [...prev, fullTempItem];
+            // Remove any existing temp items at the same position to prevent duplicate slots
+            const filtered = prev.filter(
+              (x) => !(String(x.id).startsWith("temp-") && x.position === fullTempItem.position)
+            );
+            const next = [...filtered, fullTempItem];
+            localStorage.setItem(cacheKey, JSON.stringify(next));
+            return next;
           }
-          localStorage.setItem(cacheKey, JSON.stringify(next));
-          return next;
         });
+
 
         // 2. Perform DB operation
         let data, error;
@@ -216,11 +222,18 @@ export function useContent(category?: string) {
             // HYPER-FAST UPDATE: Inject directly without refetching
             if (payload.eventType === "INSERT") {
               setItems((prev: ContentItem[]) => {
+                // If an item with this id already exists, skip
                 if (prev.some((x: ContentItem) => x.id === newItem.id)) return prev;
-                const next = [...prev, newItem];
+                // Replace any temp item at the same position (prevents duplicate slots)
+                const filtered = prev.filter(
+                  (x: ContentItem) =>
+                    !(x.position === newItem.position && String(x.id).startsWith("temp-")),
+                );
+                const next = [...filtered, newItem];
                 localStorage.setItem(cacheKey, JSON.stringify(next));
                 return next;
               });
+
             } else if (payload.eventType === "UPDATE") {
               setItems((prev: ContentItem[]) => {
                 const next = prev.map((x: ContentItem) => (x.id === newItem.id ? newItem : x));
