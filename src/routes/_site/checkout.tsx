@@ -7,7 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { toast } from "sonner";
 
-import { usePaystackPayment } from "react-paystack";
+import { PaystackButton } from "react-paystack";
 
 export const Route = createFileRoute("/_site/checkout")({
   component: CheckoutPage,
@@ -34,31 +34,6 @@ function CheckoutPage() {
     paymentMethod: "momo",
   });
 
-  // Paystack Configuration
-  const config = useMemo(() => ({
-    reference: `CF-${Date.now()}-${attempt}`,
-    email: formData.email,
-    amount: Math.round(total * 100), // Paystack expects amount in pesewas/cents
-    publicKey: "pk_test_b449552cd6346656d517050eb2ec50cdcf768593",
-    currency: "GHS",
-    metadata: {
-      custom_fields: [
-        {
-          display_name: "Customer Name",
-          variable_name: "customer_name",
-          value: `${formData.firstName} ${formData.lastName}`,
-        },
-        {
-          display_name: "Phone Number",
-          variable_name: "phone_number",
-          value: formData.phone,
-        }
-      ]
-    }
-  }), [formData.email, total, attempt]);
-
-  const initializePayment = usePaystackPayment(config as any);
-
   const onSuccess = async (reference: any) => {
     setLoading(true);
     try {
@@ -83,7 +58,7 @@ function CheckoutPage() {
         metadata: { paystack_reference: reference.reference }
       };
 
-      const { error } = await supabase.from("orders").insert([orderData]);
+      const { error } = await supabase.from("orders" as any).insert([orderData]);
 
       if (error) throw error;
 
@@ -101,19 +76,18 @@ function CheckoutPage() {
   const onClose = () => {
     toast.error("Payment cancelled.");
     setLoading(false);
-    setAttempt(prev => prev + 1); // Refresh reference for next try
+    setAttempt(prev => prev + 1);
   };
 
-  const handlePlaceOrder = () => {
-    if (!formData.email || !formData.phone) {
-      toast.error("Please fill in all shipping details first.");
-      setStep(1);
-      return;
-    }
-    
-    setLoading(true);
-    // @ts-ignore
-    initializePayment(onSuccess, onClose);
+  const paystackProps = {
+    email: formData.email,
+    amount: Math.round(total * 100),
+    publicKey: "pk_test_b449552cd6346656d517050eb2ec50cdcf768593",
+    text: loading ? "Processing..." : `Place Order (₵${total.toFixed(2)})`,
+    onSuccess: (ref: any) => onSuccess(ref),
+    onClose: () => onClose(),
+    reference: `CF-${Date.now()}-${attempt}`,
+    currency: "GHS",
   };
 
   if (items.length === 0 && step !== 3) {
@@ -340,13 +314,10 @@ function CheckoutPage() {
                   </div>
                 </div>
 
-                <button
-                  onClick={handlePlaceOrder}
-                  disabled={loading}
+                <PaystackButton
+                  {...paystackProps}
                   className="w-full rounded-full bg-cocoa py-5 text-sm font-medium text-cream shadow-luxe transition hover:bg-coffee disabled:opacity-50 flex items-center justify-center gap-2"
-                >
-                  {loading ? "Processing..." : `Place Order (₵${total.toFixed(2)})`}
-                </button>
+                />
               </motion.div>
             )}
           </div>
