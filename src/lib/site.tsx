@@ -65,7 +65,16 @@ export interface SiteSettings {
     url: string;
     images: { url: string; span: string }[];
   };
-  footer: { text: string; copyright: string };
+  footer: { 
+    text: string; 
+    copyright: string;
+    socials: {
+      facebook: string;
+      instagram: string;
+      twitter: string;
+      youtube: string;
+    };
+  };
 }
 
 export const defaultSettings: SiteSettings = {
@@ -113,6 +122,12 @@ export const defaultSettings: SiteSettings = {
   footer: {
     text: "Premium streetwear for the modern believer. Crafted with intention.",
     copyright: "© 2026 ChristFitz Apparel. All rights reserved.",
+    socials: {
+      facebook: "https://facebook.com",
+      instagram: "https://instagram.com",
+      twitter: "https://twitter.com",
+      youtube: "https://youtube.com",
+    },
   },
 };
 

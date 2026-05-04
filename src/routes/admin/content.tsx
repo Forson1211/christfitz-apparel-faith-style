@@ -488,6 +488,42 @@ function AdminContent() {
           value={footer.copyright}
           onChange={(v) => setFooter({ ...footer, copyright: v })}
         />
+
+        <div className="mt-6 pt-6 border-t border-cocoa/10">
+          <h3 className="text-sm font-bold uppercase tracking-widest text-cocoa/40 mb-4">
+            Social Media Links
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Input
+              label="Facebook URL"
+              value={footer.socials?.facebook || ""}
+              onChange={(v) =>
+                setFooter({ ...footer, socials: { ...footer.socials, facebook: v } })
+              }
+            />
+            <Input
+              label="Instagram URL"
+              value={footer.socials?.instagram || ""}
+              onChange={(v) =>
+                setFooter({ ...footer, socials: { ...footer.socials, instagram: v } })
+              }
+            />
+            <Input
+              label="Twitter / X URL"
+              value={footer.socials?.twitter || ""}
+              onChange={(v) =>
+                setFooter({ ...footer, socials: { ...footer.socials, twitter: v } })
+              }
+            />
+            <Input
+              label="YouTube URL"
+              value={footer.socials?.youtube || ""}
+              onChange={(v) =>
+                setFooter({ ...footer, socials: { ...footer.socials, youtube: v } })
+              }
+            />
+          </div>
+        </div>
       </Section>
     </div>
   );

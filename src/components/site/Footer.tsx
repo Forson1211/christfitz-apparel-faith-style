@@ -90,10 +90,17 @@ export function Footer() {
           </Link>
 
           <div className="flex gap-4 sm:gap-6">
-            {[Facebook, Instagram, Twitter, Youtube].map((Icon, i) => (
+            {[
+              { Icon: Facebook, href: settings.footer.socials.facebook },
+              { Icon: Instagram, href: settings.footer.socials.instagram },
+              { Icon: Twitter, href: settings.footer.socials.twitter },
+              { Icon: Youtube, href: settings.footer.socials.youtube },
+            ].map(({ Icon, href }, i) => (
               <a
                 key={i}
-                href="#"
+                href={href}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="text-cream/50 transition-all hover:text-gold hover:scale-110"
               >
                 <Icon className="h-5 w-5" />
