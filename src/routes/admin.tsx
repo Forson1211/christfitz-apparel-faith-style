@@ -21,6 +21,7 @@ import {
   Users,
   BarChart3,
   Tag,
+  MessageSquare,
 } from "lucide-react";
 import { useSite, resolveImage } from "@/lib/site";
 import { useEffect } from "react";
@@ -38,6 +39,7 @@ const items = [
   { to: "/admin/users", label: "Customers", Icon: Users },
   { to: "/admin/discounts", label: "Discounts", Icon: Tag },
   { to: "/admin/content", label: "Content", Icon: Type },
+  { to: "/admin/testimonials", label: "Testimonials", Icon: MessageSquare },
   { to: "/admin/colors", label: "Colors & Logo", Icon: Palette },
   { to: "/admin/navigation", label: "Navigation", Icon: NavIcon },
   { to: "/admin/media", label: "Media", Icon: ImageIcon },

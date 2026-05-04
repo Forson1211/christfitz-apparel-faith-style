@@ -1,49 +1,39 @@
 import { motion } from "framer-motion";
 import { Star } from "lucide-react";
 
-const reviews = [
-  {
-    name: "Maya Johnson",
-    role: "Worship leader",
-    text: "The quality is unreal. I get compliments every single time I wear my hoodie. Feels like wearing a prayer.",
-    rating: 5,
-  },
-  {
-    name: "Daniel Reyes",
-    role: "Designer",
-    text: "Finally a Christian brand that doesn't compromise on style. Premium fits, deeper meaning.",
-    rating: 5,
-  },
-  {
-    name: "Sarah Chen",
-    role: "Student",
-    text: "Soft, oversized, perfect drape. ChristFitz is now 80% of my closet — and I'm not sorry.",
-    rating: 5,
-  },
-  {
-    name: "Marcus Bell",
-    role: "Youth pastor",
-    text: "Wearing my faith has never felt this fresh. The cocoa hoodie is a 10/10.",
-    rating: 5,
-  },
-  {
-    name: "Kojo Mensah",
-    role: "Software Architect",
-    text: "The MTN MoMo integration is a game-changer for my local clients in Ghana. Fast and reliable.",
-    rating: 5,
-  },
-  {
-    name: "Sarah Smith",
-    role: "Content Creator",
-    text: "Beautiful templates that actually match my brand. My clients are always impressed.",
-    rating: 5,
-  },
-];
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
-// Double the reviews for a seamless infinite loop
-const infiniteReviews = [...reviews, ...reviews, ...reviews];
+interface Testimonial {
+  name: string;
+  role: string;
+  text: string;
+  rating: number;
+}
 
 export function Testimonials() {
+  const [reviews, setReviews] = useState<Testimonial[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchReviews = async () => {
+      const { data } = await supabase
+        .from("testimonials")
+        .select("*")
+        .eq("active", true)
+        .order("position");
+      
+      if (data) setReviews(data);
+      setLoading(false);
+    };
+
+    fetchReviews();
+  }, []);
+
+  if (loading || reviews.length === 0) return null;
+
+  // Repeat for seamless loop
+  const infiniteReviews = [...reviews, ...reviews, ...reviews, ...reviews];
   return (
     <section
       id="testimonials"
