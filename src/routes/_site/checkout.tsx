@@ -173,7 +173,10 @@ function CheckoutPage() {
                     <input
                       type="text"
                       value={formData.firstName}
-                      onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+                      onChange={(e) => {
+                        const val = e.target.value.replace(/[^a-zA-Z\s]/g, "");
+                        setFormData({ ...formData, firstName: val });
+                      }}
                       className="w-full rounded-2xl border border-cocoa/10 bg-white px-5 py-3.5 outline-none focus:border-gold transition-colors"
                       placeholder="Kofi"
                     />
@@ -185,7 +188,10 @@ function CheckoutPage() {
                     <input
                       type="text"
                       value={formData.lastName}
-                      onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+                      onChange={(e) => {
+                        const val = e.target.value.replace(/[^a-zA-Z\s]/g, "");
+                        setFormData({ ...formData, lastName: val });
+                      }}
                       className="w-full rounded-2xl border border-cocoa/10 bg-white px-5 py-3.5 outline-none focus:border-gold transition-colors"
                       placeholder="Ansah"
                     />
