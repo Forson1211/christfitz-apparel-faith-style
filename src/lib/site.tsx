@@ -186,7 +186,7 @@ export function SiteProvider({ children }: { children: ReactNode }) {
     }
 
     try {
-      const [s, p, c, n] = await Promise.all([
+      const results = await Promise.allSettled([
         supabase.from("site_settings").select("key, value"),
         supabase.from("products").select("*").order("position"),
         supabase.from("categories").select("*").order("position"),
@@ -194,10 +194,10 @@ export function SiteProvider({ children }: { children: ReactNode }) {
       ]);
 
       // 1. Process Settings
-      const s = results[0];
-      if (s.status === "fulfilled" && s.value.data) {
+      const sResult = results[0];
+      if (sResult.status === "fulfilled" && sResult.value.data) {
         const nextSettings = { ...defaultSettings };
-        s.value.data.forEach((row: any) => {
+        sResult.value.data.forEach((row: any) => {
           const parts = row.key.split(".");
           if (
             parts.length === 2 &&
@@ -212,9 +212,9 @@ export function SiteProvider({ children }: { children: ReactNode }) {
       }
 
       // 2. Process Products
-      const p = results[1];
-      if (p.status === "fulfilled" && p.value.data) {
-        const formattedProducts = p.value.data.map((row: any) => ({
+      const pResult = results[1];
+      if (pResult.status === "fulfilled" && pResult.value.data) {
+        const formattedProducts = pResult.value.data.map((row: any) => ({
           ...row,
           price: Number(row.price),
           rating: Number(row.rating),
@@ -226,16 +226,16 @@ export function SiteProvider({ children }: { children: ReactNode }) {
       }
 
       // 3. Process Categories
-      const c = results[2];
-      if (c.status === "fulfilled" && c.value.data) {
-        setCategories(c.value.data as any);
-        localStorage.setItem("cf_categories", JSON.stringify(c.value.data));
+      const cResult = results[2];
+      if (cResult.status === "fulfilled" && cResult.value.data) {
+        setCategories(cResult.value.data as any);
+        localStorage.setItem("cf_categories", JSON.stringify(cResult.value.data));
       }
 
       // 4. Process Nav Links
-      const n = results[3];
-      if (n.status === "fulfilled" && n.value.data) {
-        const visibleLinks = (n.value.data as any).filter((l: DBNavLink) => l.visible);
+      const nResult = results[3];
+      if (nResult.status === "fulfilled" && nResult.value.data) {
+        const visibleLinks = (nResult.value.data as any).filter((l: DBNavLink) => l.visible);
         setNavLinks(visibleLinks);
         localStorage.setItem("cf_nav_links", JSON.stringify(visibleLinks));
       }
