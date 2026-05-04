@@ -6,11 +6,23 @@ import { useSite, resolveImage } from "@/lib/site";
 import { useContent } from "@/hooks/useContent";
 
 export function Hero() {
-  const { settings } = useSite();
+  const { settings, products, userCount } = useSite();
   const h = settings.hero;
   const { items, loading } = useContent("hero");
   const heroBackground = items.length > 0 ? items[0].url : "";
   const isLoadingInitial = loading && items.length === 0;
+
+  // Calculate live stats
+  const believersCount = (h.stats?.believersBase || 0) + userCount;
+  const formatNumber = (num: number) => {
+    if (num >= 1000) return (num / 1000).toFixed(0) + "K+";
+    return num + "+";
+  };
+
+  const premiumDesigns = products.length;
+  const avgRating = products.length > 0 
+    ? (products.reduce((acc, p) => acc + p.rating, 0) / products.length).toFixed(1)
+    : "5.0";
 
   return (
     <section className="relative min-h-[auto] lg:min-h-screen w-full overflow-hidden text-cream">
@@ -119,9 +131,9 @@ export function Hero() {
                   <Users className="h-5 w-5 sm:h-8 sm:w-8 text-cocoa" />
                 </div>
                 <div className="text-left">
-                  <div className="font-display text-xl sm:text-5xl">50K+</div>
+                  <div className="font-display text-xl sm:text-5xl">{formatNumber(believersCount)}</div>
                   <div className="text-[8px] sm:text-xs uppercase tracking-[0.2em] text-cream/50 mt-0.5 sm:mt-1">
-                    Believers Reached
+                    {h.stats?.believersLabel || "Believers Reached"}
                   </div>
                 </div>
               </div>
@@ -140,9 +152,9 @@ export function Hero() {
               <div className="mb-3 sm:mb-5 inline-flex h-8 w-8 sm:h-12 sm:w-12 items-center justify-center rounded-lg bg-white/5 text-gold group-hover:bg-gold group-hover:text-cocoa transition-colors">
                 <Shirt className="h-4 w-4 sm:h-6 sm:w-6" />
               </div>
-              <div className="font-display text-lg sm:text-4xl">120+</div>
+              <div className="font-display text-lg sm:text-4xl">{premiumDesigns}+</div>
               <div className="text-[8px] uppercase tracking-widest text-cream/40 mt-1 sm:mt-2">
-                Premium Designs
+                {h.stats?.designsLabel || "Premium Designs"}
               </div>
             </div>
 
@@ -151,9 +163,9 @@ export function Hero() {
               <div className="mb-3 sm:mb-5 inline-flex h-8 w-8 sm:h-12 sm:w-12 items-center justify-center rounded-lg bg-white/5 text-gold group-hover:bg-gold group-hover:text-cocoa transition-colors">
                 <Star className="h-4 w-4 sm:h-6 sm:w-6" />
               </div>
-              <div className="font-display text-lg sm:text-4xl">4.9★</div>
+              <div className="font-display text-lg sm:text-4xl">{avgRating}★</div>
               <div className="text-[8px] uppercase tracking-widest text-cream/40 mt-1 sm:mt-2">
-                Community Rating
+                {h.stats?.ratingLabel || "Community Rating"}
               </div>
             </div>
           </div>

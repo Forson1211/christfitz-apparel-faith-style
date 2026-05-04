@@ -50,6 +50,12 @@ export interface SiteSettings {
     primaryCta: string;
     secondaryCta: string;
     background: string;
+    stats: {
+      believersBase: number;
+      believersLabel: string;
+      designsLabel: string;
+      ratingLabel: string;
+    };
   };
   about: { eyebrow: string; title: string; body: string };
   instagram: {
@@ -76,6 +82,12 @@ export const defaultSettings: SiteSettings = {
     primaryCta: "Shop Collection",
     secondaryCta: "Our Story",
     background: "/background.png",
+    stats: {
+      believersBase: 50000,
+      believersLabel: "Believers Reached",
+      designsLabel: "Premium Designs",
+      ratingLabel: "Community Rating",
+    },
   },
   about: {
     eyebrow: "Our Story",
@@ -109,6 +121,7 @@ interface SiteContextValue {
   products: DBProduct[];
   categories: DBCategory[];
   navLinks: DBNavLink[];
+  userCount: number;
   loading: boolean;
   refresh: () => Promise<void>;
 }
@@ -175,6 +188,10 @@ export function SiteProvider({ children }: { children: ReactNode }) {
     } catch {}
     return [];
   });
+  const [userCount, setUserCount] = useState<number>(() => {
+    const cached = localStorage.getItem("cf_user_count");
+    return cached ? Number(cached) : 0;
+  });
   const [loading, setLoading] = useState(true);
 
   const refresh = async () => {
@@ -191,6 +208,7 @@ export function SiteProvider({ children }: { children: ReactNode }) {
         supabase.from("products").select("*").order("position"),
         supabase.from("categories").select("*").order("position"),
         supabase.from("nav_links").select("*").order("position"),
+        supabase.from("profiles").select("*", { count: "exact", head: true }),
       ]);
 
       // 1. Process Settings
@@ -251,6 +269,13 @@ export function SiteProvider({ children }: { children: ReactNode }) {
         const visibleLinks = (nResult.value.data as any).filter((l: DBNavLink) => l.visible);
         setNavLinks(visibleLinks);
         localStorage.setItem("cf_nav_links", JSON.stringify(visibleLinks));
+      }
+      
+      // 5. Process User Count
+      const uResult = results[4];
+      if (uResult.status === "fulfilled" && uResult.value.count !== null) {
+        setUserCount(uResult.value.count);
+        localStorage.setItem("cf_user_count", String(uResult.value.count));
       }
 
       // Schedule background refresh in 5 minutes to keep it fresh without hammering DB
@@ -316,7 +341,7 @@ export function SiteProvider({ children }: { children: ReactNode }) {
   }, [settings.favicon.url]);
 
   return (
-    <SiteContext.Provider value={{ settings, products, categories, navLinks, loading, refresh }}>
+    <SiteContext.Provider value={{ settings, products, categories, navLinks, userCount, loading, refresh }}>
       {children}
     </SiteContext.Provider>
   );

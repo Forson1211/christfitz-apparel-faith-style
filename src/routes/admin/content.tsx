@@ -306,6 +306,32 @@ function AdminContent() {
           value={hero.secondaryCta}
           onChange={(v) => setHero({ ...hero, secondaryCta: v })}
         />
+
+        <div className="mt-6 pt-6 border-t border-cocoa/10">
+          <h3 className="text-sm font-bold uppercase tracking-widest text-cocoa/40 mb-4">Hero Stats</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Input
+              label="Believers Base (Marketing Offset)"
+              value={String(hero.stats?.believersBase || 0)}
+              onChange={(v) => setHero({ ...hero, stats: { ...hero.stats, believersBase: parseInt(v) || 0 } })}
+            />
+            <Input
+              label="Believers Label"
+              value={hero.stats?.believersLabel || ""}
+              onChange={(v) => setHero({ ...hero, stats: { ...hero.stats, believersLabel: v } })}
+            />
+            <Input
+              label="Designs Label"
+              value={hero.stats?.designsLabel || ""}
+              onChange={(v) => setHero({ ...hero, stats: { ...hero.stats, designsLabel: v } })}
+            />
+            <Input
+              label="Rating Label"
+              value={hero.stats?.ratingLabel || ""}
+              onChange={(v) => setHero({ ...hero, stats: { ...hero.stats, ratingLabel: v } })}
+            />
+          </div>
+        </div>
       </Section>
 
       {/* About */}
