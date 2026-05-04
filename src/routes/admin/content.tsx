@@ -285,8 +285,26 @@ function AdminContent() {
         <div className="pt-4 border-t border-cocoa/5">
           <label className="text-xs uppercase tracking-widest text-cocoa/60 font-bold">Gallery Images (Live from DB)</label>
           <div className="mt-5 grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 auto-rows-[120px] sm:auto-rows-[160px]">
-            {Array.from({ length: 8 }).map((_, i) => {
-              const liveItem = instagramContent.items[i];
+            {(() => {
+              const adminSlots = new Array(8).fill(null);
+              const adminUnplaced: any[] = [];
+              
+              const allItems = instagramContent.items.slice(0, 8);
+              allItems.forEach((item: any) => {
+                if (item.position !== null && item.position >= 0 && item.position < 8 && !adminSlots[item.position]) {
+                  adminSlots[item.position] = item;
+                } else {
+                  adminUnplaced.push(item);
+                }
+              });
+
+              for (let i = 0; i < 8; i++) {
+                if (!adminSlots[i] && adminUnplaced.length > 0) {
+                  adminSlots[i] = adminUnplaced.shift();
+                }
+              }
+
+              return adminSlots.map((liveItem, i) => {
               const displayUrl = liveItem?.url || "";
               const isSlotLoading = instagramContent.loading && !displayUrl;
               const spanClass = i === 0 || i === 3 ? "row-span-2 col-span-1" : "col-span-1";
@@ -305,19 +323,27 @@ function AdminContent() {
                   <div className="relative z-10 scale-90 sm:scale-100 bg-cream/80 hover:bg-cream backdrop-blur-md rounded-full shadow-lg transition-all duration-300">
                     <ImageUpload
                       category="instagram"
-                      saveToDb={(params) => instagramContent.saveToDb({ ...params, existingId: liveItem?.id })}
+                      saveToDb={(params) => instagramContent.saveToDb({ ...params, existingId: liveItem?.id, position: i })}
                       onUpload={async (url) => {
+                        // 1. Legacy update (optional but kept for fallback compatibility)
                         const newImages = [...(instagram.images || [])];
                         newImages[i] = { ...newImages[i], url };
-                        const newInstagram = { ...instagram, images: newImages };
-                        setInstagram(newInstagram);
+                        setInstagram({ ...instagram, images: newImages });
+
+                        // 2. Zero-latency optimistic preview injected directly into the live grid state!
+                        instagramContent.setItems((prev: any) => {
+                           const next = [...prev];
+                           const existingIdx = next.findIndex((x: any) => x.position === i);
+                           if (existingIdx !== -1) {
+                             next[existingIdx] = { ...next[existingIdx], url };
+                           } else {
+                             next.push({ id: `temp-${Date.now()}`, position: i, url, category: 'instagram', is_active: true });
+                           }
+                           return next;
+                        });
                       }}
                       onContentItem={(item) => {
-                        instagramContent.setItems((prev: any) => {
-                          const next = [...prev];
-                          next[i] = item;
-                          return next;
-                        });
+                        instagramContent.fetchItems(false, true);
                       }}
                     />
                   </div>
@@ -330,7 +356,7 @@ function AdminContent() {
                   </div>
                 </div>
               );
-            })}
+            })})()}
           </div>
         </div>
       </Section>

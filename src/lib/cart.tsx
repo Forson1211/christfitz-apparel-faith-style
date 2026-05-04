@@ -9,6 +9,7 @@ export interface CartItem {
   category: string;
   image: string;
   quantity: number;
+  size?: string;
 }
 
 interface CartContextValue {
@@ -61,25 +62,25 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const openCart = useCallback(() => setIsOpen(true), []);
   const closeCart = useCallback(() => setIsOpen(false), []);
-  const toggleCart = useCallback(() => setIsOpen((o) => !o), []);
+  const toggleCart = useCallback(() => setIsOpen((o: boolean) => !o), []);
 
   const addItem = useCallback((product: DBProduct | CartItem) => {
     const item = toCartItem(product);
-    setItems((prev) => {
-      const found = prev.find((i) => i.id === item.id);
-      if (found) return prev.map((i) => (i.id === item.id ? { ...i, quantity: i.quantity + 1 } : i));
+    setItems((prev: CartItem[]) => {
+      const found = prev.find((i: CartItem) => i.id === item.id);
+      if (found) return prev.map((i: CartItem) => (i.id === item.id ? { ...i, quantity: i.quantity + 1 } : i));
       return [...prev, item];
     });
     setIsOpen(true);
   }, []);
 
   const removeItem = useCallback((id: string) => {
-    setItems((prev) => prev.filter((i) => i.id !== id));
+    setItems((prev: CartItem[]) => prev.filter((i: CartItem) => i.id !== id));
   }, []);
 
   const updateQuantity = useCallback((id: string, qty: number) => {
-    setItems((prev) =>
-      qty <= 0 ? prev.filter((i) => i.id !== id) : prev.map((i) => (i.id === id ? { ...i, quantity: qty } : i))
+    setItems((prev: CartItem[]) =>
+      qty <= 0 ? prev.filter((i: CartItem) => i.id !== id) : prev.map((i: CartItem) => (i.id === id ? { ...i, quantity: qty } : i))
     );
   }, []);
 
@@ -87,8 +88,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const { count, subtotal } = useMemo(
     () => ({
-      count: items.reduce((s, i) => s + i.quantity, 0),
-      subtotal: items.reduce((s, i) => s + i.quantity * i.price, 0),
+      count: items.reduce((s: number, i: CartItem) => s + i.quantity, 0),
+      subtotal: items.reduce((s: number, i: CartItem) => s + i.quantity * i.price, 0),
     }),
     [items]
   );

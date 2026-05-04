@@ -54,37 +54,67 @@ export function InstagramGallery() {
                 <div key={i} className={`animate-pulse rounded-3xl bg-cocoa/5 border border-cocoa/10 ${getSpan(i)}`} />
               ))
             ) : displayItems.length > 0 ? (
-              displayItems.map((item, i) => (
-                <motion.div
-                  key={item.id}
-                  initial={{ opacity: 0, y: 30 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.8, delay: i * 0.1, ease: [0.22, 1, 0.36, 1] }}
-                  viewport={{ once: true }}
-                  className={`group relative overflow-hidden rounded-[20px] sm:rounded-3xl bg-cocoa/5 shadow-sm transition-all hover:shadow-2xl hover:-translate-y-1 border border-cocoa/5 ${getSpan(i)}`}
-                >
-                  <img
-                    src={resolveImage(item.url)}
-                    alt={`Gallery Piece ${i + 1}`}
-                    className="h-full w-full object-cover transition-transform duration-1000 group-hover:scale-105"
-                  />
-                  
-                  {/* Premium Hover Overlay */}
-                  <div className="absolute inset-0 bg-cocoa/40 opacity-0 transition-all duration-500 group-hover:opacity-100 flex flex-col items-center justify-center gap-5 text-cream backdrop-blur-[4px]">
-                     <div className="flex items-center gap-8 translate-y-6 transition-transform duration-700 group-hover:translate-y-0">
-                       <div className="flex flex-col items-center">
-                          <Heart className="h-7 w-7 fill-gold text-gold mb-1.5" />
-                          <span className="text-sm font-bold tracking-tight">{1200 + i * 45}</span>
+              (() => {
+                const slots = new Array(8).fill(null);
+                const unplacedItems: any[] = [];
+                
+                displayItems.forEach((item: any) => {
+                  if (item.position !== null && item.position >= 0 && item.position < 8 && !slots[item.position]) {
+                    slots[item.position] = item;
+                  } else {
+                    unplacedItems.push(item);
+                  }
+                });
+
+                for (let i = 0; i < 8; i++) {
+                  if (!slots[i] && unplacedItems.length > 0) {
+                    slots[i] = unplacedItems.shift();
+                  }
+                }
+
+                return slots.map((item, i) => {
+                  if (!item) {
+                    return (
+                      <div key={`empty-${i}`} className={`rounded-[20px] sm:rounded-3xl bg-cocoa/5 border border-dashed border-cocoa/10 flex flex-col items-center justify-center ${getSpan(i)}`}>
+                         <InstagramIcon className="h-6 w-6 text-cocoa/10 mb-2" />
+                         <span className="text-[10px] uppercase tracking-widest text-cocoa/20 font-bold">Slot {i + 1}</span>
+                      </div>
+                    );
+                  }
+
+                return (
+                  <motion.div
+                    key={item.id}
+                    initial={{ opacity: 0, y: 30 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.8, delay: i * 0.1, ease: [0.22, 1, 0.36, 1] }}
+                    viewport={{ once: true }}
+                    className={`group relative overflow-hidden rounded-[20px] sm:rounded-3xl bg-cocoa/5 shadow-sm transition-all hover:shadow-2xl hover:-translate-y-1 border border-cocoa/5 ${getSpan(i)}`}
+                  >
+                    <img
+                      src={resolveImage(item.url)}
+                      alt={`Gallery Piece ${i + 1}`}
+                      className="h-full w-full object-cover transition-transform duration-1000 group-hover:scale-105"
+                    />
+                    
+                    {/* Premium Hover Overlay */}
+                    <div className="absolute inset-0 bg-cocoa/40 opacity-0 transition-all duration-500 group-hover:opacity-100 flex flex-col items-center justify-center gap-5 text-cream backdrop-blur-[4px]">
+                       <div className="flex items-center gap-8 translate-y-6 transition-transform duration-700 group-hover:translate-y-0">
+                         <div className="flex flex-col items-center">
+                            <Heart className="h-7 w-7 fill-gold text-gold mb-1.5" />
+                            <span className="text-sm font-bold tracking-tight">{1200 + i * 45}</span>
+                         </div>
+                         <div className="flex flex-col items-center">
+                            <MessageCircle className="h-7 w-7 fill-cream text-cream mb-1.5" />
+                            <span className="text-sm font-bold tracking-tight">{68 + i * 4}</span>
+                         </div>
                        </div>
-                       <div className="flex flex-col items-center">
-                          <MessageCircle className="h-7 w-7 fill-cream text-cream mb-1.5" />
-                          <span className="text-sm font-bold tracking-tight">{68 + i * 4}</span>
-                       </div>
-                     </div>
-                     <p className="text-[11px] uppercase tracking-[0.4em] font-bold opacity-0 group-hover:opacity-100 transition-opacity delay-300">Experience Faith</p>
-                  </div>
-                </motion.div>
-              ))
+                       <p className="text-[11px] uppercase tracking-[0.4em] font-bold opacity-0 group-hover:opacity-100 transition-opacity delay-300">Experience Faith</p>
+                    </div>
+                  </motion.div>
+                );
+              })
+            })()
             ) : (
               <div className="col-span-full row-span-2 py-32 text-center rounded-[3rem] bg-cocoa/5 border border-dashed border-cocoa/20 flex flex-col items-center justify-center">
                  <Upload className="h-12 w-12 text-cocoa/20 mb-6" />

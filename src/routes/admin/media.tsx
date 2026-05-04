@@ -66,7 +66,7 @@ function AdminMedia() {
   // ── Delete handler ─────────────────────────────────────────────────────
   const handleDelete = async (item: (typeof items)[0]) => {
     if (!confirm(`Delete "${item.name}" permanently?`)) return;
-    const ok = await deleteItem(item);
+    const ok = await deleteItem(item.id);
     if (ok) toast.success(`"${item.name}" deleted`);
   };
 

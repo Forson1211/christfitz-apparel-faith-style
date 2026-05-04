@@ -78,6 +78,7 @@ export function useContent(category?: string) {
     category: string;
     metadata?: any;
     existingId?: string;
+    position?: number;
   }) => {
     try {
       // 1. Hyper-Optimistic Update: Inject into local state immediately
@@ -91,7 +92,7 @@ export function useContent(category?: string) {
         metadata: params.metadata || {},
       };
 
-      setItems((prev) => {
+      setItems((prev: ContentItem[]) => {
         let next = [...prev];
         if (params.existingId) {
           const idx = next.findIndex(x => x.id === params.existingId);
@@ -101,11 +102,11 @@ export function useContent(category?: string) {
         } else {
           const fullTempItem = {
             ...tempItem,
-            position: 0,
+            position: params.position ?? 0,
             is_active: true,
             created_at: new Date().toISOString()
           } as ContentItem;
-          next = [fullTempItem, ...prev];
+          next = [...prev, fullTempItem];
         }
         localStorage.setItem(cacheKey, JSON.stringify(next));
         return next;
@@ -114,13 +115,18 @@ export function useContent(category?: string) {
       // 2. Perform DB operation
       let data, error;
       if (params.existingId) {
-        const res = await supabase.from("content").update({
+        const updatePayload: any = {
           name: params.name,
           url: params.url,
           file_path: params.filePath,
           type: params.type,
           metadata: params.metadata || {}
-        }).eq("id", params.existingId).select();
+        };
+        if (params.position !== undefined) {
+          updatePayload.position = params.position;
+        }
+
+        const res = await supabase.from("content").update(updatePayload).eq("id", params.existingId).select();
         data = res.data; error = res.error;
       } else {
         const res = await supabase.from("content").insert([{
@@ -131,21 +137,21 @@ export function useContent(category?: string) {
           category: params.category,
           metadata: params.metadata || {},
           is_active: true,
-          position: 0
+          position: params.position ?? 0
         }]).select();
         data = res.data; error = res.error;
       }
 
       if (error) {
         // Simple rollback if new item insertion fails
-        if (!params.existingId) setItems((prev) => prev.filter(x => x.id !== tempId));
+        if (!params.existingId) setItems((prev: ContentItem[]) => prev.filter((x: ContentItem) => x.id !== tempId));
         throw error;
       }
       
       const inserted = data?.[0] ?? null;
       if (inserted) {
         // Replace temp with real
-        setItems((prev) => prev.map(x => x.id === tempId ? (inserted as ContentItem) : x));
+        setItems((prev: ContentItem[]) => prev.map((x: ContentItem) => x.id === tempId ? (inserted as ContentItem) : x));
         (window as any)._supabaseThrottleUntil = 0;
       }
 
@@ -160,7 +166,7 @@ export function useContent(category?: string) {
     try {
       const { error } = await supabase.from("content").delete().eq("id", id);
       if (error) throw error;
-      setItems(prev => prev.filter(i => i.id !== id));
+      setItems((prev: ContentItem[]) => prev.filter((i: ContentItem) => i.id !== id));
       return true;
     } catch (err) {
       console.error("[useContent] Delete error:", err);
@@ -176,11 +182,33 @@ export function useContent(category?: string) {
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "content" },
-        (payload) => {
+        (payload: any) => {
           const newItem = (payload.new || payload.old) as any;
           if (!category || newItem.category === category) {
-            console.log(`[useContent] Realtime pulse for ${category || 'all'}`);
-            fetchItems(false, true); // Force fresh fetch on DB change
+            console.log(`[useContent] Realtime pulse for ${category || 'all'} - Event: ${payload.eventType}`);
+            
+            // HYPER-FAST UPDATE: Inject directly without refetching
+            if (payload.eventType === 'INSERT') {
+              setItems((prev: ContentItem[]) => {
+                if (prev.some((x: ContentItem) => x.id === newItem.id)) return prev;
+                const next = [...prev, newItem];
+                localStorage.setItem(cacheKey, JSON.stringify(next));
+                return next;
+              });
+            } else if (payload.eventType === 'UPDATE') {
+              setItems((prev: ContentItem[]) => {
+                const next = prev.map((x: ContentItem) => x.id === newItem.id ? newItem : x);
+                if (!next.some((x: ContentItem) => x.id === newItem.id)) next.push(newItem);
+                localStorage.setItem(cacheKey, JSON.stringify(next));
+                return next;
+              });
+            } else if (payload.eventType === 'DELETE') {
+              setItems((prev: ContentItem[]) => {
+                const next = prev.filter((x: ContentItem) => x.id !== newItem.id);
+                localStorage.setItem(cacheKey, JSON.stringify(next));
+                return next;
+              });
+            }
           }
         }
       )
