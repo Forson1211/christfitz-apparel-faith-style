@@ -42,7 +42,6 @@ const items = [
   { to: "/admin/testimonials", label: "Testimonials", Icon: MessageSquare },
   { to: "/admin/colors", label: "Colors & Logo", Icon: Palette },
   { to: "/admin/navigation", label: "Navigation", Icon: NavIcon },
-  { to: "/admin/media", label: "Media", Icon: ImageIcon },
 ];
 
 function AdminLayout() {
