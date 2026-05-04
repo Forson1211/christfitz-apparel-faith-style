@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { ArrowLeft, CreditCard, Truck, CheckCircle2, ShieldCheck, Phone } from "lucide-react";
 import { useCart } from "@/lib/cart";
@@ -19,6 +19,7 @@ function CheckoutPage() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState(1); // 1: Shipping, 2: Payment, 3: Success
+  const [attempt, setAttempt] = useState(0);
 
   const shipping = subtotal > 100 || subtotal === 0 ? 0 : 8;
   const total = subtotal + shipping;
@@ -34,8 +35,8 @@ function CheckoutPage() {
   });
 
   // Paystack Configuration
-  const config = {
-    reference: (new Date()).getTime().toString(),
+  const config = useMemo(() => ({
+    reference: `CF-${Date.now()}-${attempt}`,
     email: formData.email,
     amount: Math.round(total * 100), // Paystack expects amount in pesewas/cents
     publicKey: "pk_test_b449552cd6346656d517050eb2ec50cdcf768593",
@@ -54,7 +55,7 @@ function CheckoutPage() {
         }
       ]
     }
-  };
+  }), [formData.email, total, attempt]);
 
   const initializePayment = usePaystackPayment(config as any);
 
@@ -100,6 +101,7 @@ function CheckoutPage() {
   const onClose = () => {
     toast.error("Payment cancelled.");
     setLoading(false);
+    setAttempt(prev => prev + 1); // Refresh reference for next try
   };
 
   const handlePlaceOrder = () => {
@@ -108,6 +110,7 @@ function CheckoutPage() {
       setStep(1);
       return;
     }
+    
     setLoading(true);
     // @ts-ignore
     initializePayment(onSuccess, onClose);
