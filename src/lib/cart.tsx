@@ -1,4 +1,12 @@
-import { createContext, useContext, useState, useCallback, useMemo, useEffect, type ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+  useCallback,
+  useMemo,
+  useEffect,
+  type ReactNode,
+} from "react";
 import type { DBProduct } from "./site";
 import { resolveImage } from "./assetMap";
 
@@ -68,7 +76,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
     const item = toCartItem(product);
     setItems((prev: CartItem[]) => {
       const found = prev.find((i: CartItem) => i.id === item.id);
-      if (found) return prev.map((i: CartItem) => (i.id === item.id ? { ...i, quantity: i.quantity + 1 } : i));
+      if (found)
+        return prev.map((i: CartItem) =>
+          i.id === item.id ? { ...i, quantity: i.quantity + 1 } : i,
+        );
       return [...prev, item];
     });
     setIsOpen(true);
@@ -80,7 +91,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const updateQuantity = useCallback((id: string, qty: number) => {
     setItems((prev: CartItem[]) =>
-      qty <= 0 ? prev.filter((i: CartItem) => i.id !== id) : prev.map((i: CartItem) => (i.id === id ? { ...i, quantity: qty } : i))
+      qty <= 0
+        ? prev.filter((i: CartItem) => i.id !== id)
+        : prev.map((i: CartItem) => (i.id === id ? { ...i, quantity: qty } : i)),
     );
   }, []);
 
@@ -91,12 +104,24 @@ export function CartProvider({ children }: { children: ReactNode }) {
       count: items.reduce((s: number, i: CartItem) => s + i.quantity, 0),
       subtotal: items.reduce((s: number, i: CartItem) => s + i.quantity * i.price, 0),
     }),
-    [items]
+    [items],
   );
 
   return (
     <CartContext.Provider
-      value={{ items, isOpen, openCart, closeCart, toggleCart, addItem, removeItem, updateQuantity, clear, count, subtotal }}
+      value={{
+        items,
+        isOpen,
+        openCart,
+        closeCart,
+        toggleCart,
+        addItem,
+        removeItem,
+        updateQuantity,
+        clear,
+        count,
+        subtotal,
+      }}
     >
       {children}
     </CartContext.Provider>

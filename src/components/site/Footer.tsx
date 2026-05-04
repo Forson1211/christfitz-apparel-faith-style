@@ -1,4 +1,12 @@
-import { Instagram, Twitter, Youtube, Facebook, ArrowUpRight, ShieldCheck, ChevronDown } from "lucide-react";
+import {
+  Instagram,
+  Twitter,
+  Youtube,
+  Facebook,
+  ArrowUpRight,
+  ShieldCheck,
+  ChevronDown,
+} from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { useSite, productImage } from "@/lib/site";
 import { motion, AnimatePresence } from "framer-motion";
@@ -10,7 +18,7 @@ import paystackLogo from "@/assets/payments/paystack.png";
 export function Footer() {
   const { settings, categories, products } = useSite();
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
-  const newProducts = products.filter(p => p.active).slice(0, 2);
+  const newProducts = products.filter((p) => p.active).slice(0, 2);
 
   const footerLinks = [
     {
@@ -25,7 +33,7 @@ export function Footer() {
     },
     {
       title: "Categories",
-      links: categories.map(c => ({ label: c.name, href: `/products?category=${c.name}` })),
+      links: categories.map((c) => ({ label: c.name, href: `/products?category=${c.name}` })),
     },
     {
       title: "My Account",
@@ -68,15 +76,19 @@ export function Footer() {
         {/* Top Section: Logo and Socials */}
         <div className="flex items-center justify-between gap-4 pb-8 border-b border-white/5 md:border-none">
           <Link to="/" className="flex items-center gap-2.5 group">
-            {(settings.logo.url || "/logo.png") ? (
-              <img src={settings.logo.url || "/logo.png"} alt={settings.brand.name} className="h-12 w-auto object-contain transition-transform group-hover:scale-105" />
+            {settings.logo.url || "/logo.png" ? (
+              <img
+                src={settings.logo.url || "/logo.png"}
+                alt={settings.brand.name}
+                className="h-12 w-auto object-contain transition-transform group-hover:scale-105"
+              />
             ) : (
               <div className="grid h-10 w-10 place-items-center rounded-2xl bg-gold text-cocoa transition-transform group-hover:rotate-12">
                 <span className="font-bold">✝</span>
               </div>
             )}
           </Link>
- 
+
           <div className="flex gap-4 sm:gap-6">
             {[Facebook, Instagram, Twitter, Youtube].map((Icon, i) => (
               <a
@@ -89,7 +101,7 @@ export function Footer() {
             ))}
           </div>
         </div>
- 
+
         {/* Links Grid / Accordion */}
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-0 lg:gap-10 py-0 lg:py-8 border-b lg:border-y border-white/5">
           {footerLinks.map((group) => (
@@ -99,13 +111,19 @@ export function Footer() {
                 onClick={() => toggleSection(group.title)}
                 className="flex w-full items-center justify-between py-6 lg:hidden"
               >
-                <span className="text-sm font-bold tracking-widest uppercase text-cream/90">{group.title}</span>
-                <ChevronDown className={`h-4 w-4 text-gold transition-transform duration-300 ${expandedSection === group.title ? "rotate-180" : ""}`} />
+                <span className="text-sm font-bold tracking-widest uppercase text-cream/90">
+                  {group.title}
+                </span>
+                <ChevronDown
+                  className={`h-4 w-4 text-gold transition-transform duration-300 ${expandedSection === group.title ? "rotate-180" : ""}`}
+                />
               </button>
- 
+
               {/* Desktop Header */}
-              <h4 className="hidden lg:block text-[11px] uppercase tracking-[0.25em] text-gold font-bold mb-6">{group.title}</h4>
-              
+              <h4 className="hidden lg:block text-[11px] uppercase tracking-[0.25em] text-gold font-bold mb-6">
+                {group.title}
+              </h4>
+
               {/* Content: Animated on mobile, always visible on desktop */}
               <AnimatePresence initial={false}>
                 {expandedSection === group.title && (
@@ -129,7 +147,7 @@ export function Footer() {
                   </motion.ul>
                 )}
               </AnimatePresence>
- 
+
               {/* Static Desktop Links */}
               <ul className="hidden lg:flex flex-col space-y-3">
                 {group.links.map((link) => (
@@ -146,10 +164,12 @@ export function Footer() {
             </div>
           ))}
         </div>
- 
+
         {/* New Products Section */}
         <div className="py-8">
-          <p className="text-[10px] uppercase tracking-[0.3em] text-cream/30 font-bold mb-6">New Products</p>
+          <p className="text-[10px] uppercase tracking-[0.3em] text-cream/30 font-bold mb-6">
+            New Products
+          </p>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
             {newProducts.map((p, i) => (
               <Link
@@ -158,10 +178,16 @@ export function Footer() {
                 className="group flex items-center gap-4 p-4 rounded-xl glass-dark border border-white/5 transition-all hover:bg-white/5"
               >
                 <div className="h-16 w-24 shrink-0 overflow-hidden rounded-lg bg-cocoa/20">
-                  <img src={productImage(p)} alt={p.name} className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                  <img
+                    src={productImage(p)}
+                    alt={p.name}
+                    className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
+                  />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h5 className="text-sm font-medium text-cream/80 leading-snug line-clamp-2">{p.name}</h5>
+                  <h5 className="text-sm font-medium text-cream/80 leading-snug line-clamp-2">
+                    {p.name}
+                  </h5>
                   <p className="text-[10px] text-gold mt-1 font-bold">GH₵ {p.price}</p>
                 </div>
                 <div className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-white/5 text-cream/40 group-hover:bg-gold group-hover:text-cocoa transition-colors">
@@ -169,16 +195,24 @@ export function Footer() {
                 </div>
               </Link>
             ))}
- 
+
             {/* Payment logos and verification removed as requested */}
           </div>
         </div>
- 
+
         {/* Copyright */}
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-[10px] uppercase tracking-[0.2em] text-cream/50 border-t border-white/5">
           <p>{settings.footer.copyright}</p>
           <p className="font-display text-[10px] uppercase tracking-[0.2em]">
-            Developed by <a href="https://oflexcreative.vercel.app/" target="_blank" rel="noopener noreferrer" className="text-cream/90 hover:text-gold transition-colors">Oflex Creative</a>
+            Developed by{" "}
+            <a
+              href="https://oflexcreative.vercel.app/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-cream/90 hover:text-gold transition-colors"
+            >
+              Oflex Creative
+            </a>
           </p>
         </div>
       </div>

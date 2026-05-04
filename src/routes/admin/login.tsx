@@ -10,7 +10,8 @@ export const Route = createFileRoute("/admin/login")({
 });
 
 function AdminLogin() {
-  const { signIn, signUp, user, isAdmin, bootstrapAdmin, loading, roleSettled, signOut } = useAuth();
+  const { signIn, signUp, user, isAdmin, bootstrapAdmin, loading, roleSettled, signOut } =
+    useAuth();
   const { settings } = useSite();
   const navigate = useNavigate();
   const [mode, setMode] = useState<"signin" | "signup">("signin");
@@ -29,7 +30,7 @@ function AdminLogin() {
         navigate({ to: "/admin/dashboard" });
       } else {
         // Not admin? Try bootstrapping in case it's the first account
-        bootstrapAdmin().then(promoted => {
+        bootstrapAdmin().then((promoted) => {
           if (promoted) {
             navigate({ to: "/admin/dashboard" });
           } else {
@@ -59,7 +60,10 @@ function AdminLogin() {
       }
       setBusy(false);
     } else {
-      const { error, needsConfirmation: confirm } = await signUp(email, password, { full_name: "Administrator", phone: "" });
+      const { error, needsConfirmation: confirm } = await signUp(email, password, {
+        full_name: "Administrator",
+        phone: "",
+      });
       if (error) {
         toast.error(error);
         setBusy(false);
@@ -78,7 +82,7 @@ function AdminLogin() {
     return (
       <div className="grid min-h-screen place-items-center bg-cream text-cocoa px-5 relative overflow-hidden">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gold/5 rounded-full blur-3xl" />
-        
+
         <div className="w-full max-w-md relative z-10">
           <div className="rounded-[2.5rem] glass shadow-luxe overflow-hidden border border-white/40">
             <div className="bg-cocoa p-10 text-center text-cream">
@@ -87,16 +91,21 @@ function AdminLogin() {
               </div>
               <h1 className="font-display text-3xl tracking-tight">Check your inbox</h1>
               <p className="mt-2 text-cream/60 text-sm leading-relaxed px-4">
-                We've sent a secure confirmation link to <span className="text-cream font-medium">{email}</span>.
+                We've sent a secure confirmation link to{" "}
+                <span className="text-cream font-medium">{email}</span>.
               </p>
             </div>
-            
+
             <div className="p-8 sm:p-10 bg-white/40 text-center">
               <p className="text-sm text-cocoa/60 leading-relaxed">
-                Once you click the link in your email, your account will be verified and you can access the admin panel.
+                Once you click the link in your email, your account will be verified and you can
+                access the admin panel.
               </p>
               <button
-                onClick={() => { setNeedsConfirmation(false); setMode("signin"); }}
+                onClick={() => {
+                  setNeedsConfirmation(false);
+                  setMode("signin");
+                }}
                 className="mt-8 w-full rounded-2xl bg-cocoa px-6 py-4 text-sm font-semibold text-cream hover:bg-coffee transition-all hover:scale-[1.02] shadow-soft"
               >
                 Return to Sign In
@@ -116,8 +125,13 @@ function AdminLogin() {
         <div className="absolute inset-0 bg-gradient-to-br from-cream/80 via-transparent to-cream/80" />
       </div>
 
-      <div className="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none z-0" 
-           style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, var(--cocoa) 1px, transparent 0)', backgroundSize: '40px 40px' }} />
+      <div
+        className="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none z-0"
+        style={{
+          backgroundImage: "radial-gradient(circle at 2px 2px, var(--cocoa) 1px, transparent 0)",
+          backgroundSize: "40px 40px",
+        }}
+      />
 
       <div className="w-full max-w-[420px] relative z-10">
         <div className="rounded-[2.5rem] glass shadow-luxe overflow-hidden border border-white/40">
@@ -127,14 +141,18 @@ function AdminLogin() {
             </div>
             <h1 className="font-display text-3xl tracking-tight">Admin Portal</h1>
             <p className="mt-2 text-cream/60 text-sm">
-              {mode === "signin" ? "Authorized personnel only." : "Configure the initial admin account."}
+              {mode === "signin"
+                ? "Authorized personnel only."
+                : "Configure the initial admin account."}
             </p>
           </div>
 
           <form onSubmit={onSubmit} className="p-8 sm:p-10 space-y-5 bg-white/40 backdrop-blur-sm">
             {denied ? (
               <div className="space-y-6 text-center animate-in fade-in zoom-in duration-300">
-                <div className="inline-grid h-16 w-16 place-items-center rounded-full bg-red-100 text-red-600 text-2xl font-bold">✕</div>
+                <div className="inline-grid h-16 w-16 place-items-center rounded-full bg-red-100 text-red-600 text-2xl font-bold">
+                  ✕
+                </div>
                 <div className="space-y-2">
                   <h2 className="font-display text-xl text-cocoa">Access Denied</h2>
                   <p className="text-sm text-cocoa/60 leading-relaxed">
@@ -152,7 +170,9 @@ function AdminLogin() {
             ) : (
               <>
                 <div className="space-y-1.5">
-                  <label className="text-[10px] uppercase tracking-widest text-cocoa/50 font-bold px-1">Identity</label>
+                  <label className="text-[10px] uppercase tracking-widest text-cocoa/50 font-bold px-1">
+                    Identity
+                  </label>
                   <input
                     type="text"
                     required
@@ -164,7 +184,9 @@ function AdminLogin() {
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-[10px] uppercase tracking-widest text-cocoa/50 font-bold px-1">Access Key</label>
+                  <label className="text-[10px] uppercase tracking-widest text-cocoa/50 font-bold px-1">
+                    Access Key
+                  </label>
                   <div className="relative">
                     <input
                       type={showPassword ? "text" : "password"}
@@ -191,7 +213,13 @@ function AdminLogin() {
                   className="group relative w-full overflow-hidden rounded-2xl bg-cocoa py-4 text-sm font-semibold text-cream shadow-soft transition-all hover:scale-[1.02] disabled:opacity-50"
                 >
                   <span className="relative z-10">
-                    {busy ? "Authenticating..." : ((!!user && !roleSettled) ? "Verifying Permissions..." : (mode === "signin" ? "Unlock Access" : "Initialize Admin"))}
+                    {busy
+                      ? "Authenticating..."
+                      : !!user && !roleSettled
+                        ? "Verifying Permissions..."
+                        : mode === "signin"
+                          ? "Unlock Access"
+                          : "Initialize Admin"}
                   </span>
                   <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-gold/50 to-transparent transition-transform duration-500 group-hover:translate-x-0" />
                 </button>
@@ -202,7 +230,9 @@ function AdminLogin() {
                     onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
                     className="text-xs font-medium text-cocoa/40 hover:text-cocoa transition-colors"
                   >
-                    {mode === "signin" ? "Need to setup first admin? Click here" : "Return to secure sign in"}
+                    {mode === "signin"
+                      ? "Need to setup first admin? Click here"
+                      : "Return to secure sign in"}
                   </button>
                 </div>
               </>
@@ -212,7 +242,8 @@ function AdminLogin() {
 
         {mode === "signup" && !denied && (
           <div className="mt-6 p-4 rounded-3xl bg-gold/10 border border-gold/20 text-[10px] text-cocoa/60 leading-relaxed text-center italic">
-            Note: The first account registered on this platform is automatically granted administrative rights.
+            Note: The first account registered on this platform is automatically granted
+            administrative rights.
           </div>
         )}
       </div>

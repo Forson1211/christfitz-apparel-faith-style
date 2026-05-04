@@ -57,7 +57,7 @@ function AppContent() {
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [path]);
-  
+
   const isAdmin = path.startsWith("/admin");
   const isAuth = (path === "/account" && !user) || path === "/admin/login";
   const hideExtras = isAdmin || isAuth;

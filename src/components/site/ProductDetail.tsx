@@ -23,7 +23,9 @@ export function ProductDetail({ product, onClose }: Props) {
     } else {
       document.body.style.overflow = "";
     }
-    return () => { document.body.style.overflow = ""; };
+    return () => {
+      document.body.style.overflow = "";
+    };
   }, [product]);
 
   useEffect(() => {
@@ -74,7 +76,9 @@ export function ProductDetail({ product, onClose }: Props) {
               <div className="flex flex-col gap-5 p-6 sm:p-9">
                 <div>
                   {product.verse && (
-                    <p className="text-xs uppercase tracking-[0.3em] text-coffee">— {product.verse}</p>
+                    <p className="text-xs uppercase tracking-[0.3em] text-coffee">
+                      — {product.verse}
+                    </p>
                   )}
                   <h2 className="mt-2 font-display text-3xl sm:text-4xl">{product.name}</h2>
                   <div className="mt-3 flex items-center gap-3">
@@ -95,13 +99,17 @@ export function ProductDetail({ product, onClose }: Props) {
                   <p className="mt-4 font-display text-3xl">GH₵ {product.price.toFixed(2)}</p>
                 </div>
 
-                <p className="text-sm leading-relaxed text-muted-foreground">{product.description}</p>
+                <p className="text-sm leading-relaxed text-muted-foreground">
+                  {product.description}
+                </p>
 
                 {product.sizes.length > 0 && (
                   <div>
                     <div className="flex items-center justify-between">
                       <h3 className="text-xs uppercase tracking-[0.25em]">Size</h3>
-                      <button className="text-xs text-coffee underline-offset-2 hover:underline">Size guide</button>
+                      <button className="text-xs text-coffee underline-offset-2 hover:underline">
+                        Size guide
+                      </button>
                     </div>
                     <div className="mt-3 flex flex-wrap gap-2">
                       {product.sizes.map((s) => (
@@ -109,7 +117,9 @@ export function ProductDetail({ product, onClose }: Props) {
                           key={s}
                           onClick={() => setSize(s)}
                           className={`min-w-[3rem] rounded-full border px-4 py-2 text-sm transition ${
-                            size === s ? "border-cocoa bg-cocoa text-cream" : "border-cocoa/20 hover:border-cocoa"
+                            size === s
+                              ? "border-cocoa bg-cocoa text-cream"
+                              : "border-cocoa/20 hover:border-cocoa"
                           }`}
                         >
                           {s}
@@ -121,11 +131,19 @@ export function ProductDetail({ product, onClose }: Props) {
 
                 <div className="flex items-center gap-3">
                   <div className="inline-flex items-center rounded-full border border-cocoa/20">
-                    <button onClick={() => setQty((q) => Math.max(1, q - 1))} aria-label="Decrease" className="grid h-11 w-11 place-items-center rounded-full transition hover:bg-cocoa/5">
+                    <button
+                      onClick={() => setQty((q) => Math.max(1, q - 1))}
+                      aria-label="Decrease"
+                      className="grid h-11 w-11 place-items-center rounded-full transition hover:bg-cocoa/5"
+                    >
                       <Minus className="h-3.5 w-3.5" />
                     </button>
                     <span className="w-8 text-center tabular-nums">{qty}</span>
-                    <button onClick={() => setQty((q) => q + 1)} aria-label="Increase" className="grid h-11 w-11 place-items-center rounded-full transition hover:bg-cocoa/5">
+                    <button
+                      onClick={() => setQty((q) => q + 1)}
+                      aria-label="Increase"
+                      className="grid h-11 w-11 place-items-center rounded-full transition hover:bg-cocoa/5"
+                    >
                       <Plus className="h-3.5 w-3.5" />
                     </button>
                   </div>

@@ -2,23 +2,23 @@ import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/lib/auth";
 import { toast } from "sonner";
-import { 
-  LogOut, 
-  User as UserIcon, 
-  Settings, 
-  Phone, 
-  Mail, 
-  Key, 
-  ShieldCheck, 
-  Save, 
-  ArrowLeft, 
-  Package, 
-  Heart, 
+import {
+  LogOut,
+  User as UserIcon,
+  Settings,
+  Phone,
+  Mail,
+  Key,
+  ShieldCheck,
+  Save,
+  ArrowLeft,
+  Package,
+  Heart,
   MapPin,
   ChevronRight,
   Clock,
   Eye,
-  EyeOff
+  EyeOff,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
@@ -34,7 +34,7 @@ function Account() {
   const { user, loading, signIn, signUp, signOut, isAdmin, updateProfile } = useAuth();
   const { settings } = useSite();
   const navigate = useNavigate();
-  
+
   // Tab State
   const [activeTab, setActiveTab] = useState<Tab>("profile");
 
@@ -55,7 +55,7 @@ function Account() {
   const [newPassword, setNewPassword] = useState("");
 
   const [authStep, setAuthStep] = useState<"select" | "form">("select");
- 
+
   useEffect(() => {
     document.title = "Account · ChristFitz";
     if (user) {
@@ -64,19 +64,28 @@ function Account() {
       setNewEmail(user.email || "");
     }
   }, [user]);
- 
+
   const onAuthSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setBusy(true);
     if (mode === "signin") {
       const { error } = await signIn(email, password);
       setBusy(false);
-      if (error) { toast.error(error); return; }
+      if (error) {
+        toast.error(error);
+        return;
+      }
       toast.success("Welcome back!");
     } else {
-      const { error, needsConfirmation } = await signUp(email, password, { full_name: name, phone });
+      const { error, needsConfirmation } = await signUp(email, password, {
+        full_name: name,
+        phone,
+      });
       setBusy(false);
-      if (error) { toast.error(error); return; }
+      if (error) {
+        toast.error(error);
+        return;
+      }
       if (needsConfirmation) {
         toast.success("Check your email to confirm your account!");
         setMode("signin");
@@ -86,30 +95,38 @@ function Account() {
       }
     }
   };
- 
+
   const handleUpdateProfile = async () => {
     setBusy(true);
     const { error } = await updateProfile({ full_name: newName, phone: newPhone });
     setBusy(false);
-    if (error) { toast.error(error); return; }
+    if (error) {
+      toast.error(error);
+      return;
+    }
     toast.success("Profile updated successfully");
     setEditMode(false);
   };
- 
-  const handleUpdateCredentials = async (type: 'email' | 'password') => {
+
+  const handleUpdateCredentials = async (type: "email" | "password") => {
     setBusy(true);
     let res;
-    if (type === 'email') {
+    if (type === "email") {
       res = await supabase.auth.updateUser({ email: newEmail });
     } else {
       res = await supabase.auth.updateUser({ password: newPassword });
     }
     setBusy(false);
-    if (res.error) { toast.error(res.error.message); return; }
-    toast.success(type === 'email' ? "Verification email sent to new address!" : "Password updated!");
-    if (type === 'password') setNewPassword("");
+    if (res.error) {
+      toast.error(res.error.message);
+      return;
+    }
+    toast.success(
+      type === "email" ? "Verification email sent to new address!" : "Password updated!",
+    );
+    if (type === "password") setNewPassword("");
   };
- 
+
   if (loading) {
     return (
       <main className="min-h-screen grid place-items-center bg-cream text-cocoa">
@@ -117,7 +134,7 @@ function Account() {
       </main>
     );
   }
- 
+
   if (user) {
     const tabs: { id: Tab; label: string; icon: any }[] = [
       { id: "profile", label: "Profile Settings", icon: UserIcon },
@@ -125,38 +142,47 @@ function Account() {
       { id: "wishlist", label: "Wishlist", icon: Heart },
       { id: "track", label: "Track Order", icon: MapPin },
     ];
- 
+
     return (
       <main className="min-h-screen bg-cream text-cocoa pt-32 pb-20 px-5 relative overflow-hidden">
         <div className="absolute top-0 right-0 w-96 h-96 bg-gold/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
         <div className="absolute bottom-0 left-0 w-96 h-96 bg-cocoa/5 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" />
- 
+
         <div className="mx-auto max-w-6xl relative z-10">
           <div className="flex flex-col lg:flex-row gap-8">
             {/* Sidebar */}
             <aside className="w-full lg:w-72 shrink-0">
               <div className="p-8 rounded-[2.5rem] glass shadow-soft border border-white/40 sticky top-32">
-                <h2 className="text-[11px] uppercase tracking-[0.3em] text-gold font-bold mb-8 px-2">My Account</h2>
+                <h2 className="text-[11px] uppercase tracking-[0.3em] text-gold font-bold mb-8 px-2">
+                  My Account
+                </h2>
                 <nav className="space-y-2">
                   {tabs.map((tab) => (
                     <button
                       key={tab.id}
-                      onClick={() => { setActiveTab(tab.id); setEditMode(false); }}
+                      onClick={() => {
+                        setActiveTab(tab.id);
+                        setEditMode(false);
+                      }}
                       className={`w-full flex items-center justify-between group rounded-2xl px-5 py-4 text-sm font-medium transition-all ${
-                        activeTab === tab.id 
-                          ? "bg-cocoa text-cream shadow-soft" 
+                        activeTab === tab.id
+                          ? "bg-cocoa text-cream shadow-soft"
                           : "text-cocoa/60 hover:bg-cocoa/5 hover:text-cocoa"
                       }`}
                     >
                       <div className="flex items-center gap-3">
-                        <tab.icon className={`h-4 w-4 ${activeTab === tab.id ? "text-gold" : "text-cocoa/40"}`} />
+                        <tab.icon
+                          className={`h-4 w-4 ${activeTab === tab.id ? "text-gold" : "text-cocoa/40"}`}
+                        />
                         {tab.label}
                       </div>
-                      <ChevronRight className={`h-3 w-3 transition-transform ${activeTab === tab.id ? "translate-x-1 opacity-100" : "opacity-0 group-hover:opacity-40"}`} />
+                      <ChevronRight
+                        className={`h-3 w-3 transition-transform ${activeTab === tab.id ? "translate-x-1 opacity-100" : "opacity-0 group-hover:opacity-40"}`}
+                      />
                     </button>
                   ))}
                 </nav>
- 
+
                 <div className="mt-10 pt-8 border-t border-cocoa/5">
                   {isAdmin && (
                     <Link
@@ -175,7 +201,7 @@ function Account() {
                 </div>
               </div>
             </aside>
- 
+
             {/* Content Area */}
             <section className="flex-1 min-w-0">
               <AnimatePresence mode="wait">
@@ -191,7 +217,7 @@ function Account() {
                   <div className="bg-cocoa p-10 text-cream relative overflow-hidden">
                     <div className="absolute top-0 right-0 p-8 opacity-10">
                       {(() => {
-                        const Icon = tabs.find(t => t.id === activeTab)?.icon;
+                        const Icon = tabs.find((t) => t.id === activeTab)?.icon;
                         return Icon ? <Icon size={120} /> : null;
                       })()}
                     </div>
@@ -199,26 +225,32 @@ function Account() {
                       <div className="flex items-center gap-6">
                         <div className="h-16 w-16 rounded-2xl bg-cream/10 backdrop-blur-md flex items-center justify-center border border-cream/20">
                           {(() => {
-                            const Icon = tabs.find(t => t.id === activeTab)?.icon;
+                            const Icon = tabs.find((t) => t.id === activeTab)?.icon;
                             return Icon ? <Icon className="h-8 w-8 text-gold" /> : null;
                           })()}
                         </div>
                         <div>
-                          <h1 className="font-display text-3xl tracking-tight">{tabs.find(t => t.id === activeTab)?.label}</h1>
+                          <h1 className="font-display text-3xl tracking-tight">
+                            {tabs.find((t) => t.id === activeTab)?.label}
+                          </h1>
                           <p className="text-cream/60 text-sm mt-1">{user.email}</p>
                         </div>
                       </div>
                       {activeTab === "profile" && (
-                        <button 
+                        <button
                           onClick={() => setEditMode(!editMode)}
                           className="rounded-full h-12 w-12 glass-dark flex items-center justify-center hover:bg-cream/10 transition-colors"
                         >
-                          {editMode ? <ArrowLeft className="h-5 w-5" /> : <Settings className="h-5 w-5" />}
+                          {editMode ? (
+                            <ArrowLeft className="h-5 w-5" />
+                          ) : (
+                            <Settings className="h-5 w-5" />
+                          )}
                         </button>
                       )}
                     </div>
                   </div>
- 
+
                   {/* Tab Content */}
                   <div className="p-8 sm:p-12 flex-1 bg-white/40 backdrop-blur-sm">
                     {activeTab === "profile" && (
@@ -227,55 +259,117 @@ function Account() {
                           <div className="grid gap-8">
                             <div className="grid sm:grid-cols-2 gap-6">
                               <div className="space-y-1.5 p-6 rounded-3xl bg-cocoa/5 border border-cocoa/10">
-                                <div className="text-[10px] uppercase tracking-widest text-cocoa/40 font-bold mb-2">Full Name</div>
-                                <p className="text-lg font-medium text-cocoa">{user.user_metadata?.full_name || "—"}</p>
+                                <div className="text-[10px] uppercase tracking-widest text-cocoa/40 font-bold mb-2">
+                                  Full Name
+                                </div>
+                                <p className="text-lg font-medium text-cocoa">
+                                  {user.user_metadata?.full_name || "—"}
+                                </p>
                               </div>
                               <div className="space-y-1.5 p-6 rounded-3xl bg-cocoa/5 border border-cocoa/10">
-                                <div className="text-[10px] uppercase tracking-widest text-cocoa/40 font-bold mb-2">Telephone</div>
-                                <p className="text-lg font-medium text-cocoa">{user.user_metadata?.phone || "—"}</p>
+                                <div className="text-[10px] uppercase tracking-widest text-cocoa/40 font-bold mb-2">
+                                  Telephone
+                                </div>
+                                <p className="text-lg font-medium text-cocoa">
+                                  {user.user_metadata?.phone || "—"}
+                                </p>
                               </div>
                             </div>
                             <div className="space-y-1.5 p-6 rounded-3xl bg-cocoa/5 border border-cocoa/10">
-                              <div className="text-[10px] uppercase tracking-widest text-cocoa/40 font-bold mb-2">Email Address</div>
+                              <div className="text-[10px] uppercase tracking-widest text-cocoa/40 font-bold mb-2">
+                                Email Address
+                              </div>
                               <p className="text-lg font-medium text-cocoa">{user.email}</p>
                             </div>
-                            <button onClick={() => setEditMode(true)} className="mt-4 flex items-center gap-2 text-gold font-bold text-xs uppercase tracking-widest hover:translate-x-1 transition-transform w-fit">
+                            <button
+                              onClick={() => setEditMode(true)}
+                              className="mt-4 flex items-center gap-2 text-gold font-bold text-xs uppercase tracking-widest hover:translate-x-1 transition-transform w-fit"
+                            >
                               Edit profile information <ChevronRight className="h-4 w-4" />
                             </button>
                           </div>
                         ) : (
                           <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
                             <div className="space-y-5">
-                              <h3 className="text-xs uppercase tracking-[0.2em] text-cocoa/40 font-bold">Personal Information</h3>
+                              <h3 className="text-xs uppercase tracking-[0.2em] text-cocoa/40 font-bold">
+                                Personal Information
+                              </h3>
                               <div className="grid sm:grid-cols-2 gap-5">
                                 <div className="space-y-1.5">
-                                  <label className="text-[10px] uppercase tracking-widest text-cocoa/50 font-bold px-1">Full Name</label>
-                                  <input type="text" value={newName} onChange={(e) => setNewName(e.target.value)} className="w-full rounded-2xl border-2 border-cocoa/5 bg-cocoa/5 px-5 py-3.5 text-sm transition-all focus:border-gold/50 focus:bg-white focus:outline-none" />
+                                  <label className="text-[10px] uppercase tracking-widest text-cocoa/50 font-bold px-1">
+                                    Full Name
+                                  </label>
+                                  <input
+                                    type="text"
+                                    value={newName}
+                                    onChange={(e) => setNewName(e.target.value)}
+                                    className="w-full rounded-2xl border-2 border-cocoa/5 bg-cocoa/5 px-5 py-3.5 text-sm transition-all focus:border-gold/50 focus:bg-white focus:outline-none"
+                                  />
                                 </div>
                                 <div className="space-y-1.5">
-                                  <label className="text-[10px] uppercase tracking-widest text-cocoa/50 font-bold px-1">Telephone</label>
-                                  <input type="tel" value={newPhone} onChange={(e) => setNewPhone(e.target.value)} className="w-full rounded-2xl border-2 border-cocoa/5 bg-cocoa/5 px-5 py-3.5 text-sm transition-all focus:border-gold/50 focus:bg-white focus:outline-none" />
+                                  <label className="text-[10px] uppercase tracking-widest text-cocoa/50 font-bold px-1">
+                                    Telephone
+                                  </label>
+                                  <input
+                                    type="tel"
+                                    value={newPhone}
+                                    onChange={(e) => setNewPhone(e.target.value)}
+                                    className="w-full rounded-2xl border-2 border-cocoa/5 bg-cocoa/5 px-5 py-3.5 text-sm transition-all focus:border-gold/50 focus:bg-white focus:outline-none"
+                                  />
                                 </div>
                               </div>
-                              <button onClick={handleUpdateProfile} disabled={busy} className="w-full flex items-center justify-center gap-2 rounded-2xl bg-cocoa text-cream py-4 text-sm font-semibold shadow-soft hover:bg-coffee transition-all">
+                              <button
+                                onClick={handleUpdateProfile}
+                                disabled={busy}
+                                className="w-full flex items-center justify-center gap-2 rounded-2xl bg-cocoa text-cream py-4 text-sm font-semibold shadow-soft hover:bg-coffee transition-all"
+                              >
                                 <Save className="h-4 w-4" /> Save Profile Changes
                               </button>
                             </div>
- 
+
                             <div className="space-y-5 pt-10 border-t border-cocoa/5">
-                              <h3 className="text-xs uppercase tracking-[0.2em] text-cocoa/40 font-bold">Security Settings</h3>
+                              <h3 className="text-xs uppercase tracking-[0.2em] text-cocoa/40 font-bold">
+                                Security Settings
+                              </h3>
                               <div className="space-y-1.5">
-                                <label className="text-[10px] uppercase tracking-widest text-cocoa/50 font-bold px-1">Change Email</label>
+                                <label className="text-[10px] uppercase tracking-widest text-cocoa/50 font-bold px-1">
+                                  Change Email
+                                </label>
                                 <div className="flex gap-3">
-                                  <input type="email" value={newEmail} onChange={(e) => setNewEmail(e.target.value)} className="flex-1 rounded-2xl border-2 border-cocoa/5 bg-cocoa/5 px-5 py-3.5 text-sm transition-all focus:border-gold/50 focus:bg-white focus:outline-none" />
-                                  <button onClick={() => handleUpdateCredentials('email')} disabled={busy || newEmail === user.email} className="rounded-2xl bg-cocoa px-5 text-sm font-semibold text-cream hover:bg-coffee transition-all disabled:opacity-50">Update</button>
+                                  <input
+                                    type="email"
+                                    value={newEmail}
+                                    onChange={(e) => setNewEmail(e.target.value)}
+                                    className="flex-1 rounded-2xl border-2 border-cocoa/5 bg-cocoa/5 px-5 py-3.5 text-sm transition-all focus:border-gold/50 focus:bg-white focus:outline-none"
+                                  />
+                                  <button
+                                    onClick={() => handleUpdateCredentials("email")}
+                                    disabled={busy || newEmail === user.email}
+                                    className="rounded-2xl bg-cocoa px-5 text-sm font-semibold text-cream hover:bg-coffee transition-all disabled:opacity-50"
+                                  >
+                                    Update
+                                  </button>
                                 </div>
                               </div>
                               <div className="space-y-1.5">
-                                <label className="text-[10px] uppercase tracking-widest text-cocoa/50 font-bold px-1">Change Password</label>
+                                <label className="text-[10px] uppercase tracking-widest text-cocoa/50 font-bold px-1">
+                                  Change Password
+                                </label>
                                 <div className="flex gap-3">
-                                  <input type="password" placeholder="New password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} className="flex-1 rounded-2xl border-2 border-cocoa/5 bg-cocoa/5 px-5 py-3.5 text-sm transition-all focus:border-gold/50 focus:bg-white focus:outline-none" />
-                                  <button onClick={() => handleUpdateCredentials('password')} disabled={busy || newPassword.length < 6} className="rounded-2xl bg-cocoa px-5 text-sm font-semibold text-cream hover:bg-coffee transition-all disabled:opacity-50">Update</button>
+                                  <input
+                                    type="password"
+                                    placeholder="New password"
+                                    value={newPassword}
+                                    onChange={(e) => setNewPassword(e.target.value)}
+                                    className="flex-1 rounded-2xl border-2 border-cocoa/5 bg-cocoa/5 px-5 py-3.5 text-sm transition-all focus:border-gold/50 focus:bg-white focus:outline-none"
+                                  />
+                                  <button
+                                    onClick={() => handleUpdateCredentials("password")}
+                                    disabled={busy || newPassword.length < 6}
+                                    className="rounded-2xl bg-cocoa px-5 text-sm font-semibold text-cream hover:bg-coffee transition-all disabled:opacity-50"
+                                  >
+                                    Update
+                                  </button>
                                 </div>
                               </div>
                             </div>
@@ -283,43 +377,73 @@ function Account() {
                         )}
                       </div>
                     )}
- 
+
                     {activeTab === "orders" && (
                       <div className="flex flex-col items-center justify-center py-20 text-center">
                         <div className="h-20 w-20 rounded-full bg-cocoa/5 flex items-center justify-center mb-6">
                           <Package className="h-10 w-10 text-cocoa/20" />
                         </div>
                         <h3 className="text-xl font-display text-cocoa">No orders yet</h3>
-                        <p className="mt-2 text-cocoa/50 text-sm max-w-xs">Your faith-inspired journey starts here. Explore our latest drops to find your first piece.</p>
-                        <Link to="/products" className="mt-8 rounded-full bg-cocoa px-8 py-3.5 text-sm font-semibold text-cream hover:bg-coffee transition-all">Browse Collection</Link>
+                        <p className="mt-2 text-cocoa/50 text-sm max-w-xs">
+                          Your faith-inspired journey starts here. Explore our latest drops to find
+                          your first piece.
+                        </p>
+                        <Link
+                          to="/products"
+                          className="mt-8 rounded-full bg-cocoa px-8 py-3.5 text-sm font-semibold text-cream hover:bg-coffee transition-all"
+                        >
+                          Browse Collection
+                        </Link>
                       </div>
                     )}
- 
+
                     {activeTab === "wishlist" && (
                       <div className="flex flex-col items-center justify-center py-20 text-center">
                         <div className="h-20 w-20 rounded-full bg-cocoa/5 flex items-center justify-center mb-6">
                           <Heart className="h-10 w-10 text-cocoa/20" />
                         </div>
                         <h3 className="text-xl font-display text-cocoa">Your wishlist is empty</h3>
-                        <p className="mt-2 text-cocoa/50 text-sm max-w-xs">Save the pieces that inspire you for later. Use the heart icon on any product to add it here.</p>
-                        <Link to="/products" className="mt-8 rounded-full bg-cocoa px-8 py-3.5 text-sm font-semibold text-cream hover:bg-coffee transition-all">Discover Pieces</Link>
+                        <p className="mt-2 text-cocoa/50 text-sm max-w-xs">
+                          Save the pieces that inspire you for later. Use the heart icon on any
+                          product to add it here.
+                        </p>
+                        <Link
+                          to="/products"
+                          className="mt-8 rounded-full bg-cocoa px-8 py-3.5 text-sm font-semibold text-cream hover:bg-coffee transition-all"
+                        >
+                          Discover Pieces
+                        </Link>
                       </div>
                     )}
- 
+
                     {activeTab === "track" && (
                       <div className="max-w-md">
                         <div className="space-y-6">
                           <div className="p-8 rounded-[2rem] bg-gold/5 border border-gold/10">
-                            <h3 className="text-sm font-bold uppercase tracking-widest text-cocoa mb-4">Track your delivery</h3>
-                            <p className="text-sm text-cocoa/60 mb-6">Enter your order ID or tracking number to see where your package is.</p>
+                            <h3 className="text-sm font-bold uppercase tracking-widest text-cocoa mb-4">
+                              Track your delivery
+                            </h3>
+                            <p className="text-sm text-cocoa/60 mb-6">
+                              Enter your order ID or tracking number to see where your package is.
+                            </p>
                             <div className="space-y-3">
-                              <input type="text" placeholder="e.g. #CF-12345" className="w-full rounded-2xl border-2 border-cocoa/5 bg-white px-5 py-4 text-sm outline-none focus:border-gold/50" />
-                              <button className="w-full rounded-2xl bg-cocoa py-4 text-sm font-semibold text-cream shadow-soft hover:bg-coffee transition-all">Track Shipment</button>
+                              <input
+                                type="text"
+                                placeholder="e.g. #CF-12345"
+                                className="w-full rounded-2xl border-2 border-cocoa/5 bg-white px-5 py-4 text-sm outline-none focus:border-gold/50"
+                              />
+                              <button className="w-full rounded-2xl bg-cocoa py-4 text-sm font-semibold text-cream shadow-soft hover:bg-coffee transition-all">
+                                Track Shipment
+                              </button>
                             </div>
                           </div>
                           <div className="flex items-center gap-4 p-5 rounded-2xl bg-cocoa/5 border border-cocoa/10">
                             <Clock className="h-5 w-5 text-gold" />
-                            <div className="text-xs text-cocoa/60 leading-relaxed">Most orders are processed within <span className="text-cocoa font-bold">24-48 hours</span> and delivered within 3-5 business days.</div>
+                            <div className="text-xs text-cocoa/60 leading-relaxed">
+                              Most orders are processed within{" "}
+                              <span className="text-cocoa font-bold">24-48 hours</span> and
+                              delivered within 3-5 business days.
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -333,7 +457,7 @@ function Account() {
       </main>
     );
   }
- 
+
   return (
     <main className="relative min-h-screen bg-cream text-cocoa py-20 px-5 flex items-center justify-center overflow-hidden">
       {/* Background Image with Overlay */}
@@ -344,12 +468,12 @@ function Account() {
 
       <div className="absolute top-1/4 -left-20 w-80 h-80 bg-gold/10 rounded-full blur-3xl animate-float-slow" />
       <div className="absolute bottom-1/4 -right-20 w-80 h-80 bg-cocoa/5 rounded-full blur-3xl animate-float-slower" />
- 
+
       <div className="mx-auto w-full max-w-[440px] relative z-10">
         <div className="rounded-[2.5rem] glass shadow-luxe overflow-hidden border border-white/40">
           <div className="bg-cocoa p-10 text-center text-cream relative">
             {authStep === "select" && (
-              <button 
+              <button
                 onClick={() => navigate({ to: "/" })}
                 className="absolute top-6 left-6 flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-cream/40 hover:text-gold transition-all"
               >
@@ -360,20 +484,24 @@ function Account() {
               <img src="/auth.png" alt="Logo" className="h-20 w-auto object-contain" />
             </Link>
             <h1 className="font-display text-3xl tracking-tight">
-              {authStep === "select" ? "Join the Fold" : mode === "signin" ? "Welcome Back" : "Create Account"}
+              {authStep === "select"
+                ? "Join the Fold"
+                : mode === "signin"
+                  ? "Welcome Back"
+                  : "Create Account"}
             </h1>
             <p className="mt-2 text-cream/60 text-sm px-4">
-              {authStep === "select" 
+              {authStep === "select"
                 ? "Manage your orders and discover faith-inspired style."
-                : mode === "signin" 
-                  ? "Sign in to manage your orders." 
+                : mode === "signin"
+                  ? "Sign in to manage your orders."
                   : "Create an account to join the community."}
             </p>
           </div>
- 
+
           <AnimatePresence mode="wait">
             {authStep === "select" ? (
-              <motion.div 
+              <motion.div
                 key="select"
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -381,13 +509,19 @@ function Account() {
                 className="p-8 sm:p-10 space-y-4 bg-white/40 backdrop-blur-sm"
               >
                 <button
-                  onClick={() => { setMode("signin"); setAuthStep("form"); }}
+                  onClick={() => {
+                    setMode("signin");
+                    setAuthStep("form");
+                  }}
                   className="w-full rounded-2xl bg-cocoa py-4 text-sm font-semibold text-cream shadow-soft hover:scale-[1.02] transition-all"
                 >
                   Sign In to Account
                 </button>
                 <button
-                  onClick={() => { setMode("signup"); setAuthStep("form"); }}
+                  onClick={() => {
+                    setMode("signup");
+                    setAuthStep("form");
+                  }}
                   className="w-full rounded-2xl border-2 border-cocoa/10 py-4 text-sm font-semibold text-cocoa hover:bg-cocoa/5 transition-all"
                 >
                   Create New Account
@@ -399,18 +533,20 @@ function Account() {
                 </div>
               </motion.div>
             ) : (
-              <motion.form 
+              <motion.form
                 key="form"
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
-                onSubmit={onAuthSubmit} 
+                onSubmit={onAuthSubmit}
                 className="p-8 sm:p-10 space-y-5 bg-white/40 backdrop-blur-sm"
               >
                 {mode === "signup" && (
                   <>
                     <div className="space-y-1.5">
-                      <label className="text-[10px] uppercase tracking-widest text-cocoa/50 font-bold px-1">Full Name</label>
+                      <label className="text-[10px] uppercase tracking-widest text-cocoa/50 font-bold px-1">
+                        Full Name
+                      </label>
                       <input
                         type="text"
                         required
@@ -421,7 +557,9 @@ function Account() {
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <label className="text-[10px] uppercase tracking-widest text-cocoa/50 font-bold px-1">Telephone</label>
+                      <label className="text-[10px] uppercase tracking-widest text-cocoa/50 font-bold px-1">
+                        Telephone
+                      </label>
                       <input
                         type="tel"
                         required
@@ -433,7 +571,7 @@ function Account() {
                     </div>
                   </>
                 )}
- 
+
                 <div className="space-y-1.5">
                   <label className="text-[10px] uppercase tracking-widest text-cocoa/50 font-bold px-1">
                     {mode === "signin" ? "Name or Email" : "Email Address"}
@@ -447,9 +585,11 @@ function Account() {
                     className="w-full rounded-2xl border-2 border-cocoa/5 bg-cocoa/5 px-5 py-3.5 text-sm transition-all focus:border-gold/50 focus:bg-white focus:outline-none"
                   />
                 </div>
- 
+
                 <div className="space-y-1.5">
-                  <label className="text-[10px] uppercase tracking-widest text-cocoa/50 font-bold px-1">Password</label>
+                  <label className="text-[10px] uppercase tracking-widest text-cocoa/50 font-bold px-1">
+                    Password
+                  </label>
                   <div className="relative">
                     <input
                       type={showPassword ? "text" : "password"}
@@ -468,25 +608,27 @@ function Account() {
                     </button>
                   </div>
                 </div>
- 
+
                 <button
                   disabled={busy}
                   type="submit"
                   className="group relative w-full overflow-hidden rounded-2xl bg-cocoa py-4 text-sm font-semibold text-cream shadow-soft transition-all hover:scale-[1.02] disabled:opacity-50"
                 >
                   <span className="relative z-10 flex items-center justify-center gap-2">
-                    {busy ? "Processing..." : (mode === "signin" ? "Sign In" : "Create Account")}
+                    {busy ? "Processing..." : mode === "signin" ? "Sign In" : "Create Account"}
                   </span>
                   <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-gold/50 to-transparent transition-transform duration-500 group-hover:translate-x-0" />
                 </button>
- 
+
                 <div className="pt-4 text-center flex flex-col gap-3">
                   <button
                     type="button"
                     onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
                     className="text-sm font-medium text-cocoa/60 hover:text-cocoa transition-colors underline underline-offset-4 decoration-cocoa/20"
                   >
-                    {mode === "signin" ? "Don't have an account? Sign up" : "Already have an account? Sign in"}
+                    {mode === "signin"
+                      ? "Don't have an account? Sign up"
+                      : "Already have an account? Sign in"}
                   </button>
                   <button
                     type="button"
@@ -502,6 +644,5 @@ function Account() {
         </div>
       </div>
     </main>
-
   );
 }

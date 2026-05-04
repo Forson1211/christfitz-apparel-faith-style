@@ -38,28 +38,29 @@ function UsersAdmin() {
     }
 
     // Fetch admin roles
-    const { data: roles } = await supabase
-      .from("user_roles")
-      .select("user_id, role");
+    const { data: roles } = await supabase.from("user_roles").select("user_id, role");
 
-    const adminIds = new Set((roles ?? []).filter((r: any) => r.role === "admin").map((r: any) => r.user_id));
+    const adminIds = new Set(
+      (roles ?? []).filter((r: any) => r.role === "admin").map((r: any) => r.user_id),
+    );
 
     setUsers(
       (profiles ?? []).map((p: any) => ({
         ...p,
         role: adminIds.has(p.id) ? "admin" : "user",
-      }))
+      })),
     );
     setLoading(false);
   };
 
-  useEffect(() => { fetchUsers(); }, []);
+  useEffect(() => {
+    fetchUsers();
+  }, []);
 
   const filtered = users.filter((u) => {
     const q = search.toLowerCase();
     return (
-      (u.full_name ?? "").toLowerCase().includes(q) ||
-      (u.email ?? "").toLowerCase().includes(q)
+      (u.full_name ?? "").toLowerCase().includes(q) || (u.email ?? "").toLowerCase().includes(q)
     );
   });
 
@@ -75,12 +76,23 @@ function UsersAdmin() {
     <div className="w-full space-y-6 pb-10">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
-          <p className="text-[10px] uppercase tracking-[0.3em] text-coffee font-bold">— User Management</p>
+          <p className="text-[10px] uppercase tracking-[0.3em] text-coffee font-bold">
+            — User Management
+          </p>
           <h1 className="mt-1 font-display text-4xl font-bold">Customers</h1>
-          <p className="mt-1 text-sm text-muted-foreground">Manage customer accounts and roles from Supabase.</p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Manage customer accounts and roles from Supabase.
+          </p>
         </motion.div>
-        <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="flex gap-2">
-          <button onClick={fetchUsers} className="rounded-xl glass px-4 py-2 text-xs font-bold border border-white/40 text-cocoa/70 hover:text-cocoa flex items-center gap-2 transition">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="flex gap-2"
+        >
+          <button
+            onClick={fetchUsers}
+            className="rounded-xl glass px-4 py-2 text-xs font-bold border border-white/40 text-cocoa/70 hover:text-cocoa flex items-center gap-2 transition"
+          >
             <RefreshCw className="h-4 w-4" /> Refresh
           </button>
         </motion.div>
@@ -93,16 +105,29 @@ function UsersAdmin() {
           { label: "Admins", value: users.filter((u) => u.role === "admin").length },
           { label: "Customers", value: users.filter((u) => u.role === "user").length },
         ].map(({ label, value }, i) => (
-          <motion.div key={label} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08 }}
-            className="rounded-2xl glass shadow-sm border border-white/40 p-5 text-center">
-            <div className="text-3xl font-display font-bold text-cocoa">{loading ? "—" : value}</div>
-            <div className="text-[10px] uppercase tracking-widest text-cocoa/50 font-bold mt-1">{label}</div>
+          <motion.div
+            key={label}
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: i * 0.08 }}
+            className="rounded-2xl glass shadow-sm border border-white/40 p-5 text-center"
+          >
+            <div className="text-3xl font-display font-bold text-cocoa">
+              {loading ? "—" : value}
+            </div>
+            <div className="text-[10px] uppercase tracking-widest text-cocoa/50 font-bold mt-1">
+              {label}
+            </div>
           </motion.div>
         ))}
       </div>
 
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
-        className="rounded-2xl glass shadow-sm overflow-hidden border border-white/40">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+        className="rounded-2xl glass shadow-sm overflow-hidden border border-white/40"
+      >
         <div className="p-4 border-b border-cocoa/5 flex flex-col sm:flex-row gap-4 justify-between items-center bg-white/40">
           <div className="relative w-full sm:w-72">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-cocoa/40" />
@@ -124,7 +149,9 @@ function UsersAdmin() {
           </div>
         ) : filtered.length === 0 ? (
           <div className="py-20 text-center text-cocoa/40 text-sm">
-            {search ? "No users match your search." : "No users found. Users appear here after they sign up."}
+            {search
+              ? "No users match your search."
+              : "No users found. Users appear here after they sign up."}
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -147,7 +174,11 @@ function UsersAdmin() {
                           {(user.full_name ?? user.email ?? "?").charAt(0).toUpperCase()}
                         </div>
                         <div>
-                          <div className="font-bold text-cocoa">{user.full_name ?? <span className="text-cocoa/40 italic">No name</span>}</div>
+                          <div className="font-bold text-cocoa">
+                            {user.full_name ?? (
+                              <span className="text-cocoa/40 italic">No name</span>
+                            )}
+                          </div>
                           <div className="text-xs text-cocoa/60 flex items-center gap-1 mt-0.5">
                             <Mail className="h-3 w-3" /> {user.email ?? "—"}
                           </div>

@@ -10,7 +10,7 @@ export function ScrollButton() {
     const handleScroll = () => {
       const scrolled = window.scrollY;
       const height = document.documentElement.scrollHeight - window.innerHeight;
-      
+
       // Show button after 300px
       if (scrolled > 300) {
         setShow(true);
@@ -61,9 +61,9 @@ export function ScrollButton() {
           ) : (
             <ChevronDown className="h-4 w-4" />
           )}
-          
+
           {/* Subtle ring animation */}
-          <motion.div 
+          <motion.div
             animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0, 0.3] }}
             transition={{ duration: 2, repeat: Infinity }}
             className="absolute inset-0 rounded-full border border-gold"

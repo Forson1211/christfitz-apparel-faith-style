@@ -34,7 +34,7 @@ export function Hero() {
             fetchpriority="high"
             onError={(e) => {
               console.error("Hero background failed to load:", e.currentTarget.src);
-              e.currentTarget.style.display = 'none';
+              e.currentTarget.style.display = "none";
             }}
           />
         ) : (
@@ -47,7 +47,6 @@ export function Hero() {
       <FloatingOrbs variant="dark" />
 
       <div className="relative z-10 mx-auto flex min-h-[auto] lg:min-h-screen max-w-7xl flex-col lg:flex-row items-center justify-start lg:justify-between gap-8 lg:gap-20 px-5 text-center lg:text-left pt-28 pb-12 sm:pt-32 sm:pb-20 sm:px-6">
-        
         {/* Left Side: Content */}
         <div className="flex flex-col items-center lg:items-start max-w-3xl lg:max-w-2xl">
           <motion.h1
@@ -61,7 +60,8 @@ export function Hero() {
                 {h.title.replace("Faith.", "").replace("Faith", "").trim()}
                 <br />
                 <span className="whitespace-nowrap">
-                  Faith <span className="font-light marquee-text inline-block pb-2">{h.titleAccent}</span>
+                  Faith{" "}
+                  <span className="font-light marquee-text inline-block pb-2">{h.titleAccent}</span>
                 </span>
               </>
             ) : (
@@ -120,15 +120,17 @@ export function Hero() {
                 </div>
                 <div className="text-left">
                   <div className="font-display text-xl sm:text-5xl">50K+</div>
-                  <div className="text-[8px] sm:text-xs uppercase tracking-[0.2em] text-cream/50 mt-0.5 sm:mt-1">Believers Reached</div>
+                  <div className="text-[8px] sm:text-xs uppercase tracking-[0.2em] text-cream/50 mt-0.5 sm:mt-1">
+                    Believers Reached
+                  </div>
                 </div>
               </div>
               <div className="mt-4 sm:mt-8 h-1 w-full overflow-hidden rounded-full bg-white/5">
-                <motion.div 
+                <motion.div
                   initial={{ width: 0 }}
                   whileInView={{ width: "85%" }}
                   transition={{ duration: 1.5, delay: 1.8, ease: "easeOut" }}
-                  className="h-full bg-gradient-to-r from-gold to-cream/40" 
+                  className="h-full bg-gradient-to-r from-gold to-cream/40"
                 />
               </div>
             </div>
@@ -139,7 +141,9 @@ export function Hero() {
                 <Shirt className="h-4 w-4 sm:h-6 sm:w-6" />
               </div>
               <div className="font-display text-lg sm:text-4xl">120+</div>
-              <div className="text-[8px] uppercase tracking-widest text-cream/40 mt-1 sm:mt-2">Premium Designs</div>
+              <div className="text-[8px] uppercase tracking-widest text-cream/40 mt-1 sm:mt-2">
+                Premium Designs
+              </div>
             </div>
 
             {/* Bottom Right Card */}
@@ -148,12 +152,13 @@ export function Hero() {
                 <Star className="h-4 w-4 sm:h-6 sm:w-6" />
               </div>
               <div className="font-display text-lg sm:text-4xl">4.9★</div>
-              <div className="text-[8px] uppercase tracking-widest text-cream/40 mt-1 sm:mt-2">Community Rating</div>
+              <div className="text-[8px] uppercase tracking-widest text-cream/40 mt-1 sm:mt-2">
+                Community Rating
+              </div>
             </div>
           </div>
         </motion.div>
       </div>
-
     </section>
   );
 }

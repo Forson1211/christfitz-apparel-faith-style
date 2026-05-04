@@ -22,25 +22,59 @@ export function SearchModal({ open, onClose }: { open: boolean; onClose: () => v
 
   const results = useMemo(() => {
     const q = query.trim().toLowerCase();
-    
+
     // 1. Static Pages with Keywords
     const pages = [
-      { name: "About ChristFitz", category: "Page", href: "/about", keys: ["story", "mission", "who", "brand"] },
-      { name: "Contact & Support", category: "Page", href: "/contact", keys: ["help", "email", "phone", "address", "support"] },
-      { name: "Shipping & Returns", category: "Page", href: "/shipping", keys: ["delivery", "track", "refund", "exchange", "orders"] },
-      { name: "Frequently Asked Questions", category: "Page", href: "/faqs", keys: ["faq", "help", "how to", "questions"] },
-      { name: "Privacy Policy", category: "Page", href: "/privacy", keys: ["legal", "data", "security", "terms"] },
-      { name: "Terms of Service", category: "Page", href: "/terms", keys: ["legal", "rules", "policy"] },
-    ].filter(p => !q || p.name.toLowerCase().includes(q) || p.keys.some(k => k.includes(q)));
+      {
+        name: "About ChristFitz",
+        category: "Page",
+        href: "/about",
+        keys: ["story", "mission", "who", "brand"],
+      },
+      {
+        name: "Contact & Support",
+        category: "Page",
+        href: "/contact",
+        keys: ["help", "email", "phone", "address", "support"],
+      },
+      {
+        name: "Shipping & Returns",
+        category: "Page",
+        href: "/shipping",
+        keys: ["delivery", "track", "refund", "exchange", "orders"],
+      },
+      {
+        name: "Frequently Asked Questions",
+        category: "Page",
+        href: "/faqs",
+        keys: ["faq", "help", "how to", "questions"],
+      },
+      {
+        name: "Privacy Policy",
+        category: "Page",
+        href: "/privacy",
+        keys: ["legal", "data", "security", "terms"],
+      },
+      {
+        name: "Terms of Service",
+        category: "Page",
+        href: "/terms",
+        keys: ["legal", "rules", "policy"],
+      },
+    ].filter((p) => !q || p.name.toLowerCase().includes(q) || p.keys.some((k) => k.includes(q)));
 
     // 2. Categories
     const cats = categories
-      .map((c: any) => ({ name: c.name, category: "Collection", href: `/products?category=${c.name}` }))
+      .map((c: any) => ({
+        name: c.name,
+        category: "Collection",
+        href: `/products?category=${c.name}`,
+      }))
       .filter((c: any) => !q || c.name.toLowerCase().includes(q));
 
     // 3. Deep Product Search
     const prods = products
-      .filter(p => {
+      .filter((p) => {
         if (!q) return false;
         const name = p.name.toLowerCase();
         const cat = p.category.toLowerCase();
@@ -58,7 +92,8 @@ export function SearchModal({ open, onClose }: { open: boolean; onClose: () => v
     return { prods, pages, cats };
   }, [query, products, categories]);
 
-  const hasResults = results.prods.length > 0 || results.pages.length > 0 || results.cats.length > 0;
+  const hasResults =
+    results.prods.length > 0 || results.pages.length > 0 || results.cats.length > 0;
 
   return (
     <AnimatePresence>
@@ -104,20 +139,32 @@ export function SearchModal({ open, onClose }: { open: boolean; onClose: () => v
             <div className="max-h-[65vh] overflow-y-auto p-4 custom-scrollbar space-y-6">
               {!hasResults ? (
                 <div className="py-20 text-center">
-                  <p className="text-cocoa/40 italic">We couldn't find anything matching "{query}"</p>
-                  <button onClick={() => setQuery("")} className="mt-4 text-xs font-bold uppercase tracking-widest text-gold hover:underline">Clear search</button>
+                  <p className="text-cocoa/40 italic">
+                    We couldn't find anything matching "{query}"
+                  </p>
+                  <button
+                    onClick={() => setQuery("")}
+                    className="mt-4 text-xs font-bold uppercase tracking-widest text-gold hover:underline"
+                  >
+                    Clear search
+                  </button>
                 </div>
               ) : (
                 <>
                   {/* Category Results */}
                   {results.cats.length > 0 && (
                     <div className="space-y-2">
-                      <p className="px-2 text-[10px] uppercase tracking-[0.2em] text-cocoa/40 font-bold">Collections</p>
+                      <p className="px-2 text-[10px] uppercase tracking-[0.2em] text-cocoa/40 font-bold">
+                        Collections
+                      </p>
                       <div className="grid grid-cols-2 gap-2">
                         {results.cats.map((c: any) => (
                           <button
                             key={c.name}
-                            onClick={() => { navigate({ to: c.href as any }); onClose(); }}
+                            onClick={() => {
+                              navigate({ to: c.href as any });
+                              onClose();
+                            }}
                             className="flex items-center gap-3 rounded-2xl bg-cocoa/5 p-3 text-left transition hover:bg-gold hover:text-cocoa"
                           >
                             <span className="font-medium text-sm">{c.name}</span>
@@ -130,16 +177,23 @@ export function SearchModal({ open, onClose }: { open: boolean; onClose: () => v
                   {/* Page Results */}
                   {results.pages.length > 0 && (
                     <div className="space-y-2">
-                      <p className="px-2 text-[10px] uppercase tracking-[0.2em] text-cocoa/40 font-bold">Help & Info</p>
+                      <p className="px-2 text-[10px] uppercase tracking-[0.2em] text-cocoa/40 font-bold">
+                        Help & Info
+                      </p>
                       <div className="grid gap-1">
                         {results.pages.map((p) => (
                           <button
                             key={p.name}
-                            onClick={() => { navigate({ to: p.href as any }); onClose(); }}
+                            onClick={() => {
+                              navigate({ to: p.href as any });
+                              onClose();
+                            }}
                             className="flex items-center justify-between rounded-xl px-3 py-2 text-left transition hover:bg-cocoa/5 group"
                           >
                             <span className="text-sm font-medium">{p.name}</span>
-                            <span className="text-[10px] uppercase tracking-widest text-cocoa/30 group-hover:text-gold transition-colors">Go to page →</span>
+                            <span className="text-[10px] uppercase tracking-widest text-cocoa/30 group-hover:text-gold transition-colors">
+                              Go to page →
+                            </span>
                           </button>
                         ))}
                       </div>
@@ -149,27 +203,39 @@ export function SearchModal({ open, onClose }: { open: boolean; onClose: () => v
                   {/* Product Results */}
                   {results.prods.length > 0 && (
                     <div className="space-y-2">
-                      <p className="px-2 text-[10px] uppercase tracking-[0.2em] text-cocoa/40 font-bold">Products</p>
+                      <p className="px-2 text-[10px] uppercase tracking-[0.2em] text-cocoa/40 font-bold">
+                        Products
+                      </p>
                       <ul className="grid gap-2">
                         {results.prods.map((p) => (
                           <li key={p.id}>
                             <button
-                              onClick={() => { 
+                              onClick={() => {
                                 navigate({ to: "/products", search: { category: p.category } });
-                                onClose(); 
+                                onClose();
                               }}
                               className="group flex w-full items-center gap-4 rounded-3xl border border-transparent p-2.5 text-left transition-all hover:bg-cocoa hover:text-cream hover:shadow-luxe"
                             >
                               <div className="h-16 w-16 overflow-hidden rounded-2xl bg-cocoa/5 transition-transform group-hover:scale-105">
-                                <img src={productImage(p)} alt={p.name} className="h-full w-full object-cover" />
+                                <img
+                                  src={productImage(p)}
+                                  alt={p.name}
+                                  className="h-full w-full object-cover"
+                                />
                               </div>
                               <div className="min-w-0 flex-1">
-                                <p className="truncate font-display text-lg leading-tight">{p.name}</p>
-                                <p className="text-[10px] uppercase tracking-widest text-cocoa/40 group-hover:text-cream/50 mt-0.5">{p.category}</p>
+                                <p className="truncate font-display text-lg leading-tight">
+                                  {p.name}
+                                </p>
+                                <p className="text-[10px] uppercase tracking-widest text-cocoa/40 group-hover:text-cream/50 mt-0.5">
+                                  {p.category}
+                                </p>
                               </div>
                               <div className="text-right pr-2">
                                 <p className="font-bold tabular-nums">₵{p.price}</p>
-                                <p className="text-[9px] uppercase tracking-tighter opacity-40">View Piece</p>
+                                <p className="text-[9px] uppercase tracking-tighter opacity-40">
+                                  View Piece
+                                </p>
                               </div>
                             </button>
                           </li>

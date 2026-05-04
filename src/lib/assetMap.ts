@@ -15,9 +15,16 @@ import essentials from "@/assets/collection-essentials.jpg";
 import premium from "@/assets/collection-premium.jpg";
 
 const map: Record<string, string> = {
-  "p1.jpg": p1, "p2.jpg": p2, "p3.jpg": p3, "p4.jpg": p4,
-  "p5.jpg": p5, "p6.jpg": p6, "p7.jpg": p7, "p8.jpg": p8,
-  "hero.jpg": hero, "about.jpg": about,
+  "p1.jpg": p1,
+  "p2.jpg": p2,
+  "p3.jpg": p3,
+  "p4.jpg": p4,
+  "p5.jpg": p5,
+  "p6.jpg": p6,
+  "p7.jpg": p7,
+  "p8.jpg": p8,
+  "hero.jpg": hero,
+  "about.jpg": about,
   "collection-tees.jpg": tees,
   "collection-essentials.jpg": essentials,
   "collection-premium.jpg": premium,

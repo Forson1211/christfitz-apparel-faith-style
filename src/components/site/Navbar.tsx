@@ -1,7 +1,16 @@
 import { Link, useLocation } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, ShoppingCart, Menu, X, User as UserIcon, Package, Heart, LogOut } from "lucide-react";
+import {
+  Search,
+  ShoppingCart,
+  Menu,
+  X,
+  User as UserIcon,
+  Package,
+  Heart,
+  LogOut,
+} from "lucide-react";
 import { useCart } from "@/lib/cart";
 import { useSite } from "@/lib/site";
 import { useAuth } from "@/lib/auth";
@@ -37,36 +46,38 @@ export function Navbar() {
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${scrolled ? "py-2 sm:py-3" : "py-4 sm:py-5"}`}
       >
         <div className="mx-auto max-w-7xl px-4 sm:px-5">
-            <div
-              className="flex items-center justify-between rounded-full px-4 sm:px-5 py-2.5 sm:py-3 transition-all duration-500 glass-dark text-cream shadow-soft"
+          <div className="flex items-center justify-between rounded-full px-4 sm:px-5 py-2.5 sm:py-3 transition-all duration-500 glass-dark text-cream shadow-soft">
+            <Link
+              to="/"
+              onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+              className="flex items-center gap-2 font-display text-lg sm:text-xl tracking-tight"
             >
-              <Link 
-                to="/" 
-                onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-                className="flex items-center gap-2 font-display text-lg sm:text-xl tracking-tight"
-              >
-                {(settings.logo.url || "/logo.png") ? (
-                  <img src={settings.logo.url || "/logo.png"} alt={settings.brand.name} className="h-10 w-auto object-contain" />
-                ) : (
-                  <span className="grid h-10 w-10 place-items-center rounded-full bg-cream text-cocoa font-bold">
-                    {settings.logo.symbol || "✝"}
-                  </span>
-                )}
-              </Link>
-  
-              <nav className="hidden md:flex items-center gap-7 text-sm font-medium">
-                {navLinks.map((l) => (
-                  <Link
-                    key={l.id}
-                    to={l.href}
-                    onClick={() => l.href === "/" && window.scrollTo({ top: 0, behavior: 'smooth' })}
-                    activeOptions={{ exact: l.href === "/" }}
-                    className="relative opacity-70 transition hover:opacity-100 after:absolute after:left-0 after:-bottom-1.5 after:h-[2px] after:w-0 after:bg-gold after:transition-all hover:after:w-full data-[status=active]:opacity-100 data-[status=active]:after:w-full"
-                  >
-                    {l.label}
-                  </Link>
-                ))}
-              </nav>
+              {settings.logo.url || "/logo.png" ? (
+                <img
+                  src={settings.logo.url || "/logo.png"}
+                  alt={settings.brand.name}
+                  className="h-10 w-auto object-contain"
+                />
+              ) : (
+                <span className="grid h-10 w-10 place-items-center rounded-full bg-cream text-cocoa font-bold">
+                  {settings.logo.symbol || "✝"}
+                </span>
+              )}
+            </Link>
+
+            <nav className="hidden md:flex items-center gap-7 text-sm font-medium">
+              {navLinks.map((l) => (
+                <Link
+                  key={l.id}
+                  to={l.href}
+                  onClick={() => l.href === "/" && window.scrollTo({ top: 0, behavior: "smooth" })}
+                  activeOptions={{ exact: l.href === "/" }}
+                  className="relative opacity-70 transition hover:opacity-100 after:absolute after:left-0 after:-bottom-1.5 after:h-[2px] after:w-0 after:bg-gold after:transition-all hover:after:w-full data-[status=active]:opacity-100 data-[status=active]:after:w-full"
+                >
+                  {l.label}
+                </Link>
+              ))}
+            </nav>
 
             <div className="flex items-center gap-1 sm:gap-2">
               <button
@@ -77,14 +88,24 @@ export function Navbar() {
                 <Search className="h-4 w-4" />
               </button>
               <div className="relative hidden sm:block group">
-                <button
-                  className="flex items-center gap-2 h-9 px-3 rounded-full hover:bg-cream/10 transition"
-                >
+                <button className="flex items-center gap-2 h-9 px-3 rounded-full hover:bg-cream/10 transition">
                   <UserIcon className="h-4 w-4" />
                   <span className="text-sm font-medium">Account</span>
                   <motion.span animate={{ rotate: 0 }} className="text-gold">
-                    <svg width="10" height="6" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M1 1L5 5L9 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                    <svg
+                      width="10"
+                      height="6"
+                      viewBox="0 0 10 6"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M1 1L5 5L9 1"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
                     </svg>
                   </motion.span>
                 </button>
@@ -103,8 +124,12 @@ export function Navbar() {
                       </div>
                     ) : (
                       <div className="p-4 pb-2">
-                        <p className="text-[10px] uppercase tracking-[0.2em] text-cocoa/40 font-bold mb-1">Signed in as</p>
-                        <p className="text-sm font-bold truncate">{user.user_metadata?.full_name || user.email}</p>
+                        <p className="text-[10px] uppercase tracking-[0.2em] text-cocoa/40 font-bold mb-1">
+                          Signed in as
+                        </p>
+                        <p className="text-sm font-bold truncate">
+                          {user.user_metadata?.full_name || user.email}
+                        </p>
                         <div className="h-[1px] bg-cocoa/5 mt-4 mb-2" />
                       </div>
                     )}
@@ -179,7 +204,10 @@ export function Navbar() {
               exit={{ opacity: 0 }}
               className="fixed inset-0 z-50 md:hidden"
             >
-              <div className="absolute inset-0 bg-cocoa/80 backdrop-blur-xl" onClick={() => setOpen(false)} />
+              <div
+                className="absolute inset-0 bg-cocoa/80 backdrop-blur-xl"
+                onClick={() => setOpen(false)}
+              />
               <motion.div
                 initial={{ x: "100%" }}
                 animate={{ x: 0 }}
@@ -189,8 +217,12 @@ export function Navbar() {
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2 font-display text-xl tracking-tight">
-                    {(settings.logo.url || "/logo.png") ? (
-                      <img src={settings.logo.url || "/logo.png"} alt={settings.brand.name} className="h-10 w-auto object-contain" />
+                    {settings.logo.url || "/logo.png" ? (
+                      <img
+                        src={settings.logo.url || "/logo.png"}
+                        alt={settings.brand.name}
+                        className="h-10 w-auto object-contain"
+                      />
                     ) : (
                       <span className="grid h-10 w-10 place-items-center rounded-full bg-cream text-cocoa font-bold">
                         {settings.logo.symbol || "✝"}
@@ -214,15 +246,21 @@ export function Navbar() {
                         animate={{ x: 0, opacity: 1 }}
                         transition={{ delay: 0.05 * i }}
                       >
-                        <Link to={l.href} onClick={() => setOpen(false)} className="hover:text-gold transition-colors">
+                        <Link
+                          to={l.href}
+                          onClick={() => setOpen(false)}
+                          className="hover:text-gold transition-colors"
+                        >
                           {l.label}
                         </Link>
                       </motion.div>
                     ))}
                   </div>
- 
+
                   <div className="mt-6 pt-6 border-t border-white/10 space-y-4">
-                    <p className="text-[10px] uppercase tracking-[0.3em] text-cream/40 font-bold px-1">Account & Settings</p>
+                    <p className="text-[10px] uppercase tracking-[0.3em] text-cream/40 font-bold px-1">
+                      Account & Settings
+                    </p>
                     <div className="grid gap-2">
                       {[
                         { label: "Profile Settings", href: "/account", Icon: UserIcon },
@@ -233,7 +271,7 @@ export function Navbar() {
                           key={item.label}
                           initial={{ x: 20, opacity: 0 }}
                           animate={{ x: 0, opacity: 1 }}
-                          transition={{ delay: 0.2 + (0.05 * i) }}
+                          transition={{ delay: 0.2 + 0.05 * i }}
                         >
                           <Link
                             to={item.href as any}
@@ -246,7 +284,7 @@ export function Navbar() {
                         </motion.div>
                       ))}
                     </div>
- 
+
                     {!user ? (
                       <Link
                         to="/account"
@@ -257,14 +295,17 @@ export function Navbar() {
                       </Link>
                     ) : (
                       <button
-                        onClick={() => { signOut(); setOpen(false); }}
+                        onClick={() => {
+                          signOut();
+                          setOpen(false);
+                        }}
                         className="flex items-center justify-center gap-2 w-full rounded-2xl bg-white/5 py-3.5 text-sm font-medium text-red-400 hover:bg-red-400/10 transition-all"
                       >
                         <LogOut className="h-4 w-4" /> Sign Out
                       </button>
                     )}
                   </div>
- 
+
                   {/* Search bar removed from mobile menu as requested */}
                 </nav>
               </motion.div>

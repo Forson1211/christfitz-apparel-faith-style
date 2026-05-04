@@ -45,9 +45,14 @@ const infiniteReviews = [...reviews, ...reviews, ...reviews];
 
 export function Testimonials() {
   return (
-    <section id="testimonials" className="relative overflow-hidden py-24 bg-[#1A0D07] text-cream border-y border-white/5">
+    <section
+      id="testimonials"
+      className="relative overflow-hidden py-24 bg-[#1A0D07] text-cream border-y border-white/5"
+    >
       <div className="mx-auto max-w-7xl px-6 text-center mb-16">
-        <p className="text-[10px] uppercase tracking-[0.4em] text-cream/40 font-bold">— Community Love</p>
+        <p className="text-[10px] uppercase tracking-[0.4em] text-cream/40 font-bold">
+          — Community Love
+        </p>
         <h2 className="mt-4 font-display text-4xl sm:text-5xl text-white">
           Words from the <span className="text-gold">believers.</span>
         </h2>
@@ -78,18 +83,23 @@ export function Testimonials() {
                   <Star key={k} className="h-3.5 w-3.5 fill-gold text-gold" />
                 ))}
               </div>
-              
+
               <p className="text-sm leading-relaxed text-cream/80 whitespace-normal mb-8 min-h-[4.5rem]">
                 “{review.text}”
               </p>
 
               <div className="flex items-center gap-3 mt-auto">
                 <div className="h-10 w-10 rounded-full bg-gold/10 flex items-center justify-center text-gold font-bold text-xs uppercase tracking-tighter">
-                  {review.name.split(" ").map(n => n[0]).join("")}
+                  {review.name
+                    .split(" ")
+                    .map((n) => n[0])
+                    .join("")}
                 </div>
                 <div className="text-left">
                   <div className="text-sm font-bold text-cream">{review.name}</div>
-                  <div className="text-[10px] uppercase tracking-wider text-cream/40 font-medium">{review.role}</div>
+                  <div className="text-[10px] uppercase tracking-wider text-cream/40 font-medium">
+                    {review.role}
+                  </div>
                 </div>
               </div>
             </div>

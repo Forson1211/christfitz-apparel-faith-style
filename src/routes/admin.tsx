@@ -1,6 +1,27 @@
-import { createFileRoute, Outlet, redirect, Link, useNavigate, useLocation } from "@tanstack/react-router";
+import {
+  createFileRoute,
+  Outlet,
+  redirect,
+  Link,
+  useNavigate,
+  useLocation,
+} from "@tanstack/react-router";
 import { useAuth } from "@/lib/auth";
-import { LayoutDashboard, Package, FolderTree, Palette, Image as ImageIcon, Type, Navigation as NavIcon, LogOut, Home, ShoppingCart, Users, BarChart3, Tag } from "lucide-react";
+import {
+  LayoutDashboard,
+  Package,
+  FolderTree,
+  Palette,
+  Image as ImageIcon,
+  Type,
+  Navigation as NavIcon,
+  LogOut,
+  Home,
+  ShoppingCart,
+  Users,
+  BarChart3,
+  Tag,
+} from "lucide-react";
 import { useEffect } from "react";
 
 export const Route = createFileRoute("/admin")({
@@ -57,17 +78,22 @@ function AdminLayout() {
           </div>
           <h1 className="font-display text-3xl">Access Denied</h1>
           <p className="mt-3 text-sm text-cocoa/60 leading-relaxed">
-            Your account does not have admin permissions. If you are the first user, try to bootstrap admin access.
+            Your account does not have admin permissions. If you are the first user, try to
+            bootstrap admin access.
           </p>
           <div className="mt-8 space-y-3">
             <button
-              onClick={() => bootstrapAdmin().then(success => {
-                if (success) {
-                  window.location.reload();
-                } else {
-                  alert("Bootstrap failed. An admin might already exist or the system is locked.");
-                }
-              })}
+              onClick={() =>
+                bootstrapAdmin().then((success) => {
+                  if (success) {
+                    window.location.reload();
+                  } else {
+                    alert(
+                      "Bootstrap failed. An admin might already exist or the system is locked.",
+                    );
+                  }
+                })
+              }
               className="w-full rounded-2xl bg-gold text-cocoa px-6 py-4 text-xs font-bold uppercase tracking-widest hover:bg-gold/80 transition-all shadow-soft"
             >
               Try to Bootstrap Admin
@@ -87,8 +113,13 @@ function AdminLayout() {
   return (
     <div className="flex min-h-screen bg-cream text-cocoa">
       <aside className="hidden md:flex w-60 shrink-0 flex-col border-r border-cocoa/10 bg-cream/60 backdrop-blur-xl">
-        <Link to="/admin/dashboard" className="flex items-center gap-2 px-5 py-5 font-display text-xl">
-          <span className="grid h-7 w-7 place-items-center rounded-lg bg-cocoa text-cream text-sm">✝</span>
+        <Link
+          to="/admin/dashboard"
+          className="flex items-center gap-2 px-5 py-5 font-display text-xl"
+        >
+          <span className="grid h-7 w-7 place-items-center rounded-lg bg-cocoa text-cream text-sm">
+            ✝
+          </span>
           ChristFitz · Admin
         </Link>
         <nav className="flex-1 space-y-1 px-3">
@@ -99,7 +130,9 @@ function AdminLayout() {
                 key={to}
                 to={to}
                 className={`flex items-center gap-3 rounded-xl px-3 py-2 text-sm transition ${
-                  active ? "bg-cocoa text-cream font-medium" : "text-cocoa/70 hover:bg-cocoa/5 hover:text-cocoa"
+                  active
+                    ? "bg-cocoa text-cream font-medium"
+                    : "text-cocoa/70 hover:bg-cocoa/5 hover:text-cocoa"
                 }`}
               >
                 <Icon className="h-4 w-4" />
@@ -109,7 +142,10 @@ function AdminLayout() {
           })}
         </nav>
         <div className="space-y-1 border-t border-cocoa/10 p-3">
-          <Link to="/" className="flex items-center gap-3 rounded-xl px-3 py-2 text-sm text-cocoa/70 hover:bg-cocoa/5 hover:text-cocoa">
+          <Link
+            to="/"
+            className="flex items-center gap-3 rounded-xl px-3 py-2 text-sm text-cocoa/70 hover:bg-cocoa/5 hover:text-cocoa"
+          >
             <Home className="h-4 w-4" /> Visit site
           </Link>
           <button
@@ -123,8 +159,13 @@ function AdminLayout() {
 
       <div className="flex-1 min-w-0">
         <header className="md:hidden flex items-center justify-between border-b border-cocoa/10 px-5 py-4">
-          <Link to="/admin/dashboard" className="font-display text-lg">ChristFitz · Admin</Link>
-          <button onClick={() => signOut().then(() => navigate({ to: "/admin/login" }))} className="text-sm text-cocoa/60">
+          <Link to="/admin/dashboard" className="font-display text-lg">
+            ChristFitz · Admin
+          </Link>
+          <button
+            onClick={() => signOut().then(() => navigate({ to: "/admin/login" }))}
+            className="text-sm text-cocoa/60"
+          >
             Sign out
           </button>
         </header>
@@ -132,7 +173,11 @@ function AdminLayout() {
           {items.map(({ to, label, Icon }) => {
             const active = path === to;
             return (
-              <Link key={to} to={to} className={`flex shrink-0 items-center gap-2 rounded-full px-3 py-1.5 text-xs ${active ? "bg-cocoa text-cream" : "text-cocoa/60"}`}>
+              <Link
+                key={to}
+                to={to}
+                className={`flex shrink-0 items-center gap-2 rounded-full px-3 py-1.5 text-xs ${active ? "bg-cocoa text-cream" : "text-cocoa/60"}`}
+              >
                 <Icon className="h-3 w-3" /> {label}
               </Link>
             );

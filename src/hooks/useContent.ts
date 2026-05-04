@@ -19,7 +19,7 @@ export interface ContentItem {
  */
 export function useContent(category?: string) {
   const cacheKey = `cf_content_${category || "all"}`;
-  
+
   // 1. Initial State from Cache (Lightning Load)
   const [items, setItems] = useState<ContentItem[]>(() => {
     try {
@@ -29,138 +29,158 @@ export function useContent(category?: string) {
       return [];
     }
   });
-  
+
   const [loading, setLoading] = useState(false);
 
   // ── Fetch ──────────────────────────────────────────────────────────────
-  const fetchItems = useCallback(async (isInitial = false, force = false) => {
-    // 1. Global Throttle Check: Skip if forced (Admin actions)
-    const throttleUntil = (window as any)._supabaseThrottleUntil || 0;
-    if (!force && Date.now() < throttleUntil) {
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const { data, error } = await supabase
-        .from("content")
-        .select("*")
-        .eq("category", category || "general")
-        .eq("is_active", true)
-        .order("position", { ascending: true })
-        .order("created_at", { ascending: false });
-
-      if (error) {
-        const is503 = (error as any).status === 503 || error.message.includes("503");
-        if (is503) {
-          console.error(`[useContent] 503 Error for ${category}. Silencing for 5s.`);
-          (window as any)._supabaseThrottleUntil = Date.now() + 5000;
-        }
-        throw error;
+  const fetchItems = useCallback(
+    async (isInitial = false, force = false) => {
+      // 1. Global Throttle Check: Skip if forced (Admin actions)
+      const throttleUntil = (window as any)._supabaseThrottleUntil || 0;
+      if (!force && Date.now() < throttleUntil) {
+        return;
       }
 
-      const fetchedItems = (data as ContentItem[]) ?? [];
-      setItems(fetchedItems);
-      localStorage.setItem(cacheKey, JSON.stringify(fetchedItems));
-    } catch (err) {
-      console.error(`[useContent] Error fetching ${category}:`, err);
-    } finally {
-      setLoading(false);
-    }
-  }, [category, cacheKey]);
+      setLoading(true);
+      try {
+        const { data, error } = await supabase
+          .from("content")
+          .select("*")
+          .eq("category", category || "general")
+          .eq("is_active", true)
+          .order("position", { ascending: true })
+          .order("created_at", { ascending: false });
+
+        if (error) {
+          const is503 = (error as any).status === 503 || error.message.includes("503");
+          if (is503) {
+            console.error(`[useContent] 503 Error for ${category}. Silencing for 5s.`);
+            (window as any)._supabaseThrottleUntil = Date.now() + 5000;
+          }
+          throw error;
+        }
+
+        const fetchedItems = (data as ContentItem[]) ?? [];
+        setItems(fetchedItems);
+        localStorage.setItem(cacheKey, JSON.stringify(fetchedItems));
+      } catch (err) {
+        console.error(`[useContent] Error fetching ${category}:`, err);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [category, cacheKey],
+  );
 
   // ── Save/Update ────────────────────────────────────────────────────────
-  const saveToDb = useCallback(async (params: {
-    name: string;
-    url: string;
-    filePath: string;
-    type: "image" | "video";
-    category: string;
-    metadata?: any;
-    existingId?: string;
-    position?: number;
-  }) => {
-    try {
-      // 1. Hyper-Optimistic Update: Inject into local state immediately
-      const tempId = params.existingId || `temp-${Date.now()}`;
-      const tempItem: Partial<ContentItem> = {
-        id: tempId,
-        name: params.name,
-        url: params.url,
-        type: params.type,
-        category: params.category,
-        metadata: params.metadata || {},
-      };
-
-      setItems((prev: ContentItem[]) => {
-        let next = [...prev];
-        if (params.existingId) {
-          const idx = next.findIndex(x => x.id === params.existingId);
-          if (idx !== -1) {
-            next[idx] = { ...next[idx], ...tempItem } as ContentItem;
-          }
-        } else {
-          const fullTempItem = {
-            ...tempItem,
-            position: params.position ?? 0,
-            is_active: true,
-            created_at: new Date().toISOString()
-          } as ContentItem;
-          next = [...prev, fullTempItem];
-        }
-        localStorage.setItem(cacheKey, JSON.stringify(next));
-        return next;
-      });
-
-      // 2. Perform DB operation
-      let data, error;
-      if (params.existingId) {
-        const updatePayload: any = {
+  const saveToDb = useCallback(
+    async (params: {
+      name: string;
+      url: string;
+      filePath: string;
+      type: "image" | "video";
+      category: string;
+      metadata?: any;
+      existingId?: string;
+      position?: number;
+    }) => {
+      try {
+        // 1. Hyper-Optimistic Update: Inject into local state immediately
+        const tempId = params.existingId || `temp-${Date.now()}`;
+        const tempItem: Partial<ContentItem> = {
+          id: tempId,
           name: params.name,
           url: params.url,
-          file_path: params.filePath,
-          type: params.type,
-          metadata: params.metadata || {}
-        };
-        if (params.position !== undefined) {
-          updatePayload.position = params.position;
-        }
-
-        const res = await supabase.from("content").update(updatePayload).eq("id", params.existingId).select();
-        data = res.data; error = res.error;
-      } else {
-        const res = await supabase.from("content").insert([{
-          name: params.name,
-          url: params.url,
-          file_path: params.filePath,
           type: params.type,
           category: params.category,
           metadata: params.metadata || {},
-          is_active: true,
-          position: params.position ?? 0
-        }]).select();
-        data = res.data; error = res.error;
-      }
+        };
 
-      if (error) {
-        // Simple rollback if new item insertion fails
-        if (!params.existingId) setItems((prev: ContentItem[]) => prev.filter((x: ContentItem) => x.id !== tempId));
-        throw error;
-      }
-      
-      const inserted = data?.[0] ?? null;
-      if (inserted) {
-        // Replace temp with real
-        setItems((prev: ContentItem[]) => prev.map((x: ContentItem) => x.id === tempId ? (inserted as ContentItem) : x));
-        (window as any)._supabaseThrottleUntil = 0;
-      }
+        setItems((prev: ContentItem[]) => {
+          let next = [...prev];
+          if (params.existingId) {
+            const idx = next.findIndex((x) => x.id === params.existingId);
+            if (idx !== -1) {
+              next[idx] = { ...next[idx], ...tempItem } as ContentItem;
+            }
+          } else {
+            const fullTempItem = {
+              ...tempItem,
+              position: params.position ?? 0,
+              is_active: true,
+              created_at: new Date().toISOString(),
+            } as ContentItem;
+            next = [...prev, fullTempItem];
+          }
+          localStorage.setItem(cacheKey, JSON.stringify(next));
+          return next;
+        });
 
-      return inserted as ContentItem | null;
-    } catch (err) {
-      console.error("[useContent] Save error:", err);
-      return null;
-    }
-  }, [cacheKey]);
+        // 2. Perform DB operation
+        let data, error;
+        if (params.existingId) {
+          const updatePayload: any = {
+            name: params.name,
+            url: params.url,
+            file_path: params.filePath,
+            type: params.type,
+            metadata: params.metadata || {},
+          };
+          if (params.position !== undefined) {
+            updatePayload.position = params.position;
+          }
+
+          const res = await supabase
+            .from("content")
+            .update(updatePayload)
+            .eq("id", params.existingId)
+            .select();
+          data = res.data;
+          error = res.error;
+        } else {
+          const res = await supabase
+            .from("content")
+            .insert([
+              {
+                name: params.name,
+                url: params.url,
+                file_path: params.filePath,
+                type: params.type,
+                category: params.category,
+                metadata: params.metadata || {},
+                is_active: true,
+                position: params.position ?? 0,
+              },
+            ])
+            .select();
+          data = res.data;
+          error = res.error;
+        }
+
+        if (error) {
+          // Simple rollback if new item insertion fails
+          if (!params.existingId)
+            setItems((prev: ContentItem[]) => prev.filter((x: ContentItem) => x.id !== tempId));
+          throw error;
+        }
+
+        const inserted = data?.[0] ?? null;
+        if (inserted) {
+          // Replace temp with real
+          setItems((prev: ContentItem[]) =>
+            prev.map((x: ContentItem) => (x.id === tempId ? (inserted as ContentItem) : x)),
+          );
+          (window as any)._supabaseThrottleUntil = 0;
+        }
+
+        return inserted as ContentItem | null;
+      } catch (err) {
+        console.error("[useContent] Save error:", err);
+        return null;
+      }
+    },
+    [cacheKey],
+  );
 
   const deleteItem = useCallback(async (id: string) => {
     try {
@@ -176,7 +196,7 @@ export function useContent(category?: string) {
 
   // ── Realtime ───────────────────────────────────────────────────────────
   useEffect(() => {
-    const channelName = `content_changes_${category || 'all'}`;
+    const channelName = `content_changes_${category || "all"}`;
     const channel = supabase
       .channel(channelName)
       .on(
@@ -185,24 +205,26 @@ export function useContent(category?: string) {
         (payload: any) => {
           const newItem = (payload.new || payload.old) as any;
           if (!category || newItem.category === category) {
-            console.log(`[useContent] Realtime pulse for ${category || 'all'} - Event: ${payload.eventType}`);
-            
+            console.log(
+              `[useContent] Realtime pulse for ${category || "all"} - Event: ${payload.eventType}`,
+            );
+
             // HYPER-FAST UPDATE: Inject directly without refetching
-            if (payload.eventType === 'INSERT') {
+            if (payload.eventType === "INSERT") {
               setItems((prev: ContentItem[]) => {
                 if (prev.some((x: ContentItem) => x.id === newItem.id)) return prev;
                 const next = [...prev, newItem];
                 localStorage.setItem(cacheKey, JSON.stringify(next));
                 return next;
               });
-            } else if (payload.eventType === 'UPDATE') {
+            } else if (payload.eventType === "UPDATE") {
               setItems((prev: ContentItem[]) => {
-                const next = prev.map((x: ContentItem) => x.id === newItem.id ? newItem : x);
+                const next = prev.map((x: ContentItem) => (x.id === newItem.id ? newItem : x));
                 if (!next.some((x: ContentItem) => x.id === newItem.id)) next.push(newItem);
                 localStorage.setItem(cacheKey, JSON.stringify(next));
                 return next;
               });
-            } else if (payload.eventType === 'DELETE') {
+            } else if (payload.eventType === "DELETE") {
               setItems((prev: ContentItem[]) => {
                 const next = prev.filter((x: ContentItem) => x.id !== newItem.id);
                 localStorage.setItem(cacheKey, JSON.stringify(next));
@@ -210,7 +232,7 @@ export function useContent(category?: string) {
               });
             }
           }
-        }
+        },
       )
       .subscribe();
 

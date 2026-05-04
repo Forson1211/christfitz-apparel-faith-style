@@ -20,7 +20,7 @@ export function StaticPage({ title, eyebrow, children }: StaticPageProps) {
           <h1 className="mt-4 font-display text-5xl sm:text-7xl">{title}</h1>
         </motion.div>
 
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.2 }}

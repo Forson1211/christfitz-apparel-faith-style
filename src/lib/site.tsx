@@ -52,10 +52,10 @@ export interface SiteSettings {
     background: string;
   };
   about: { eyebrow: string; title: string; body: string };
-  instagram: { 
-    handle: string; 
-    title: string; 
-    cta: string; 
+  instagram: {
+    handle: string;
+    title: string;
+    cta: string;
     url: string;
     images: { url: string; span: string }[];
   };
@@ -152,8 +152,8 @@ export function SiteProvider({ children }: { children: ReactNode }) {
 
       // Check if any request failed with a server overload
       const errors = [s.error, p.error, c.error, n.error];
-      const has503 = errors.some(e => e?.message.includes("503") || e?.message.includes("cache"));
-      
+      const has503 = errors.some((e) => e?.message.includes("503") || e?.message.includes("cache"));
+
       if (has503) {
         (window as any)._supabaseThrottleUntil = Date.now() + 30000;
         console.error("[Site] SERVER OVERLOAD. Engaging 30s silence.");
@@ -173,7 +173,7 @@ export function SiteProvider({ children }: { children: ReactNode }) {
         setSettings(nextSettings);
         localStorage.setItem("cf_site_settings", JSON.stringify(nextSettings));
       }
-      
+
       if (p.data) {
         const formattedProducts = p.data.map((row: any) => ({
           ...row,
@@ -185,12 +185,12 @@ export function SiteProvider({ children }: { children: ReactNode }) {
         setProducts(formattedProducts);
         localStorage.setItem("cf_products", JSON.stringify(formattedProducts));
       }
-      
+
       if (c.data) {
         setCategories(c.data as any);
         localStorage.setItem("cf_categories", JSON.stringify(c.data));
       }
-      
+
       if (n.data) {
         const visibleLinks = (n.data as any).filter((l: DBNavLink) => l.visible);
         setNavLinks(visibleLinks);
@@ -213,15 +213,11 @@ export function SiteProvider({ children }: { children: ReactNode }) {
 
     // Subscribe to realtime updates for site_settings
     const channel = supabase
-      .channel('site_settings_changes')
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'site_settings' },
-        () => {
-          console.log("[Realtime] Site settings changed, refreshing...");
-          refresh();
-        }
-      )
+      .channel("site_settings_changes")
+      .on("postgres_changes", { event: "*", schema: "public", table: "site_settings" }, () => {
+        console.log("[Realtime] Site settings changed, refreshing...");
+        refresh();
+      })
       .subscribe();
 
     return () => {

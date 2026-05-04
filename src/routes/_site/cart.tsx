@@ -32,7 +32,9 @@ function CartPage() {
               <ShoppingBag className="h-10 w-10 text-cocoa/40" />
             </div>
             <h2 className="mt-6 font-display text-3xl">Your cart is empty</h2>
-            <p className="mt-2 max-w-sm text-muted-foreground">Discover pieces crafted with intention.</p>
+            <p className="mt-2 max-w-sm text-muted-foreground">
+              Discover pieces crafted with intention.
+            </p>
             <Link
               to="/products"
               className="mt-8 inline-flex items-center gap-2 rounded-full bg-cocoa px-7 py-3.5 text-sm font-medium text-cream transition hover:bg-coffee"
@@ -55,7 +57,11 @@ function CartPage() {
                     className="flex gap-4 p-4 sm:p-5"
                   >
                     <div className="h-24 w-24 sm:h-28 sm:w-28 shrink-0 overflow-hidden rounded-2xl bg-cocoa/5">
-                      <img src={item.image} alt={item.name} className="h-full w-full object-cover" />
+                      <img
+                        src={item.image}
+                        alt={item.name}
+                        className="h-full w-full object-cover"
+                      />
                     </div>
                     <div className="flex flex-1 flex-col">
                       <div className="flex items-start justify-between gap-2">
@@ -81,7 +87,9 @@ function CartPage() {
                           >
                             <Minus className="h-3 w-3" />
                           </button>
-                          <span className="w-8 text-center text-sm tabular-nums">{item.quantity}</span>
+                          <span className="w-8 text-center text-sm tabular-nums">
+                            {item.quantity}
+                          </span>
                           <button
                             onClick={() => updateQuantity(item.id, item.quantity + 1)}
                             className="grid h-9 w-9 place-items-center rounded-full transition hover:bg-cocoa/5"
@@ -89,17 +97,25 @@ function CartPage() {
                             <Plus className="h-3 w-3" />
                           </button>
                         </div>
-                        <span className="font-medium tabular-nums">₵{(item.price * item.quantity).toFixed(2)}</span>
+                        <span className="font-medium tabular-nums">
+                          ₵{(item.price * item.quantity).toFixed(2)}
+                        </span>
                       </div>
                     </div>
                   </motion.li>
                 ))}
               </AnimatePresence>
               <div className="flex justify-between p-4">
-                <button onClick={clear} className="text-xs uppercase tracking-widest text-cocoa/60 hover:text-cocoa">
+                <button
+                  onClick={clear}
+                  className="text-xs uppercase tracking-widest text-cocoa/60 hover:text-cocoa"
+                >
                   Clear cart
                 </button>
-                <Link to="/products" className="text-xs uppercase tracking-widest text-cocoa/60 hover:text-cocoa">
+                <Link
+                  to="/products"
+                  className="text-xs uppercase tracking-widest text-cocoa/60 hover:text-cocoa"
+                >
                   Continue shopping
                 </Link>
               </div>
@@ -114,14 +130,16 @@ function CartPage() {
                 </div>
                 <div className="flex justify-between text-cream/70">
                   <span>Shipping</span>
-                  <span className="tabular-nums">{shipping === 0 ? "Free" : `₵${shipping.toFixed(2)}`}</span>
+                  <span className="tabular-nums">
+                    {shipping === 0 ? "Free" : `₵${shipping.toFixed(2)}`}
+                  </span>
                 </div>
                 <div className="mt-3 flex justify-between border-t border-cream/15 pt-3 font-display text-xl">
                   <span>Total</span>
                   <span className="tabular-nums">₵{total.toFixed(2)}</span>
                 </div>
               </div>
-              <Link 
+              <Link
                 to="/checkout"
                 className="mt-7 inline-flex w-full items-center justify-center gap-2 rounded-full bg-cream px-6 py-4 text-sm font-medium text-cocoa transition hover:scale-[1.02]"
               >

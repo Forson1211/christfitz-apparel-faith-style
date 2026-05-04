@@ -21,8 +21,9 @@ export function Products({ limit, initialCategory }: ProductsProps) {
     if (initialCategory) setActive(initialCategory);
   }, [initialCategory]);
 
-  const filtered = (active === "All" ? products : products.filter((p) => p.category === active))
-    .filter((p) => p.active);
+  const filtered = (
+    active === "All" ? products : products.filter((p) => p.category === active)
+  ).filter((p) => p.active);
   const display = limit ? filtered.slice(0, limit) : filtered;
 
   return (
@@ -64,7 +65,10 @@ export function Products({ limit, initialCategory }: ProductsProps) {
           </div>
         </motion.div>
 
-        <motion.div layout className="mt-10 sm:mt-14 grid gap-5 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+        <motion.div
+          layout
+          className="mt-10 sm:mt-14 grid gap-5 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4"
+        >
           <AnimatePresence mode="popLayout">
             {display.map((p, i) => (
               <motion.article
@@ -86,7 +90,10 @@ export function Products({ limit, initialCategory }: ProductsProps) {
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-cocoa/70 via-transparent to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
                   <button
-                    onClick={(e) => { e.stopPropagation(); setSelected(p); }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelected(p);
+                    }}
                     aria-label={`Quick view ${p.name}`}
                     className="absolute left-1/2 top-1/2 grid h-12 w-12 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full glass-dark text-cream opacity-0 scale-75 transition-all duration-500 group-hover:opacity-100 group-hover:scale-100"
                   >
@@ -103,7 +110,10 @@ export function Products({ limit, initialCategory }: ProductsProps) {
                     <p className="mt-0.5 text-sm text-muted-foreground">GH₵ {p.price}</p>
                   </div>
                   <button
-                    onClick={(e) => { e.stopPropagation(); addItem(p); }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      addItem(p);
+                    }}
                     aria-label={`Add ${p.name} to cart`}
                     className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-cocoa text-cream transition-transform hover:rotate-90 hover:bg-coffee"
                   >

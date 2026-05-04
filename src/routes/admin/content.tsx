@@ -20,7 +20,12 @@ interface ImageUploadProps {
   category?: string;
 }
 
-function ImageUpload({ onUpload, onContentItem, saveToDb, category = "general" }: ImageUploadProps) {
+function ImageUpload({
+  onUpload,
+  onContentItem,
+  saveToDb,
+  category = "general",
+}: ImageUploadProps) {
   const [uploading, setUploading] = useState(false);
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -124,7 +129,11 @@ function AdminContent() {
   useEffect(() => {
     // Automatically sync legacy settings images to content table if empty
     const autoSync = async () => {
-      if (!instagramContent.loading && instagramContent.items.length === 0 && settings.instagram?.images?.length > 0) {
+      if (
+        !instagramContent.loading &&
+        instagramContent.items.length === 0 &&
+        settings.instagram?.images?.length > 0
+      ) {
         console.log("[AdminContent] Auto-syncing legacy instagram images...");
         for (const img of settings.instagram.images) {
           if (img.url) {
@@ -170,7 +179,11 @@ function AdminContent() {
     if (instagram?.images) {
       instagram.images.forEach((img, i) => {
         if (img.url)
-          mediaToSync.push({ name: `Instagram Image ${i + 1}`, url: img.url, category: "instagram" });
+          mediaToSync.push({
+            name: `Instagram Image ${i + 1}`,
+            url: img.url,
+            category: "instagram",
+          });
       });
     }
     if (settings.logo?.url) {
@@ -222,8 +235,16 @@ function AdminContent() {
 
       {/* Brand */}
       <Section title="Brand" onSave={() => saveKey("brand", brand)}>
-        <Input label="Brand name" value={brand.name} onChange={(v) => setBrand({ ...brand, name: v })} />
-        <Input label="Tagline" value={brand.tagline} onChange={(v) => setBrand({ ...brand, tagline: v })} />
+        <Input
+          label="Brand name"
+          value={brand.name}
+          onChange={(v) => setBrand({ ...brand, name: v })}
+        />
+        <Input
+          label="Tagline"
+          value={brand.tagline}
+          onChange={(v) => setBrand({ ...brand, tagline: v })}
+        />
       </Section>
 
       {/* Hero */}
@@ -233,65 +254,128 @@ function AdminContent() {
             category="hero"
             saveToDb={heroContent.saveToDb}
             onUpload={(url) => setHero({ ...hero, background: url })}
-            onContentItem={(item) => heroContent.setItems((prev: any) => [item, ...prev].slice(0, 1))}
+            onContentItem={(item) =>
+              heroContent.setItems((prev: any) => [item, ...prev].slice(0, 1))
+            }
           />
           <div className="h-16 w-16 overflow-hidden rounded-xl bg-cocoa/20 border border-cocoa/10">
             {isLoadingInitial ? (
               <div className="h-full w-full bg-cocoa/10 animate-pulse" />
             ) : heroBackground ? (
-              <img 
+              <img
                 key={heroBackground}
-                src={resolveImage(heroBackground)} 
-                alt="Hero Preview" 
+                src={resolveImage(heroBackground)}
+                alt="Hero Preview"
                 className="h-full w-full object-cover"
                 onError={(e) => {
                   console.error("Hero image failed to load:", e.currentTarget.src);
-                  e.currentTarget.style.display = 'none';
+                  e.currentTarget.style.display = "none";
                 }}
               />
             ) : (
-              <div className="h-full w-full flex items-center justify-center text-[10px] text-cocoa/40 text-center leading-tight">No DB Image</div>
+              <div className="h-full w-full flex items-center justify-center text-[10px] text-cocoa/40 text-center leading-tight">
+                No DB Image
+              </div>
             )}
           </div>
           <div className="flex-1 min-w-0">
-            <label className="text-[10px] uppercase tracking-widest text-cocoa/40 font-bold">Hero Background (Live from DB)</label>
+            <label className="text-[10px] uppercase tracking-widest text-cocoa/40 font-bold">
+              Hero Background (Live from DB)
+            </label>
             <p className="text-[10px] text-cocoa/40 truncate">
               {heroContent.items.length > 0 ? heroContent.items[0].url : "Empty in Database"}
             </p>
           </div>
         </div>
-        <Input label="Eyebrow" value={hero.eyebrow} onChange={(v) => setHero({ ...hero, eyebrow: v })} />
+        <Input
+          label="Eyebrow"
+          value={hero.eyebrow}
+          onChange={(v) => setHero({ ...hero, eyebrow: v })}
+        />
         <Input label="Title" value={hero.title} onChange={(v) => setHero({ ...hero, title: v })} />
-        <Input label="Title accent" value={hero.titleAccent} onChange={(v) => setHero({ ...hero, titleAccent: v })} />
-        <Input label="Subtitle" value={hero.subtitle} onChange={(v) => setHero({ ...hero, subtitle: v })} textarea />
-        <Input label="Primary CTA" value={hero.primaryCta} onChange={(v) => setHero({ ...hero, primaryCta: v })} />
-        <Input label="Secondary CTA" value={hero.secondaryCta} onChange={(v) => setHero({ ...hero, secondaryCta: v })} />
+        <Input
+          label="Title accent"
+          value={hero.titleAccent}
+          onChange={(v) => setHero({ ...hero, titleAccent: v })}
+        />
+        <Input
+          label="Subtitle"
+          value={hero.subtitle}
+          onChange={(v) => setHero({ ...hero, subtitle: v })}
+          textarea
+        />
+        <Input
+          label="Primary CTA"
+          value={hero.primaryCta}
+          onChange={(v) => setHero({ ...hero, primaryCta: v })}
+        />
+        <Input
+          label="Secondary CTA"
+          value={hero.secondaryCta}
+          onChange={(v) => setHero({ ...hero, secondaryCta: v })}
+        />
       </Section>
 
       {/* About */}
       <Section title="About" onSave={() => saveKey("about", about)}>
-        <Input label="Eyebrow" value={about.eyebrow} onChange={(v) => setAbout({ ...about, eyebrow: v })} />
-        <Input label="Title" value={about.title} onChange={(v) => setAbout({ ...about, title: v })} />
-        <Input label="Body" value={about.body} onChange={(v) => setAbout({ ...about, body: v })} textarea />
+        <Input
+          label="Eyebrow"
+          value={about.eyebrow}
+          onChange={(v) => setAbout({ ...about, eyebrow: v })}
+        />
+        <Input
+          label="Title"
+          value={about.title}
+          onChange={(v) => setAbout({ ...about, title: v })}
+        />
+        <Input
+          label="Body"
+          value={about.body}
+          onChange={(v) => setAbout({ ...about, body: v })}
+          textarea
+        />
       </Section>
 
       {/* Instagram */}
       <Section title="Instagram" onSave={() => saveKey("instagram", instagram)}>
-        <Input label="Handle (e.g. @christfitz)" value={instagram.handle} onChange={(v) => setInstagram({ ...instagram, handle: v })} />
-        <Input label="Title" value={instagram.title} onChange={(v) => setInstagram({ ...instagram, title: v })} />
-        <Input label="Button Label" value={instagram.cta} onChange={(v) => setInstagram({ ...instagram, cta: v })} />
-        <Input label="Instagram URL" value={instagram.url} onChange={(v) => setInstagram({ ...instagram, url: v })} />
+        <Input
+          label="Handle (e.g. @christfitz)"
+          value={instagram.handle}
+          onChange={(v) => setInstagram({ ...instagram, handle: v })}
+        />
+        <Input
+          label="Title"
+          value={instagram.title}
+          onChange={(v) => setInstagram({ ...instagram, title: v })}
+        />
+        <Input
+          label="Button Label"
+          value={instagram.cta}
+          onChange={(v) => setInstagram({ ...instagram, cta: v })}
+        />
+        <Input
+          label="Instagram URL"
+          value={instagram.url}
+          onChange={(v) => setInstagram({ ...instagram, url: v })}
+        />
 
         <div className="pt-4 border-t border-cocoa/5">
-          <label className="text-xs uppercase tracking-widest text-cocoa/60 font-bold">Gallery Images (Live from DB)</label>
+          <label className="text-xs uppercase tracking-widest text-cocoa/60 font-bold">
+            Gallery Images (Live from DB)
+          </label>
           <div className="mt-5 grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 auto-rows-[120px] sm:auto-rows-[160px]">
             {(() => {
               const adminSlots = new Array(8).fill(null);
               const adminUnplaced: any[] = [];
-              
+
               const allItems = instagramContent.items.slice(0, 8);
               allItems.forEach((item: any) => {
-                if (item.position !== null && item.position >= 0 && item.position < 8 && !adminSlots[item.position]) {
+                if (
+                  item.position !== null &&
+                  item.position >= 0 &&
+                  item.position < 8 &&
+                  !adminSlots[item.position]
+                ) {
                   adminSlots[item.position] = item;
                 } else {
                   adminUnplaced.push(item);
@@ -305,66 +389,97 @@ function AdminContent() {
               }
 
               return adminSlots.map((liveItem, i) => {
-              const displayUrl = liveItem?.url || "";
-              const isSlotLoading = instagramContent.loading && !displayUrl;
-              const spanClass = i === 0 || i === 3 ? "row-span-2 col-span-1" : "col-span-1";
+                const displayUrl = liveItem?.url || "";
+                const isSlotLoading = instagramContent.loading && !displayUrl;
+                const spanClass = i === 0 || i === 3 ? "row-span-2 col-span-1" : "col-span-1";
 
-              return (
-                <div key={i} className={`group relative overflow-hidden rounded-2xl bg-cocoa/5 border border-cocoa/10 flex items-center justify-center ${spanClass}`}>
-                  {isSlotLoading ? (
-                    <div className="absolute inset-0 bg-cocoa/10 animate-pulse" />
-                  ) : displayUrl ? (
-                    <img src={resolveImage(displayUrl)} alt="" className="absolute inset-0 h-full w-full object-cover opacity-70 group-hover:opacity-100 transition-opacity duration-300" />
-                  ) : (
-                    <div className="absolute inset-0 flex items-center justify-center text-cocoa/10"><Upload className="h-8 w-8" /></div>
-                  )}
-                  
-                  {/* Upload Button overlayed on top of the image */}
-                  <div className="relative z-10 scale-90 sm:scale-100 bg-cream/80 hover:bg-cream backdrop-blur-md rounded-full shadow-lg transition-all duration-300">
-                    <ImageUpload
-                      category="instagram"
-                      saveToDb={(params) => instagramContent.saveToDb({ ...params, existingId: liveItem?.id, position: i })}
-                      onUpload={async (url) => {
-                        // 1. Legacy update (optional but kept for fallback compatibility)
-                        const newImages = [...(instagram.images || [])];
-                        newImages[i] = { ...newImages[i], url };
-                        setInstagram({ ...instagram, images: newImages });
+                return (
+                  <div
+                    key={i}
+                    className={`group relative overflow-hidden rounded-2xl bg-cocoa/5 border border-cocoa/10 flex items-center justify-center ${spanClass}`}
+                  >
+                    {isSlotLoading ? (
+                      <div className="absolute inset-0 bg-cocoa/10 animate-pulse" />
+                    ) : displayUrl ? (
+                      <img
+                        src={resolveImage(displayUrl)}
+                        alt=""
+                        className="absolute inset-0 h-full w-full object-cover opacity-70 group-hover:opacity-100 transition-opacity duration-300"
+                      />
+                    ) : (
+                      <div className="absolute inset-0 flex items-center justify-center text-cocoa/10">
+                        <Upload className="h-8 w-8" />
+                      </div>
+                    )}
 
-                        // 2. Zero-latency optimistic preview injected directly into the live grid state!
-                        instagramContent.setItems((prev: any) => {
-                           const next = [...prev];
-                           const existingIdx = next.findIndex((x: any) => x.position === i);
-                           if (existingIdx !== -1) {
-                             next[existingIdx] = { ...next[existingIdx], url };
-                           } else {
-                             next.push({ id: `temp-${Date.now()}`, position: i, url, category: 'instagram', is_active: true });
-                           }
-                           return next;
-                        });
-                      }}
-                      onContentItem={(item) => {
-                        instagramContent.fetchItems(false, true);
-                      }}
-                    />
+                    {/* Upload Button overlayed on top of the image */}
+                    <div className="relative z-10 scale-90 sm:scale-100 bg-cream/80 hover:bg-cream backdrop-blur-md rounded-full shadow-lg transition-all duration-300">
+                      <ImageUpload
+                        category="instagram"
+                        saveToDb={(params) =>
+                          instagramContent.saveToDb({
+                            ...params,
+                            existingId: liveItem?.id,
+                            position: i,
+                          })
+                        }
+                        onUpload={async (url) => {
+                          // 1. Legacy update (optional but kept for fallback compatibility)
+                          const newImages = [...(instagram.images || [])];
+                          newImages[i] = { ...newImages[i], url };
+                          setInstagram({ ...instagram, images: newImages });
+
+                          // 2. Zero-latency optimistic preview injected directly into the live grid state!
+                          instagramContent.setItems((prev: any) => {
+                            const next = [...prev];
+                            const existingIdx = next.findIndex((x: any) => x.position === i);
+                            if (existingIdx !== -1) {
+                              next[existingIdx] = { ...next[existingIdx], url };
+                            } else {
+                              next.push({
+                                id: `temp-${Date.now()}`,
+                                position: i,
+                                url,
+                                category: "instagram",
+                                is_active: true,
+                              });
+                            }
+                            return next;
+                          });
+                        }}
+                        onContentItem={(item) => {
+                          instagramContent.fetchItems(false, true);
+                        }}
+                      />
+                    </div>
+
+                    {/* Visual Identifier */}
+                    <div className="absolute bottom-2 left-2 z-10 pointer-events-none">
+                      <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider bg-cream/90 text-cocoa px-2 py-1 rounded border border-cocoa/5 backdrop-blur-sm shadow-sm">
+                        Slot {i + 1}
+                      </span>
+                    </div>
                   </div>
-                  
-                  {/* Visual Identifier */}
-                  <div className="absolute bottom-2 left-2 z-10 pointer-events-none">
-                    <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider bg-cream/90 text-cocoa px-2 py-1 rounded border border-cocoa/5 backdrop-blur-sm shadow-sm">
-                      Slot {i + 1}
-                    </span>
-                  </div>
-                </div>
-              );
-            })})()}
+                );
+              });
+            })()}
           </div>
         </div>
       </Section>
 
       {/* Footer */}
       <Section title="Footer" onSave={() => saveKey("footer", footer)}>
-        <Input label="Text" value={footer.text} onChange={(v) => setFooter({ ...footer, text: v })} textarea />
-        <Input label="Copyright" value={footer.copyright} onChange={(v) => setFooter({ ...footer, copyright: v })} />
+        <Input
+          label="Text"
+          value={footer.text}
+          onChange={(v) => setFooter({ ...footer, text: v })}
+          textarea
+        />
+        <Input
+          label="Copyright"
+          value={footer.copyright}
+          onChange={(v) => setFooter({ ...footer, copyright: v })}
+        />
       </Section>
     </div>
   );
@@ -401,13 +516,19 @@ function Input({
   onChange: (v: string) => void;
   textarea?: boolean;
 }) {
-  const cls = "w-full rounded-2xl border border-cocoa/15 bg-cream/60 px-4 py-2.5 outline-none focus:border-coffee";
+  const cls =
+    "w-full rounded-2xl border border-cocoa/15 bg-cream/60 px-4 py-2.5 outline-none focus:border-coffee";
   return (
     <div>
       <label className="text-xs uppercase tracking-widest text-cocoa/60">{label}</label>
       <div className="mt-1.5">
         {textarea ? (
-          <textarea rows={3} value={value} onChange={(e) => onChange(e.target.value)} className={cls} />
+          <textarea
+            rows={3}
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            className={cls}
+          />
         ) : (
           <input value={value} onChange={(e) => onChange(e.target.value)} className={cls} />
         )}

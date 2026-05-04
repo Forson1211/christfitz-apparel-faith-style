@@ -119,14 +119,12 @@ function AdminMedia() {
       ) : (
         <div className="grid gap-4 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
           {items.map((item) => (
-            <div key={item.id} className="group relative rounded-2xl glass overflow-hidden aspect-square">
+            <div
+              key={item.id}
+              className="group relative rounded-2xl glass overflow-hidden aspect-square"
+            >
               {item.type === "video" ? (
-                <video
-                  src={item.url}
-                  className="h-full w-full object-cover"
-                  muted
-                  playsInline
-                />
+                <video src={item.url} className="h-full w-full object-cover" muted playsInline />
               ) : (
                 <img
                   src={item.url}

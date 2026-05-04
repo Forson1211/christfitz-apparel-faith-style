@@ -37,7 +37,9 @@ export function Collections() {
         <div className="mt-12 sm:mt-16 grid gap-5 sm:gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
           {categories.slice(0, 3).map((cat, i) => {
             const count = products.filter((p) => p.category === cat.name).length;
-            const img = cat.image_url ? resolveImage(cat.image_url) : fallbackImgs[i] ?? fallbackImgs[0];
+            const img = cat.image_url
+              ? resolveImage(cat.image_url)
+              : (fallbackImgs[i] ?? fallbackImgs[0]);
 
             return (
               <motion.div

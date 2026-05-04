@@ -10,8 +10,15 @@ interface AuthContextValue {
   roleLoading: boolean;
   roleSettled: boolean;
   signIn: (email: string, password: string) => Promise<{ error: string | null }>;
-  signUp: (email: string, password: string, metadata: { full_name: string; phone: string }) => Promise<{ error: string | null; needsConfirmation?: boolean }>;
-  updateProfile: (updates: { full_name?: string; phone?: string }) => Promise<{ error: string | null }>;
+  signUp: (
+    email: string,
+    password: string,
+    metadata: { full_name: string; phone: string },
+  ) => Promise<{ error: string | null; needsConfirmation?: boolean }>;
+  updateProfile: (updates: {
+    full_name?: string;
+    phone?: string;
+  }) => Promise<{ error: string | null }>;
   signOut: () => Promise<void>;
   bootstrapAdmin: () => Promise<boolean>;
   refreshRole: () => Promise<void>;
@@ -45,19 +52,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     mountedRef.current = true;
-    return () => { mountedRef.current = false; };
+    return () => {
+      mountedRef.current = false;
+    };
   }, []);
 
   const isCheckingRef = useRef(false);
 
   const checkAdmin = async (uid: string, email?: string) => {
     if (!mountedRef.current || isCheckingRef.current) return;
-    
+
     // If we've already checked this specific UID successfully, don't re-check immediately
     if (roleSettled && lastCheckedUidRef.current === uid && !isAdmin && Date.now() % 5000 !== 0) {
-       return; 
+      return;
     }
-    
+
     // Global Throttle Check
     const throttleUntil = (window as any)._supabaseThrottleUntil || 0;
     if (Date.now() < throttleUntil) {
@@ -66,7 +75,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     console.log("[Auth] Checking admin role for:", uid, email);
-    
+
     setRoleLoading(true);
     try {
       const { data, error } = await supabase
@@ -75,11 +84,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         .eq("user_id", uid)
         .eq("role", "admin")
         .maybeSingle();
-      
+
       if (error) {
-        const isServerDown = error.message.includes("503") || error.message.includes("cache") || error.message.includes("client error");
+        const isServerDown =
+          error.message.includes("503") ||
+          error.message.includes("cache") ||
+          error.message.includes("client error");
         console.error("[Auth] Role check error:", error.message);
-        
+
         if (isServerDown) {
           (window as any)._supabaseThrottleUntil = Date.now() + 30000;
           // IMPORTANT: If server is down, do NOT continue to auto-bootstrap.
@@ -87,7 +99,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           throw new Error("Server overloaded");
         }
       }
-      
+
       let isDbAdmin = !!data;
 
       // Special handling for christfitz@gmail.com to ensure they get DB rights automatically
@@ -108,7 +120,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const finalStatus = isDbAdmin || email === "christfitz@gmail.com";
         console.log("[Auth] Admin status:", finalStatus, "(DB:", isDbAdmin, ")");
         setIsAdmin(finalStatus);
-        
+
         try {
           localStorage.setItem("cf_is_admin", finalStatus.toString());
           localStorage.setItem("cf_role_settled", "true");
@@ -139,15 +151,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const { data: sub } = supabase.auth.onAuthStateChange(async (event, sess) => {
       if (!mountedRef.current) return;
-      
+
       if (event === "SIGNED_IN") {
         // Only reset roleSettled if it's a NEW user (prevents re-login loops for same user)
         // Skip reset entirely for the master admin to ensure instant login
-        if (sess?.user?.id && sess.user.id !== lastCheckedUidRef.current && sess.user.email !== "christfitz@gmail.com") {
+        if (
+          sess?.user?.id &&
+          sess.user.id !== lastCheckedUidRef.current &&
+          sess.user.email !== "christfitz@gmail.com"
+        ) {
           setRoleSettled(false);
         }
       }
-      
+
       setSession(sess);
       setUser(sess?.user ?? null);
       if (sess?.user) {
@@ -165,7 +181,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (!mountedRef.current) return;
       setSession(sess);
       setUser(sess?.user ?? null);
-      
+
       if (sess?.user) {
         // Always resolve authLoading immediately once session is known.
         // roleLoading tracks the async role check separately.
@@ -182,7 +198,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signIn = async (identifier: string, password: string) => {
     let email = identifier;
-    
+
     // If identifier doesn't look like an email, try looking it up by name in profiles
     if (!identifier.includes("@")) {
       const { data, error: lookupError } = await (supabase as any)
@@ -190,7 +206,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         .select("email")
         .eq("full_name", identifier)
         .maybeSingle();
-        
+
       if (data?.email) {
         email = data.email;
       } else if (lookupError) {
@@ -199,7 +215,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-    
+
     if (data?.user && data.user.email === "christfitz@gmail.com") {
       setUser(data.user);
       setSession(data.session);
@@ -214,13 +230,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { error: error?.message ?? null };
   };
 
-  const signUp = async (email: string, password: string, metadata: { full_name: string; phone: string }) => {
+  const signUp = async (
+    email: string,
+    password: string,
+    metadata: { full_name: string; phone: string },
+  ) => {
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
-      options: { 
+      options: {
         emailRedirectTo: `${window.location.origin}/admin/dashboard`,
-        data: metadata
+        data: metadata,
       },
     });
     if (error) return { error: error.message };
@@ -231,7 +251,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const updateProfile = async (updates: { full_name?: string; phone?: string }) => {
     const { error } = await supabase.auth.updateUser({
-      data: updates
+      data: updates,
     });
     return { error: error?.message ?? null };
   };
@@ -262,11 +282,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (user) await checkAdmin(user.id, user.email);
   };
 
-  console.log("[Auth] State:", { authLoading, roleLoading, roleSettled, user: user?.email, isAdmin });
+  console.log("[Auth] State:", {
+    authLoading,
+    roleLoading,
+    roleSettled,
+    user: user?.email,
+    isAdmin,
+  });
 
   return (
     <AuthContext.Provider
-      value={{ user, session, isAdmin, loading, roleLoading, roleSettled, signIn, signUp, updateProfile, signOut, bootstrapAdmin, refreshRole }}
+      value={{
+        user,
+        session,
+        isAdmin,
+        loading,
+        roleLoading,
+        roleSettled,
+        signIn,
+        signUp,
+        updateProfile,
+        signOut,
+        bootstrapAdmin,
+        refreshRole,
+      }}
     >
       {children}
     </AuthContext.Provider>

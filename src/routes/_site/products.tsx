@@ -11,7 +11,10 @@ export const Route = createFileRoute("/_site/products")({
   head: () => ({
     meta: [
       { title: "Shop — ChristFitz Apparel" },
-      { name: "description", content: "Shop premium Christian streetwear: tees, hoodies, and accessories." },
+      {
+        name: "description",
+        content: "Shop premium Christian streetwear: tees, hoodies, and accessories.",
+      },
     ],
   }),
   component: ProductsPage,
