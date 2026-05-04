@@ -32,11 +32,21 @@ const map: Record<string, string> = {
 
 export function resolveImage(url: string | null | undefined): string {
   if (!url) return p1;
+  
+  // 1. Handle absolute URLs (http, https, data)
   if (url.startsWith("http://") || url.startsWith("https://") || url.startsWith("data:")) {
-    // console.log("[resolveImage] Found absolute URL:", url);
     return url;
   }
-  const resolved = map[url] ?? url;
-  // console.log("[resolveImage] Resolved", url, "to", resolved);
-  return resolved;
+
+  // 2. Handle mapped bundled assets (e.g. "hero.jpg" -> bundled asset)
+  if (map[url]) return map[url];
+
+  // 3. Handle Supabase storage paths (e.g. "hero/bg.jpg")
+  if (url.includes("/") && !url.startsWith("/")) {
+    return `https://txhovpomafiomlfbegpx.supabase.co/storage/v1/object/public/site-assets/${url}`;
+  }
+
+  // 4. Fallback to local path
+  return url;
 }
+
