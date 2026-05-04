@@ -26,6 +26,7 @@ export interface DBCategory {
   slug: string;
   description: string | null;
   image_url: string | null;
+  tag: string | null;
   position: number;
 }
 
