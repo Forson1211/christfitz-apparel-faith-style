@@ -255,6 +255,8 @@ export type Database = {
           phone: string | null;
           email: string | null;
           avatar_url: string | null;
+          bio: string | null;
+          preferences: Json;
           updated_at: string;
         };
         Insert: {
@@ -263,6 +265,8 @@ export type Database = {
           phone?: string | null;
           email?: string | null;
           avatar_url?: string | null;
+          bio?: string | null;
+          preferences?: Json;
           updated_at?: string;
         };
         Update: {
@@ -271,6 +275,8 @@ export type Database = {
           phone?: string | null;
           email?: string | null;
           avatar_url?: string | null;
+          bio?: string | null;
+          preferences?: Json;
           updated_at?: string;
         };
         Relationships: [];
