@@ -22,6 +22,7 @@ import {
   BarChart3,
   Tag,
 } from "lucide-react";
+import { useSite, resolveImage } from "@/lib/site";
 import { useEffect } from "react";
 
 export const Route = createFileRoute("/admin")({
@@ -44,6 +45,7 @@ const items = [
 
 function AdminLayout() {
   const { user, isAdmin, loading, roleLoading, roleSettled, signOut, bootstrapAdmin } = useAuth();
+  const { settings } = useSite();
   const navigate = useNavigate();
   const location = useLocation();
   const path = location.pathname;
@@ -110,17 +112,28 @@ function AdminLayout() {
     );
   }
 
+  const logoUrl = settings.logo?.url && settings.logo.url !== "/logo.png" 
+    ? resolveImage(settings.logo.url) 
+    : "/favicon.png";
+
   return (
     <div className="flex min-h-screen bg-cream text-cocoa">
-      <aside className="hidden md:flex w-60 shrink-0 flex-col border-r border-cocoa/10 bg-cream/60 backdrop-blur-xl">
+      <aside className="hidden md:flex w-64 shrink-0 flex-col border-r border-cocoa/10 bg-cream/60 backdrop-blur-xl">
         <Link
           to="/admin/dashboard"
-          className="flex items-center gap-2 px-5 py-5 font-display text-xl"
+          className="flex items-center gap-3 px-6 py-8 font-display text-xl"
         >
-          <span className="grid h-7 w-7 place-items-center rounded-lg bg-cocoa text-cream text-sm">
-            ✝
-          </span>
-          ChristFitz · Admin
+          <div className="h-10 w-10 shrink-0 overflow-hidden flex items-center justify-center">
+            <img 
+              src={logoUrl} 
+              alt="Logo" 
+              className="h-full w-full object-contain" 
+            />
+          </div>
+          <div className="flex flex-col">
+            <span className="font-bold leading-none">{settings.brand?.name || "ChristFitz"}</span>
+            <span className="text-[10px] uppercase tracking-widest text-cocoa/40 mt-1">Admin Panel</span>
+          </div>
         </Link>
         <nav className="flex-1 space-y-1 px-3">
           {items.map(({ to, label, Icon }) => {
@@ -159,8 +172,15 @@ function AdminLayout() {
 
       <div className="flex-1 min-w-0">
         <header className="md:hidden flex items-center justify-between border-b border-cocoa/10 px-5 py-4">
-          <Link to="/admin/dashboard" className="font-display text-lg">
-            ChristFitz · Admin
+          <Link to="/admin/dashboard" className="flex items-center gap-2 font-display text-lg">
+            <div className="h-8 w-8 shrink-0 overflow-hidden flex items-center justify-center">
+              <img 
+                src={logoUrl} 
+                alt="Logo" 
+                className="h-full w-full object-contain" 
+              />
+            </div>
+            <span>{settings.brand?.name || "ChristFitz"}</span>
           </Link>
           <button
             onClick={() => signOut().then(() => navigate({ to: "/admin/login" }))}

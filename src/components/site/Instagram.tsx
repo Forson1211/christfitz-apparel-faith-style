@@ -17,7 +17,7 @@ export function InstagramGallery() {
   const { settings } = useSite();
   const { items, loading } = useContent("instagram");
 
-  const displayItems = items.length > 0 ? items.slice(0, 8) : [];
+  const displayItems = items || [];
   const showSkeletons = loading && displayItems.length === 0;
 
   // Exact Span Logic to match the reference screenshot perfectly
@@ -121,23 +121,14 @@ export function InstagramGallery() {
                         className="h-full w-full object-cover transition-transform duration-1000 group-hover:scale-105"
                       />
 
-                      {/* Premium Hover Overlay */}
-                      <div className="absolute inset-0 bg-cocoa/40 opacity-0 transition-all duration-500 group-hover:opacity-100 flex flex-col items-center justify-center gap-5 text-cream backdrop-blur-[4px]">
-                        <div className="flex items-center gap-8 translate-y-6 transition-transform duration-700 group-hover:translate-y-0">
-                          <div className="flex flex-col items-center">
-                            <Heart className="h-7 w-7 fill-gold text-gold mb-1.5" />
-                            <span className="text-sm font-bold tracking-tight">
-                              {1200 + i * 45}
-                            </span>
-                          </div>
-                          <div className="flex flex-col items-center">
-                            <MessageCircle className="h-7 w-7 fill-cream text-cream mb-1.5" />
-                            <span className="text-sm font-bold tracking-tight">{68 + i * 4}</span>
-                          </div>
+                      {/* Premium Minimal Hover Overlay */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-cocoa/60 via-transparent to-transparent opacity-0 transition-all duration-700 group-hover:opacity-100 flex flex-col items-center justify-end pb-8 text-cream">
+                        <div className="translate-y-4 transition-transform duration-700 ease-out group-hover:translate-y-0 flex flex-col items-center gap-2">
+                          <div className="h-px w-12 bg-gold/50 mb-2" />
+                          <p className="text-[10px] uppercase tracking-[0.6em] font-bold text-cream/90">
+                            Explore Faith
+                          </p>
                         </div>
-                        <p className="text-[11px] uppercase tracking-[0.4em] font-bold opacity-0 group-hover:opacity-100 transition-opacity delay-300">
-                          Experience Faith
-                        </p>
                       </div>
                     </motion.div>
                   );

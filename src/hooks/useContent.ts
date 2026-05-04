@@ -11,6 +11,7 @@ export interface ContentItem {
   position: number;
   is_active: boolean;
   created_at: string;
+  updated_at: string;
 }
 
 /**
@@ -19,6 +20,15 @@ export interface ContentItem {
  */
 export function useContent(category?: string) {
   const cacheKey = `cf_content_${category || "all"}`;
+
+  const sortItems = (arr: ContentItem[]) => {
+    return [...arr].sort((a, b) => {
+      if (a.position !== b.position) return a.position - b.position;
+      const dateA = new Date(a.updated_at || a.created_at || 0).getTime();
+      const dateB = new Date(b.updated_at || b.created_at || 0).getTime();
+      return dateB - dateA;
+    });
+  };
 
   // 1. Initial State from Cache (Lightning Load)
   const [items, setItems] = useState<ContentItem[]>(() => {
@@ -53,7 +63,7 @@ export function useContent(category?: string) {
           .eq("category", category || "general")
           .eq("is_active", true)
           .order("position", { ascending: true })
-          .order("created_at", { ascending: false });
+          .order("updated_at", { ascending: false });
 
         if (error) {
           const is503 = (error as any).status === 503 || error.message.includes("503");
@@ -103,9 +113,9 @@ export function useContent(category?: string) {
         setItems((prev: ContentItem[]) => {
           if (params.existingId) {
             // Update existing item in-place
-            const next = prev.map((x) =>
+            const next = sortItems(prev.map((x) =>
               x.id === params.existingId ? { ...x, ...tempItem } as ContentItem : x
-            );
+            ));
             localStorage.setItem(cacheKey, JSON.stringify(next));
             return next;
           } else {
@@ -114,12 +124,13 @@ export function useContent(category?: string) {
               position: params.position ?? 0,
               is_active: true,
               created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
             } as ContentItem;
             // Remove any existing temp items at the same position to prevent duplicate slots
             const filtered = prev.filter(
               (x) => !(String(x.id).startsWith("temp-") && x.position === fullTempItem.position)
             );
-            const next = [...filtered, fullTempItem];
+            const next = sortItems([...filtered, fullTempItem]);
             localStorage.setItem(cacheKey, JSON.stringify(next));
             return next;
           }
@@ -204,6 +215,11 @@ export function useContent(category?: string) {
     }
   }, []);
 
+  const clearCache = useCallback(() => {
+    localStorage.removeItem(cacheKey);
+    setItems([]);
+  }, [cacheKey]);
+
   // ── Realtime ───────────────────────────────────────────────────────────
   useEffect(() => {
     const channelName = `content_changes_${category || "all"}`;
@@ -229,7 +245,7 @@ export function useContent(category?: string) {
                   (x: ContentItem) =>
                     !(x.position === newItem.position && String(x.id).startsWith("temp-")),
                 );
-                const next = [...filtered, newItem];
+                const next = sortItems([...filtered, newItem]);
                 localStorage.setItem(cacheKey, JSON.stringify(next));
                 return next;
               });
@@ -238,8 +254,9 @@ export function useContent(category?: string) {
               setItems((prev: ContentItem[]) => {
                 const next = prev.map((x: ContentItem) => (x.id === newItem.id ? newItem : x));
                 if (!next.some((x: ContentItem) => x.id === newItem.id)) next.push(newItem);
-                localStorage.setItem(cacheKey, JSON.stringify(next));
-                return next;
+                const sortedNext = sortItems(next);
+                localStorage.setItem(cacheKey, JSON.stringify(sortedNext));
+                return sortedNext;
               });
             } else if (payload.eventType === "DELETE") {
               setItems((prev: ContentItem[]) => {
@@ -263,5 +280,5 @@ export function useContent(category?: string) {
     fetchItems(true, true); // Force initial fetch on load
   }, [fetchItems]);
 
-  return { items, setItems, loading, fetchItems, saveToDb, deleteItem };
+  return { items, setItems, loading, fetchItems, saveToDb, deleteItem, clearCache };
 }

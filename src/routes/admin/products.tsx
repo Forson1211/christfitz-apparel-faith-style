@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useSite, type DBProduct, productImage } from "@/lib/site";
+import { useSite, type DBProduct, productImage, resolveImage } from "@/lib/site";
 import { supabase } from "@/integrations/supabase/client";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -217,14 +217,35 @@ function AdminProducts() {
                   ))}
                 </select>
               </Field>
-              <Field label="Image URL or code (e.g. p1.jpg)">
-                <div className="flex gap-2">
-                  <ImageUpload onUpload={(url) => setEditing({ ...editing, image_url: url })} />
-                  <input
-                    value={editing.image_url ?? ""}
-                    onChange={(e) => setEditing({ ...editing, image_url: e.target.value })}
-                    className="input"
-                  />
+              <Field label="Product Image" full>
+                <div className="flex items-start gap-4 p-4 rounded-2xl bg-cocoa/5 border border-cocoa/10">
+                  <div className="h-24 w-24 shrink-0 overflow-hidden rounded-xl bg-cocoa/10 border border-cocoa/10">
+                    {editing.image_url ? (
+                      <img
+                        src={resolveImage(editing.image_url)}
+                        alt="Preview"
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center text-[10px] text-cocoa/40 uppercase tracking-tighter text-center px-2">
+                        No Image
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex-1 space-y-3">
+                    <p className="text-xs text-cocoa/60 leading-relaxed">
+                      Upload a high-quality product image or enter a path.
+                    </p>
+                    <div className="flex gap-2">
+                      <ImageUpload onUpload={(url) => setEditing({ ...editing, image_url: url })} />
+                      <input
+                        placeholder="Image path or URL..."
+                        value={editing.image_url ?? ""}
+                        onChange={(e) => setEditing({ ...editing, image_url: e.target.value })}
+                        className="input text-xs"
+                      />
+                    </div>
+                  </div>
                 </div>
               </Field>
               <Field label="Verse">

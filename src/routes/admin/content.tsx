@@ -3,7 +3,7 @@ import { useSite, resolveImage } from "@/lib/site";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Upload } from "lucide-react";
+import { Upload, RefreshCw } from "lucide-react";
 import { useContent, type ContentItem } from "@/hooks/useContent";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -89,9 +89,8 @@ function ImageUpload({
         disabled={uploading}
       />
       <div
-        className={`grid h-12 w-12 place-items-center rounded-xl border border-dashed border-cocoa/30 hover:bg-cocoa/5 transition ${
-          uploading ? "animate-pulse" : ""
-        }`}
+        className={`grid h-12 w-12 place-items-center rounded-xl border border-dashed border-cocoa/30 hover:bg-cocoa/5 transition ${uploading ? "animate-pulse" : ""
+          }`}
       >
         <Upload className="h-4 w-4 text-cocoa/40" />
       </div>
@@ -117,6 +116,7 @@ function AdminContent() {
   const [footer, setFooter] = useState(settings.footer);
   const [brand, setBrand] = useState(settings.brand);
   const [instagram, setInstagram] = useState(settings.instagram);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     setHero(settings.hero);
@@ -125,31 +125,6 @@ function AdminContent() {
     setBrand(settings.brand);
     setInstagram(settings.instagram);
   }, [settings]);
-
-  useEffect(() => {
-    // Automatically sync legacy settings images to content table if empty
-    const autoSync = async () => {
-      if (
-        !instagramContent.loading &&
-        instagramContent.items.length === 0 &&
-        settings.instagram?.images?.length > 0
-      ) {
-        console.log("[AdminContent] Auto-syncing legacy instagram images...");
-        for (const img of settings.instagram.images) {
-          if (img.url) {
-            await instagramContent.saveToDb({
-              name: "Legacy Sync",
-              url: img.url,
-              filePath: "legacy",
-              type: "image",
-              category: "instagram",
-            });
-          }
-        }
-      }
-    };
-    autoSync();
-  }, [instagramContent.loading, instagramContent.items.length, settings.instagram]);
 
   // ── Save site setting ────────────────────────────────────────────────────
   const saveKey = async (key: string, value: any) => {
@@ -170,8 +145,9 @@ function AdminContent() {
 
   // ── Sync helper (manual, for legacy items not yet in content table) ──────
   const syncToContentTable = async () => {
+    setLoading(true);
     toast.info("Checking for unsynced media…");
-    const mediaToSync: { name: string; url: string; category: string }[] = [];
+    const mediaToSync: { name: string; url: string; category: string; position?: number }[] = [];
 
     if (hero.background) {
       mediaToSync.push({ name: "Hero Background", url: hero.background, category: "hero" });
@@ -183,6 +159,7 @@ function AdminContent() {
             name: `Instagram Image ${i + 1}`,
             url: img.url,
             category: "instagram",
+            position: i
           });
       });
     }
@@ -204,6 +181,7 @@ function AdminContent() {
         p_type: "image",
         p_category: item.category,
         p_metadata: { synced_at: new Date().toISOString() },
+        p_position: (item as any).position ?? 0
       });
 
       if (!insertError) {
@@ -219,18 +197,32 @@ function AdminContent() {
     } else if (errors === 0) {
       toast.info("All images are already in the database.");
     }
+    setLoading(false);
   };
 
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between">
         <h1 className="font-display text-3xl">Site Content</h1>
-        <button
-          onClick={syncToContentTable}
-          className="text-xs px-4 py-2 rounded-full border border-cocoa/20 hover:bg-cocoa/5 text-cocoa/60 transition"
-        >
-          Sync Media to DB
-        </button>
+        <div className="flex items-center gap-2">
+            <button
+              onClick={() => {
+                instagramContent.clearCache();
+                instagramContent.fetchItems(false, true);
+              }}
+              className="text-xs px-4 py-2 rounded-full border border-cocoa/20 hover:bg-cocoa/5 text-cocoa/60 transition flex items-center gap-2"
+            >
+              <RefreshCw className={`h-3 w-3 ${instagramContent.loading ? "animate-spin" : ""}`} />
+              Clear Cache
+            </button>
+            <button
+              onClick={syncToContentTable}
+              className="text-xs px-4 py-2 rounded-full border border-cocoa/20 hover:bg-cocoa/5 text-cocoa/60 transition flex items-center gap-2"
+            >
+              <RefreshCw className={`h-3 w-3 ${loading ? "animate-spin" : ""}`} />
+              Sync Media to DB
+            </button>
+        </div>
       </div>
 
       {/* Brand */}
@@ -371,7 +363,7 @@ function AdminContent() {
               // We only care about items that actually have a valid slot position
               instagramContent.items.forEach((item: any) => {
                 if (!item || item.position === null || item.position < 0 || item.position >= 8) return;
-                
+
                 // If multiple items have the same position, the newest one (first in sorted array) wins
                 if (!adminSlots[item.position]) {
                   adminSlots[item.position] = item;

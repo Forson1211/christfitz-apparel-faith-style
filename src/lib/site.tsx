@@ -199,12 +199,25 @@ export function SiteProvider({ children }: { children: ReactNode }) {
         const nextSettings = { ...defaultSettings };
         sResult.value.data.forEach((row: any) => {
           const parts = row.key.split(".");
-          if (
-            parts.length === 2 &&
-            nextSettings[parts[0] as keyof SiteSettings] &&
-            typeof nextSettings[parts[0] as keyof SiteSettings] === "object"
-          ) {
-            (nextSettings as any)[parts[0]][parts[1]] = row.value;
+          if (parts.length === 2) {
+            // Handle nested keys: e.g. "brand.name"
+            const parentKey = parts[0] as keyof SiteSettings;
+            if (nextSettings[parentKey] && typeof nextSettings[parentKey] === "object") {
+              (nextSettings as any)[parentKey][parts[1]] = row.value;
+            }
+          } else if (parts.length === 1) {
+            // Handle top-level keys: e.g. "colors", "logo", "hero"
+            const key = parts[0] as keyof SiteSettings;
+            if (nextSettings[key] !== undefined) {
+              if (typeof row.value === "object" && row.value !== null && !Array.isArray(row.value)) {
+                (nextSettings as any)[key] = {
+                  ...(nextSettings[key] as object),
+                  ...row.value,
+                };
+              } else {
+                (nextSettings as any)[key] = row.value;
+              }
+            }
           }
         });
         setSettings(nextSettings);
@@ -254,11 +267,23 @@ export function SiteProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     refresh();
 
-    // Subscribe to realtime updates for site_settings
+    // Subscribe to realtime updates for site_settings, products, categories, and nav_links
     const channel = supabase
-      .channel("site_settings_changes")
+      .channel("site_data_changes")
       .on("postgres_changes", { event: "*", schema: "public", table: "site_settings" }, () => {
         console.log("[Realtime] Site settings changed, refreshing...");
+        refresh();
+      })
+      .on("postgres_changes", { event: "*", schema: "public", table: "products" }, () => {
+        console.log("[Realtime] Products changed, refreshing...");
+        refresh();
+      })
+      .on("postgres_changes", { event: "*", schema: "public", table: "categories" }, () => {
+        console.log("[Realtime] Categories changed, refreshing...");
+        refresh();
+      })
+      .on("postgres_changes", { event: "*", schema: "public", table: "nav_links" }, () => {
+        console.log("[Realtime] Nav links changed, refreshing...");
         refresh();
       })
       .subscribe();
