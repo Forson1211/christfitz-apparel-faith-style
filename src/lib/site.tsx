@@ -117,20 +117,63 @@ const SiteContext = createContext<SiteContextValue | null>(null);
 
 export function SiteProvider({ children }: { children: ReactNode }) {
   const [settings, setSettings] = useState<SiteSettings>(() => {
-    const cached = localStorage.getItem("cf_site_settings");
-    return cached ? JSON.parse(cached) : defaultSettings;
+    try {
+      const cached = localStorage.getItem("cf_site_settings");
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (parsed && typeof parsed === "object") {
+          // Deep merge simple objects
+          const merged = { ...defaultSettings };
+          Object.keys(parsed).forEach((key) => {
+            if (
+              parsed[key] &&
+              typeof parsed[key] === "object" &&
+              !Array.isArray(parsed[key]) &&
+              merged[key as keyof SiteSettings]
+            ) {
+              (merged as any)[key] = {
+                ...(merged[key as keyof SiteSettings] as object),
+                ...parsed[key],
+              };
+            } else {
+              (merged as any)[key] = parsed[key];
+            }
+          });
+          return merged;
+        }
+      }
+    } catch {}
+    return defaultSettings;
   });
   const [products, setProducts] = useState<DBProduct[]>(() => {
-    const cached = localStorage.getItem("cf_products");
-    return cached ? JSON.parse(cached) : [];
+    try {
+      const cached = localStorage.getItem("cf_products");
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (Array.isArray(parsed)) return parsed;
+      }
+    } catch {}
+    return [];
   });
   const [categories, setCategories] = useState<DBCategory[]>(() => {
-    const cached = localStorage.getItem("cf_categories");
-    return cached ? JSON.parse(cached) : [];
+    try {
+      const cached = localStorage.getItem("cf_categories");
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (Array.isArray(parsed)) return parsed;
+      }
+    } catch {}
+    return [];
   });
   const [navLinks, setNavLinks] = useState<DBNavLink[]>(() => {
-    const cached = localStorage.getItem("cf_nav_links");
-    return cached ? JSON.parse(cached) : [];
+    try {
+      const cached = localStorage.getItem("cf_nav_links");
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (Array.isArray(parsed)) return parsed;
+      }
+    } catch {}
+    return [];
   });
   const [loading, setLoading] = useState(true);
 
@@ -165,7 +208,11 @@ export function SiteProvider({ children }: { children: ReactNode }) {
         const nextSettings = { ...defaultSettings };
         s.data?.forEach((row: any) => {
           const parts = row.key.split(".");
-          if (parts.length === 2 && nextSettings[parts[0] as keyof SiteSettings]) {
+          if (
+            parts.length === 2 &&
+            nextSettings[parts[0] as keyof SiteSettings] &&
+            typeof nextSettings[parts[0] as keyof SiteSettings] === "object"
+          ) {
             (nextSettings as any)[parts[0]][parts[1]] = row.value;
           }
         });

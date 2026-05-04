@@ -72,6 +72,7 @@ export function InstagramGallery() {
                 const unplacedItems: any[] = [];
 
                 displayItems.forEach((item: any) => {
+                  if (!item) return; // Safeguard against null items from cache
                   if (
                     item.position !== null &&
                     item.position >= 0 &&

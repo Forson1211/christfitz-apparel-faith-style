@@ -370,6 +370,7 @@ function AdminContent() {
 
               const allItems = instagramContent.items.slice(0, 8);
               allItems.forEach((item: any) => {
+                if (!item) return; // Safeguard against null items from cache
                 if (
                   item.position !== null &&
                   item.position >= 0 &&

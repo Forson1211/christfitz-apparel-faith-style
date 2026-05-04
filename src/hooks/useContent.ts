@@ -24,7 +24,11 @@ export function useContent(category?: string) {
   const [items, setItems] = useState<ContentItem[]>(() => {
     try {
       const cached = localStorage.getItem(cacheKey);
-      return cached ? JSON.parse(cached) : [];
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        return Array.isArray(parsed) ? parsed.filter(Boolean) : [];
+      }
+      return [];
     } catch {
       return [];
     }
