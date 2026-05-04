@@ -169,6 +169,7 @@ export type Database = {
           items: Json;
           shipping_address: Json | null;
           notes: string | null;
+          metadata: Json | null;
           created_at: string;
           updated_at: string;
         };
@@ -182,6 +183,7 @@ export type Database = {
           items?: Json;
           shipping_address?: Json | null;
           notes?: string | null;
+          metadata?: Json | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -195,6 +197,7 @@ export type Database = {
           items?: Json;
           shipping_address?: Json | null;
           notes?: string | null;
+          metadata?: Json | null;
           created_at?: string;
           updated_at?: string;
         };

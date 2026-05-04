@@ -7,6 +7,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { toast } from "sonner";
 
+import { usePaystackPayment } from "react-paystack";
+
 export const Route = createFileRoute("/_site/checkout")({
   component: CheckoutPage,
 });
@@ -31,21 +33,32 @@ function CheckoutPage() {
     paymentMethod: "momo",
   });
 
-  if (items.length === 0 && step !== 3) {
-    return (
-      <div className="flex min-h-screen flex-col items-center justify-center text-center p-6">
-        <h2 className="font-display text-3xl">Your cart is empty</h2>
-        <button
-          onClick={() => navigate({ to: "/products" })}
-          className="mt-6 text-gold hover:underline"
-        >
-          Go back to shop
-        </button>
-      </div>
-    );
-  }
+  // Paystack Configuration
+  const config = {
+    reference: (new Date()).getTime().toString(),
+    email: formData.email,
+    amount: Math.round(total * 100), // Paystack expects amount in pesewas/cents
+    publicKey: "pk_test_b449552cd6346656d517050eb2ec50cdcf768593",
+    currency: "GHS",
+    metadata: {
+      custom_fields: [
+        {
+          display_name: "Customer Name",
+          variable_name: "customer_name",
+          value: `${formData.firstName} ${formData.lastName}`,
+        },
+        {
+          display_name: "Phone Number",
+          variable_name: "phone_number",
+          value: formData.phone,
+        }
+      ]
+    }
+  };
 
-  const handlePlaceOrder = async () => {
+  const initializePayment = usePaystackPayment(config as any);
+
+  const onSuccess = async (reference: any) => {
     setLoading(true);
     try {
       const orderData = {
@@ -65,7 +78,8 @@ function CheckoutPage() {
           city: formData.city,
           phone: formData.phone,
         },
-        status: "pending",
+        status: "paid",
+        metadata: { paystack_reference: reference.reference }
       };
 
       const { error } = await supabase.from("orders").insert([orderData]);
@@ -76,12 +90,42 @@ function CheckoutPage() {
       setStep(3); // Move to success step
       toast.success("Order placed successfully!");
     } catch (err: any) {
-      console.error("Order failed:", err);
-      toast.error("Failed to place order: " + err.message);
+      console.error("Order recording failed:", err);
+      toast.error("Payment successful but failed to record order. Please contact support.");
     } finally {
       setLoading(false);
     }
   };
+
+  const onClose = () => {
+    toast.error("Payment cancelled.");
+    setLoading(false);
+  };
+
+  const handlePlaceOrder = () => {
+    if (!formData.email || !formData.phone) {
+      toast.error("Please fill in all shipping details first.");
+      setStep(1);
+      return;
+    }
+    setLoading(true);
+    // @ts-ignore
+    initializePayment(onSuccess, onClose);
+  };
+
+  if (items.length === 0 && step !== 3) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center text-center p-6">
+        <h2 className="font-display text-3xl">Your cart is empty</h2>
+        <button
+          onClick={() => navigate({ to: "/products" })}
+          className="mt-6 text-gold hover:underline"
+        >
+          Go back to shop
+        </button>
+      </div>
+    );
+  }
 
   if (step === 3) {
     return (

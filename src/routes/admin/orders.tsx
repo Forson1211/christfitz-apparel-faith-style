@@ -18,6 +18,7 @@ type Order = {
   items: any[];
   created_at: string;
   notes: string | null;
+  metadata: any | null;
 };
 
 const STATUS_OPTS = ["pending", "processing", "fulfilled", "cancelled", "refunded"];
@@ -291,6 +292,17 @@ function OrdersAdmin() {
                   <span>₵{Number(editing.total).toFixed(2)}</span>
                 </div>
               </div>
+
+              {editing.metadata && (editing.metadata as any).paystack_reference && (
+                <div className="rounded-xl bg-gold/5 border border-gold/20 p-4 space-y-1">
+                  <div className="text-[10px] uppercase tracking-widest text-gold font-bold">
+                    Payment Reference (Paystack)
+                  </div>
+                  <div className="text-sm font-mono font-medium text-cocoa">
+                    {(editing.metadata as any).paystack_reference}
+                  </div>
+                </div>
+              )}
               <div>
                 <label className="text-[10px] uppercase tracking-widest text-cocoa/50 font-bold mb-1.5 block">
                   Update Status
