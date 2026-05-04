@@ -365,29 +365,18 @@ function AdminContent() {
           </label>
           <div className="mt-5 grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 auto-rows-[120px] sm:auto-rows-[160px]">
             {(() => {
+              // Strict mapping: Slots 1-8 correspond to positions 0-7
               const adminSlots = new Array(8).fill(null);
-              const adminUnplaced: any[] = [];
 
-              const allItems = instagramContent.items.slice(0, 8);
-              allItems.forEach((item: any) => {
-                if (!item) return; // Safeguard against null items from cache
-                if (
-                  item.position !== null &&
-                  item.position >= 0 &&
-                  item.position < 8 &&
-                  !adminSlots[item.position]
-                ) {
+              // We only care about items that actually have a valid slot position
+              instagramContent.items.forEach((item: any) => {
+                if (!item || item.position === null || item.position < 0 || item.position >= 8) return;
+                
+                // If multiple items have the same position, the newest one (first in sorted array) wins
+                if (!adminSlots[item.position]) {
                   adminSlots[item.position] = item;
-                } else {
-                  adminUnplaced.push(item);
                 }
               });
-
-              for (let i = 0; i < 8; i++) {
-                if (!adminSlots[i] && adminUnplaced.length > 0) {
-                  adminSlots[i] = adminUnplaced.shift();
-                }
-              }
 
               return adminSlots.map((liveItem, i) => {
                 const displayUrl = liveItem?.url || "";
