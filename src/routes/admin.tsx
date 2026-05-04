@@ -22,9 +22,11 @@ import {
   BarChart3,
   Tag,
   MessageSquare,
+  UserCircle,
 } from "lucide-react";
 import { useSite, resolveImage } from "@/lib/site";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/admin")({
   component: AdminLayout,
@@ -42,6 +44,7 @@ const items = [
   { to: "/admin/testimonials", label: "Testimonials", Icon: MessageSquare },
   { to: "/admin/colors", label: "Colors & Logo", Icon: Palette },
   { to: "/admin/navigation", label: "Navigation", Icon: NavIcon },
+  { to: "/admin/profile", label: "Profile", Icon: UserCircle },
 ];
 
 function AdminLayout() {
@@ -50,6 +53,14 @@ function AdminLayout() {
   const navigate = useNavigate();
   const location = useLocation();
   const path = location.pathname;
+  const [adminProfile, setAdminProfile] = useState<{ full_name: string; avatar_url: string } | null>(null);
+
+  useEffect(() => {
+    if (user && isAdmin) {
+      supabase.from("profiles").select("full_name, avatar_url").eq("id", user.id).single()
+        .then(({ data }) => data && setAdminProfile(data as any));
+    }
+  }, [user, isAdmin]);
 
   useEffect(() => {
     if (loading) return;
@@ -155,6 +166,35 @@ function AdminLayout() {
             );
           })}
         </nav>
+        <div className="border-t border-cocoa/10 p-4">
+          <Link
+            to="/admin/profile"
+            className="flex items-center gap-3 rounded-2xl bg-cocoa/5 p-3 transition hover:bg-cocoa/10 group"
+          >
+            <div className="h-10 w-10 shrink-0 overflow-hidden rounded-xl bg-cocoa/10">
+              {adminProfile?.avatar_url ? (
+                <img
+                  src={resolveImage(adminProfile.avatar_url)}
+                  alt=""
+                  className="h-full w-full object-cover transition-transform group-hover:scale-110"
+                />
+              ) : (
+                <div className="flex h-full w-full items-center justify-center text-cocoa/20">
+                  <UserCircle className="h-6 w-6" />
+                </div>
+              )}
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-bold text-cocoa">
+                {adminProfile?.full_name || "Administrator"}
+              </p>
+              <p className="truncate text-[10px] uppercase tracking-wider text-cocoa/40">
+                View Profile
+              </p>
+            </div>
+          </Link>
+        </div>
+
         <div className="space-y-1 border-t border-cocoa/10 p-3">
           <Link
             to="/"
