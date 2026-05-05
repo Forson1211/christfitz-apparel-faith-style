@@ -188,9 +188,22 @@ export function Navbar() {
               <button
                 onClick={() => setOpen(true)}
                 aria-label="Open menu"
-                className="md:hidden grid h-9 w-9 place-items-center rounded-full hover:bg-cream/10 transition"
+                className="md:hidden relative grid h-9 w-9 place-items-center rounded-full hover:bg-cream/10 transition group"
               >
-                <Menu className="h-4 w-4" />
+                <div className="flex flex-col gap-1.5 w-5 items-end group-hover:items-center transition-all duration-300">
+                  <motion.span 
+                    animate={open ? { rotate: 45, y: 7, width: "100%" } : { rotate: 0, y: 0, width: "100%" }}
+                    className="h-0.5 w-full bg-current rounded-full" 
+                  />
+                  <motion.span 
+                    animate={open ? { opacity: 0, x: 10 } : { opacity: 1, x: 0 }}
+                    className="h-0.5 w-3/4 bg-current rounded-full" 
+                  />
+                  <motion.span 
+                    animate={open ? { rotate: -45, y: -7, width: "100%" } : { rotate: 0, y: 0, width: "60%" }}
+                    className="h-0.5 w-full bg-current rounded-full" 
+                  />
+                </div>
               </button>
             </div>
           </div>
@@ -212,7 +225,7 @@ export function Navbar() {
                 initial={{ x: "100%" }}
                 animate={{ x: 0 }}
                 exit={{ x: "100%" }}
-                transition={{ type: "spring", damping: 24 }}
+                transition={{ type: "spring", damping: 30, stiffness: 350 }}
                 className="absolute right-0 top-0 h-full w-80 max-w-[85%] glass-dark p-7 text-cream"
               >
                 <div className="flex items-center justify-between">
@@ -244,7 +257,7 @@ export function Navbar() {
                         key={l.id}
                         initial={{ x: 30, opacity: 0 }}
                         animate={{ x: 0, opacity: 1 }}
-                        transition={{ delay: 0.05 * i }}
+                        transition={{ duration: 0.3, delay: 0.03 * i }}
                       >
                         <Link
                           to={l.href}
@@ -271,7 +284,7 @@ export function Navbar() {
                           key={item.label}
                           initial={{ x: 20, opacity: 0 }}
                           animate={{ x: 0, opacity: 1 }}
-                          transition={{ delay: 0.2 + 0.05 * i }}
+                          transition={{ duration: 0.3, delay: 0.1 + 0.03 * i }}
                         >
                           <Link
                             to={item.href as any}

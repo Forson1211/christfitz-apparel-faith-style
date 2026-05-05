@@ -13,10 +13,13 @@ import {
   BarChart3,
   ShoppingCart,
   MessageSquare,
+  RefreshCw,
+  Trash2,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/admin/dashboard")({
   component: Dashboard,
@@ -37,8 +40,9 @@ function Dashboard() {
   const [customers, setCustomers] = useState<Profile[]>([]);
   const [dataLoading, setDataLoading] = useState(true);
 
-  useEffect(() => {
-    Promise.all([
+  const fetchData = async () => {
+    setDataLoading(true);
+    const [ordersRes, profilesRes] = await Promise.all([
       supabase
         .from("orders")
         .select("id, customer_name, total, status, created_at")
@@ -49,12 +53,49 @@ function Dashboard() {
         .select("id, full_name, email, updated_at")
         .order("updated_at", { ascending: false })
         .limit(5),
-    ]).then(([ordersRes, profilesRes]) => {
-      if (ordersRes.data) setOrders(ordersRes.data as Order[]);
-      if (profilesRes.data) setCustomers(profilesRes.data as Profile[]);
-      setDataLoading(false);
-    });
+    ]);
+    if (ordersRes.data) setOrders(ordersRes.data as Order[]);
+    if (profilesRes.data) setCustomers(profilesRes.data as Profile[]);
+    setDataLoading(false);
+  };
+
+  useEffect(() => {
+    fetchData();
   }, []);
+
+  const resetStoreData = async () => {
+    const confirmed = window.confirm(
+      "Are you sure you want to RESET ALL STORE DATA? This will delete all orders, testimonials, and customer profiles (except yours). This action cannot be undone.",
+    );
+    if (!confirmed) return;
+
+    setDataLoading(true);
+    try {
+      // 1. Delete all orders
+      await supabase.from("orders").delete().not("id", "eq", "00000000-0000-0000-0000-000000000000");
+
+      // 2. Delete all testimonials
+      await supabase
+        .from("testimonials")
+        .delete()
+        .not("id", "eq", "00000000-0000-0000-0000-000000000000");
+
+      // 3. Delete all profiles except current user
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (user) {
+        await supabase.from("profiles").delete().neq("id", user.id);
+      }
+
+      toast.success("Store data has been reset successfully.");
+      fetchData();
+    } catch (error: any) {
+      toast.error("Error resetting data: " + error.message);
+    } finally {
+      setDataLoading(false);
+    }
+  };
 
   const fulfilledRevenue = orders
     .filter((o) => o.status === "fulfilled" || o.status === "pending")
@@ -123,9 +164,18 @@ function Dashboard() {
           animate={{ opacity: 1, scale: 1 }}
           className="flex gap-2"
         >
-          <div className="rounded-xl glass px-4 py-2 text-xs font-bold text-cocoa/60 border border-white/40">
-            Last 30 Days
-          </div>
+          <button
+            onClick={fetchData}
+            className="rounded-xl glass px-4 py-2 text-xs font-bold text-cocoa/60 border border-white/40 flex items-center gap-2 hover:bg-white/50 transition"
+          >
+            <RefreshCw className="h-3.5 w-3.5" /> Refresh
+          </button>
+          <button
+            onClick={resetStoreData}
+            className="rounded-xl glass px-4 py-2 text-xs font-bold text-red-600 border border-red-100 flex items-center gap-2 hover:bg-red-50 transition"
+          >
+            <Trash2 className="h-3.5 w-3.5" /> Reset Data
+          </button>
           <Link
             to="/admin/analytics"
             className="rounded-xl bg-cocoa text-cream px-4 py-2 text-xs font-bold shadow-sm hover:scale-[1.03] transition flex items-center gap-1.5"

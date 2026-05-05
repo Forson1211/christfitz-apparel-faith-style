@@ -58,7 +58,20 @@ export interface SiteSettings {
       ratingLabel: string;
     };
   };
-  about: { eyebrow: string; title: string; body: string };
+  about: { 
+    eyebrow: string; 
+    title: string; 
+    body: string;
+    features: { title: string; subtitle: string }[];
+    stat: { label: string; text: string };
+    images: { main: string; secondary: string };
+  };
+  contact: {
+    email: string;
+    phone: string;
+    address: string;
+    tagline: string;
+  };
   instagram: {
     handle: string;
     title: string;
@@ -102,7 +115,20 @@ export const defaultSettings: SiteSettings = {
   about: {
     eyebrow: "Our Story",
     title: "Built on faith. Crafted with intention.",
-    body: "ChristFitz Apparel was born from a simple conviction — that faith and fashion were never meant to be separate.",
+    body: "ChristFitz Apparel was born from a simple conviction — that faith and fashion were never meant to be separate. Every piece we create is a reminder that style can carry meaning, and that what you wear can speak before you do.",
+    features: [
+      { title: "Organic", subtitle: "100% cotton" },
+      { title: "Limited", subtitle: "Small batches" },
+      { title: "Ethical", subtitle: "Fair sourced" },
+    ],
+    stat: { label: "Est. 2024", text: "Built by believers, worn by the bold." },
+    images: { main: "about.jpg", secondary: "collection-essentials.jpg" },
+  },
+  contact: {
+    email: "hello@christfitz.com",
+    phone: "+233 555 010 2024",
+    address: "Accra, Ghana",
+    tagline: "Questions, collaborations, or just want to share your story? We'd love to hear from you.",
   },
   instagram: {
     handle: "@christfitz",

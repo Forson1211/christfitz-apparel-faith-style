@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Search, Filter, MoreHorizontal, Download, RefreshCw, X, Save } from "lucide-react";
+import { Search, Filter, MoreHorizontal, Download, RefreshCw, X, Save, Trash2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -63,6 +63,24 @@ function OrdersAdmin() {
     fetchOrders();
   }, []);
 
+  const clearAllOrders = async () => {
+    if (!window.confirm("Are you sure you want to delete ALL orders? This action cannot be undone.")) return;
+    
+    setLoading(true);
+    const { error } = await supabase
+      .from("orders")
+      .delete()
+      .not("id", "eq", "00000000-0000-0000-0000-000000000000"); // Delete all rows
+    
+    if (error) {
+      toast.error("Failed to clear orders: " + error.message);
+    } else {
+      toast.success("All orders have been cleared");
+      setOrders([]);
+    }
+    setLoading(false);
+  };
+
   const saveStatus = async (id: string, status: string) => {
     setSaving(true);
     const { error } = await supabase
@@ -112,6 +130,12 @@ function OrdersAdmin() {
             className="rounded-xl glass px-4 py-2 text-xs font-bold text-cocoa border border-white/40 flex items-center gap-2 hover:bg-white/50 transition"
           >
             <RefreshCw className="h-4 w-4" /> Refresh
+          </button>
+          <button
+            onClick={clearAllOrders}
+            className="rounded-xl glass px-4 py-2 text-xs font-bold text-red-600 border border-red-100 flex items-center gap-2 hover:bg-red-50 transition"
+          >
+            <Trash2 className="h-4 w-4" /> Clear All
           </button>
           <button className="rounded-xl glass px-4 py-2 text-xs font-bold text-cocoa border border-white/40 flex items-center gap-2 hover:bg-white/50 transition">
             <Download className="h-4 w-4" /> Export CSV

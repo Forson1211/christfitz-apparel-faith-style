@@ -109,6 +109,7 @@ function AdminContent() {
   const { settings, refresh } = useSite();
   const heroContent = useContent("hero");
   const instagramContent = useContent("instagram");
+  const aboutContent = useContent("about");
   const heroBackground = heroContent.items.length > 0 ? heroContent.items[0].url : "";
   const isLoadingInitial = heroContent.loading && heroContent.items.length === 0;
   const [hero, setHero] = useState(settings.hero);
@@ -116,6 +117,7 @@ function AdminContent() {
   const [footer, setFooter] = useState(settings.footer);
   const [brand, setBrand] = useState(settings.brand);
   const [instagram, setInstagram] = useState(settings.instagram);
+  const [contact, setContact] = useState(settings.contact);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -124,6 +126,7 @@ function AdminContent() {
     setFooter(settings.footer);
     setBrand(settings.brand);
     setInstagram(settings.instagram);
+    setContact(settings.contact);
   }, [settings]);
 
   // ── Save site setting ────────────────────────────────────────────────────
@@ -153,7 +156,7 @@ function AdminContent() {
       mediaToSync.push({ name: "Hero Background", url: hero.background, category: "hero" });
     }
     if (instagram?.images) {
-      instagram.images.forEach((img, i) => {
+      instagram.images.forEach((img: any, i: number) => {
         if (img.url)
           mediaToSync.push({
             name: `Instagram Image ${i + 1}`,
@@ -352,127 +355,112 @@ function AdminContent() {
           onChange={(v) => setAbout({ ...about, body: v })}
           textarea
         />
-      </Section>
 
-      {/* Instagram */}
-      <Section title="Instagram" onSave={() => saveKey("instagram", instagram)}>
-        <Input
-          label="Handle (e.g. @christfitz)"
-          value={instagram.handle}
-          onChange={(v) => setInstagram({ ...instagram, handle: v })}
-        />
-        <Input
-          label="Title"
-          value={instagram.title}
-          onChange={(v) => setInstagram({ ...instagram, title: v })}
-        />
-        <Input
-          label="Button Label"
-          value={instagram.cta}
-          onChange={(v) => setInstagram({ ...instagram, cta: v })}
-        />
-        <Input
-          label="Instagram URL"
-          value={instagram.url}
-          onChange={(v) => setInstagram({ ...instagram, url: v })}
-        />
+        <div className="mt-6 pt-6 border-t border-cocoa/10">
+          <h3 className="text-sm font-bold uppercase tracking-widest text-cocoa/40 mb-4">About Images</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-3">
+              <label className="text-[10px] uppercase tracking-widest text-cocoa/40 font-bold">Main Community Image</label>
+              <div className="flex items-center gap-4 p-4 rounded-2xl bg-cocoa/5 border border-cocoa/10">
+                <ImageUpload
+                  category="about"
+                  saveToDb={aboutContent.saveToDb}
+                  onUpload={(url) => setAbout({ ...about, images: { ...about.images, main: url } })}
+                />
+                <div className="h-20 w-20 overflow-hidden rounded-xl bg-cocoa/20 border border-cocoa/10">
+                  <img src={resolveImage(about.images.main)} className="h-full w-full object-cover" />
+                </div>
+              </div>
+            </div>
 
-        <div className="pt-4 border-t border-cocoa/5">
-          <label className="text-xs uppercase tracking-widest text-cocoa/60 font-bold">
-            Gallery Images (Live from DB)
-          </label>
-          <div className="mt-5 grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 auto-rows-[120px] sm:auto-rows-[160px]">
-            {(() => {
-              // Strict mapping: Slots 1-8 correspond to positions 0-7
-              const adminSlots = new Array(8).fill(null);
-
-              // We only care about items that actually have a valid slot position
-              instagramContent.items.forEach((item: any) => {
-                if (!item || item.position === null || item.position < 0 || item.position >= 8) return;
-
-                // If multiple items have the same position, the newest one (first in sorted array) wins
-                if (!adminSlots[item.position]) {
-                  adminSlots[item.position] = item;
-                }
-              });
-
-              return adminSlots.map((liveItem, i) => {
-                const displayUrl = liveItem?.url || "";
-                const isSlotLoading = instagramContent.loading && !displayUrl;
-                const spanClass = i === 0 || i === 3 ? "row-span-2 col-span-1" : "col-span-1";
-
-                return (
-                  <div
-                    key={i}
-                    className={`group relative overflow-hidden rounded-2xl bg-cocoa/5 border border-cocoa/10 flex items-center justify-center ${spanClass}`}
-                  >
-                    {isSlotLoading ? (
-                      <div className="absolute inset-0 bg-cocoa/10 animate-pulse" />
-                    ) : displayUrl ? (
-                      <img
-                        src={resolveImage(displayUrl)}
-                        alt=""
-                        className="absolute inset-0 h-full w-full object-cover opacity-70 group-hover:opacity-100 transition-opacity duration-300"
-                      />
-                    ) : (
-                      <div className="absolute inset-0 flex items-center justify-center text-cocoa/10">
-                        <Upload className="h-8 w-8" />
-                      </div>
-                    )}
-
-                    {/* Upload Button overlayed on top of the image */}
-                    <div className="relative z-10 scale-90 sm:scale-100 bg-cream/80 hover:bg-cream backdrop-blur-md rounded-full shadow-lg transition-all duration-300">
-                      <ImageUpload
-                        category="instagram"
-                        saveToDb={(params) =>
-                          instagramContent.saveToDb({
-                            ...params,
-                            existingId: liveItem?.id,
-                            position: i,
-                          })
-                        }
-                        onUpload={async (url) => {
-                          // 1. Legacy update (optional but kept for fallback compatibility)
-                          const newImages = [...(instagram.images || [])];
-                          newImages[i] = { ...newImages[i], url };
-                          setInstagram({ ...instagram, images: newImages });
-
-                          // 2. Zero-latency optimistic preview injected directly into the live grid state!
-                          instagramContent.setItems((prev: any) => {
-                            const next = [...prev];
-                            const existingIdx = next.findIndex((x: any) => x.position === i);
-                            if (existingIdx !== -1) {
-                              next[existingIdx] = { ...next[existingIdx], url };
-                            } else {
-                              next.push({
-                                id: `temp-${Date.now()}`,
-                                position: i,
-                                url,
-                                category: "instagram",
-                                is_active: true,
-                              });
-                            }
-                            return next;
-                          });
-                        }}
-                        onContentItem={(item) => {
-                          instagramContent.fetchItems(false, true);
-                        }}
-                      />
-                    </div>
-
-                    {/* Visual Identifier */}
-                    <div className="absolute bottom-2 left-2 z-10 pointer-events-none">
-                      <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider bg-cream/90 text-cocoa px-2 py-1 rounded border border-cocoa/5 backdrop-blur-sm shadow-sm">
-                        Slot {i + 1}
-                      </span>
-                    </div>
-                  </div>
-                );
-              });
-            })()}
+            <div className="space-y-3">
+              <label className="text-[10px] uppercase tracking-widest text-cocoa/40 font-bold">Secondary Product Image</label>
+              <div className="flex items-center gap-4 p-4 rounded-2xl bg-cocoa/5 border border-cocoa/10">
+                <ImageUpload
+                  category="about"
+                  saveToDb={aboutContent.saveToDb}
+                  onUpload={(url) => setAbout({ ...about, images: { ...about.images, secondary: url } })}
+                />
+                <div className="h-20 w-20 overflow-hidden rounded-xl bg-cocoa/20 border border-cocoa/10">
+                  <img src={resolveImage(about.images.secondary)} className="h-full w-full object-cover" />
+                </div>
+              </div>
+            </div>
           </div>
         </div>
+
+        <div className="mt-6 pt-6 border-t border-cocoa/10">
+          <h3 className="text-sm font-bold uppercase tracking-widest text-cocoa/40 mb-4">
+            Features (Organic, Limited, etc.)
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {about.features.map((f, i) => (
+              <div key={i} className="space-y-2 p-3 rounded-2xl bg-cocoa/5">
+                <Input
+                  label={`Feature ${i + 1} Title`}
+                  value={f.title}
+                  onChange={(v) => {
+                    const next = [...about.features];
+                    next[i] = { ...next[i], title: v };
+                    setAbout({ ...about, features: next });
+                  }}
+                />
+                <Input
+                  label={`Feature ${i + 1} Subtitle`}
+                  value={f.subtitle}
+                  onChange={(v) => {
+                    const next = [...about.features];
+                    next[i] = { ...next[i], subtitle: v };
+                    setAbout({ ...about, features: next });
+                  }}
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="mt-6 pt-6 border-t border-cocoa/10">
+          <h3 className="text-sm font-bold uppercase tracking-widest text-cocoa/40 mb-4">
+            About Stat (Est. 2024)
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Input
+              label="Label (e.g. Est. 2024)"
+              value={about.stat.label}
+              onChange={(v) => setAbout({ ...about, stat: { ...about.stat, label: v } })}
+            />
+            <Input
+              label="Text"
+              value={about.stat.text}
+              onChange={(v) => setAbout({ ...about, stat: { ...about.stat, text: v } })}
+            />
+          </div>
+        </div>
+      </Section>
+
+      {/* Contact */}
+      <Section title="Contact Info" onSave={() => saveKey("contact", contact)}>
+        <Input
+          label="Email Address"
+          value={contact.email}
+          onChange={(v) => setContact({ ...contact, email: v })}
+        />
+        <Input
+          label="Phone Number"
+          value={contact.phone}
+          onChange={(v) => setContact({ ...contact, phone: v })}
+        />
+        <Input
+          label="Office / Studio Address"
+          value={contact.address}
+          onChange={(v) => setContact({ ...contact, address: v })}
+        />
+        <Input
+          label="Contact Page Tagline"
+          value={contact.tagline}
+          onChange={(v) => setContact({ ...contact, tagline: v })}
+          textarea
+        />
       </Section>
 
       {/* Footer */}

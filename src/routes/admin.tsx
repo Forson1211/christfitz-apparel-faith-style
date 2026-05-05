@@ -39,6 +39,7 @@ const items = [
   { to: "/admin/products", label: "Products", Icon: Package },
   { to: "/admin/categories", label: "Categories", Icon: FolderTree },
   { to: "/admin/users", label: "Customers", Icon: Users },
+  { to: "/admin/gallery", label: "Gallery", Icon: ImageIcon },
   { to: "/admin/discounts", label: "Discounts", Icon: Tag },
   { to: "/admin/content", label: "Content", Icon: Type },
   { to: "/admin/testimonials", label: "Testimonials", Icon: MessageSquare },

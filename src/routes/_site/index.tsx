@@ -19,7 +19,7 @@ function Index() {
       <Products limit={8} />
       <About />
       <Testimonials />
-      <InstagramGallery />
+      <InstagramGallery limit={8} />
       <Newsletter />
     </>
   );

@@ -43,12 +43,12 @@ export function Products({ limit, initialCategory }: ProductsProps) {
             </h2>
           </div>
 
-          <div className="flex flex-wrap gap-1 sm:gap-2 rounded-full glass p-1.5">
+          <div className="flex w-full overflow-x-auto no-scrollbar sm:w-auto sm:flex-wrap gap-1 sm:gap-2 rounded-full glass p-1.5 px-3 sm:px-1.5">
             {tabs.map((t) => (
               <button
                 key={t}
                 onClick={() => setActive(t)}
-                className={`relative rounded-full px-3 sm:px-5 py-2 text-xs sm:text-sm transition ${
+                className={`relative shrink-0 rounded-full px-4 sm:px-5 py-2 text-xs sm:text-sm transition ${
                   active === t ? "text-cream" : "text-cocoa/70 hover:text-cocoa"
                 }`}
               >
@@ -59,7 +59,7 @@ export function Products({ limit, initialCategory }: ProductsProps) {
                     transition={{ type: "spring", duration: 0.5 }}
                   />
                 )}
-                <span className="relative z-10">{t}</span>
+                <span className="relative z-10 whitespace-nowrap">{t}</span>
               </button>
             ))}
           </div>

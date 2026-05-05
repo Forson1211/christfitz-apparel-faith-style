@@ -8,29 +8,18 @@ import {
 } from "lucide-react";
 import { useContent } from "@/hooks/useContent";
 import { useSite, resolveImage } from "@/lib/site";
+import { Link } from "@tanstack/react-router";
 
 /**
  * InstagramGallery — Precision Bento Grid Layout
  * Matches the user's reference screenshot pixel-for-pixel.
  */
-export function InstagramGallery() {
+export function InstagramGallery({ limit }: { limit?: number }) {
   const { settings } = useSite();
   const { items, loading } = useContent("instagram");
 
-  const displayItems = items || [];
+  const displayItems = limit ? (items || []).slice(0, limit) : (items || []);
   const showSkeletons = loading && displayItems.length === 0;
-
-  // Exact Span Logic to match the reference screenshot perfectly
-  const getSpan = (index: number) => {
-    switch (index) {
-      case 0:
-        return "row-span-2 col-span-1"; // Slot 1: Tall (spans 2 rows on all devices)
-      case 3:
-        return "row-span-2 col-span-1"; // Slot 4: Tall (spans 2 rows on all devices)
-      default:
-        return "col-span-1";
-    }
-  };
 
   return (
     <section className="py-24 sm:py-32 bg-cream overflow-hidden">
@@ -63,77 +52,53 @@ export function InstagramGallery() {
               Array.from({ length: 8 }).map((_, i) => (
                 <div
                   key={i}
-                  className={`animate-pulse rounded-3xl bg-cocoa/5 border border-cocoa/10 ${getSpan(i)}`}
+                  className={`animate-pulse rounded-3xl bg-cocoa/5 border border-cocoa/10 ${i % 8 === 0 || i % 8 === 3 ? "row-span-2 col-span-1" : "col-span-1"}`}
                 />
               ))
             ) : displayItems.length > 0 ? (
-              (() => {
-                const slots = new Array(8).fill(null);
-                const unplacedItems: any[] = [];
+              displayItems.map((item, i) => {
+                const pos = item.position ?? i;
+                const spanClass = pos % 8 === 0 || pos % 8 === 3 ? "row-span-2 col-span-1" : "col-span-1";
 
-                displayItems.forEach((item: any) => {
-                  if (!item) return; // Safeguard against null items from cache
-                  if (
-                    item.position !== null &&
-                    item.position >= 0 &&
-                    item.position < 8 &&
-                    !slots[item.position]
-                  ) {
-                    slots[item.position] = item;
-                  } else {
-                    unplacedItems.push(item);
-                  }
-                });
-
-                for (let i = 0; i < 8; i++) {
-                  if (!slots[i] && unplacedItems.length > 0) {
-                    slots[i] = unplacedItems.shift();
-                  }
-                }
-
-                return slots.map((item, i) => {
-                  if (!item) {
-                    return (
-                      <div
-                        key={`empty-${i}`}
-                        className={`rounded-[20px] sm:rounded-3xl bg-cocoa/5 border border-dashed border-cocoa/10 flex flex-col items-center justify-center ${getSpan(i)}`}
-                      >
-                        <InstagramIcon className="h-6 w-6 text-cocoa/10 mb-2" />
-                        <span className="text-[10px] uppercase tracking-widest text-cocoa/20 font-bold">
-                          Slot {i + 1}
-                        </span>
-                      </div>
-                    );
-                  }
-
-                  return (
+                return (
+                  <Link
+                    key={item.id}
+                    to="/gallery"
+                    className={`${spanClass} block group cursor-pointer`}
+                  >
                     <motion.div
-                      key={item.id}
-                      initial={{ opacity: 0, y: 30 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.8, delay: i * 0.1, ease: [0.22, 1, 0.36, 1] }}
-                      viewport={{ once: true }}
-                      className={`group relative overflow-hidden rounded-[20px] sm:rounded-3xl bg-cocoa/5 shadow-sm transition-all hover:shadow-2xl hover:-translate-y-1 border border-cocoa/5 ${getSpan(i)}`}
+                      initial={{ opacity: 0, scale: 0.9, y: 40 }}
+                      whileInView={{ opacity: 1, scale: 1, y: 0 }}
+                      whileHover={{ y: -8, scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      transition={{ 
+                        duration: 0.8, 
+                        delay: (i % 8) * 0.1, 
+                        ease: [0.22, 1, 0.36, 1],
+                        scale: { duration: 1, ease: [0.22, 1, 0.36, 1] }
+                      }}
+                      viewport={{ once: true, margin: "-100px" }}
+                      className="relative h-full w-full overflow-hidden rounded-[20px] sm:rounded-3xl bg-cocoa/5 shadow-sm transition-all hover:shadow-2xl border border-cocoa/5"
                     >
                       <img
                         src={resolveImage(item.url)}
                         alt={`Gallery Piece ${i + 1}`}
-                        className="h-full w-full object-cover transition-transform duration-1000 group-hover:scale-105"
+                        className="h-full w-full object-cover transition-transform duration-1000 group-hover:scale-110"
                       />
 
                       {/* Premium Minimal Hover Overlay */}
-                      <div className="absolute inset-0 bg-gradient-to-t from-cocoa/60 via-transparent to-transparent opacity-0 transition-all duration-700 group-hover:opacity-100 flex flex-col items-center justify-end pb-8 text-cream">
-                        <div className="translate-y-4 transition-transform duration-700 ease-out group-hover:translate-y-0 flex flex-col items-center gap-2">
+                      <div className="absolute inset-0 bg-gradient-to-t from-cocoa/80 via-cocoa/20 to-transparent opacity-0 transition-all duration-500 group-hover:opacity-100 flex flex-col items-center justify-end pb-8 text-cream">
+                        <div className="translate-y-4 transition-transform duration-500 ease-out group-hover:translate-y-0 flex flex-col items-center gap-2">
                           <div className="h-px w-12 bg-gold/50 mb-2" />
                           <p className="text-[10px] uppercase tracking-[0.6em] font-bold text-cream/90">
-                            Explore Faith
+                            View Gallery
                           </p>
                         </div>
                       </div>
                     </motion.div>
-                  );
-                });
-              })()
+                  </Link>
+                );
+              })
             ) : (
               <div className="col-span-full row-span-2 py-32 text-center rounded-[3rem] bg-cocoa/5 border border-dashed border-cocoa/20 flex flex-col items-center justify-center">
                 <Upload className="h-12 w-12 text-cocoa/20 mb-6" />

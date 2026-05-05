@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { Mail, MapPin, Phone, Send } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { useSite } from "@/lib/site";
 
 export const Route = createFileRoute("/_site/contact")({
   head: () => ({
@@ -16,6 +17,8 @@ export const Route = createFileRoute("/_site/contact")({
 
 function ContactPage() {
   const [submitting, setSubmitting] = useState(false);
+  const { settings } = useSite();
+  const c = settings.contact;
 
   const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -39,16 +42,16 @@ function ContactPage() {
           <p className="text-xs uppercase tracking-[0.3em] text-coffee">— Get in touch</p>
           <h1 className="mt-3 font-display text-5xl sm:text-7xl">Say hello.</h1>
           <p className="mx-auto mt-5 max-w-xl text-muted-foreground">
-            Questions, collaborations, or just want to share your story? We'd love to hear from you.
+            {c.tagline}
           </p>
         </motion.div>
 
         <div className="mt-16 grid gap-10 lg:grid-cols-[1fr_1.4fr]">
           <div className="space-y-6">
             {[
-              { Icon: Mail, label: "Email", value: "hello@christfitz.com" },
-              { Icon: Phone, label: "Phone", value: "+1 (555) 010-2024" },
-              { Icon: MapPin, label: "Studio", value: "Brooklyn, NY" },
+              { Icon: Mail, label: "Email", value: c.email },
+              { Icon: Phone, label: "Phone", value: c.phone },
+              { Icon: MapPin, label: "Studio", value: c.address },
             ].map(({ Icon, label, value }) => (
               <div key={label} className="flex items-start gap-4 rounded-2xl glass p-5">
                 <div className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-cocoa text-cream">

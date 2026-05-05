@@ -19,6 +19,7 @@ import { Route as AdminProductsRouteImport } from './routes/admin/products'
 import { Route as AdminOrdersRouteImport } from './routes/admin/orders'
 import { Route as AdminNavigationRouteImport } from './routes/admin/navigation'
 import { Route as AdminLoginRouteImport } from './routes/admin/login'
+import { Route as AdminGalleryRouteImport } from './routes/admin/gallery'
 import { Route as AdminDiscountsRouteImport } from './routes/admin/discounts'
 import { Route as AdminDashboardRouteImport } from './routes/admin/dashboard'
 import { Route as AdminContentRouteImport } from './routes/admin/content'
@@ -29,6 +30,7 @@ import { Route as SiteTermsRouteImport } from './routes/_site/terms'
 import { Route as SiteShippingRouteImport } from './routes/_site/shipping'
 import { Route as SiteProductsRouteImport } from './routes/_site/products'
 import { Route as SitePrivacyRouteImport } from './routes/_site/privacy'
+import { Route as SiteGalleryRouteImport } from './routes/_site/gallery'
 import { Route as SiteFaqsRouteImport } from './routes/_site/faqs'
 import { Route as SiteContactRouteImport } from './routes/_site/contact'
 import { Route as SiteCheckoutRouteImport } from './routes/_site/checkout'
@@ -86,6 +88,11 @@ const AdminLoginRoute = AdminLoginRouteImport.update({
   path: '/login',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminGalleryRoute = AdminGalleryRouteImport.update({
+  id: '/gallery',
+  path: '/gallery',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminDiscountsRoute = AdminDiscountsRouteImport.update({
   id: '/discounts',
   path: '/discounts',
@@ -136,6 +143,11 @@ const SitePrivacyRoute = SitePrivacyRouteImport.update({
   path: '/privacy',
   getParentRoute: () => SiteRoute,
 } as any)
+const SiteGalleryRoute = SiteGalleryRouteImport.update({
+  id: '/gallery',
+  path: '/gallery',
+  getParentRoute: () => SiteRoute,
+} as any)
 const SiteFaqsRoute = SiteFaqsRouteImport.update({
   id: '/faqs',
   path: '/faqs',
@@ -182,6 +194,7 @@ export interface FileRoutesByFullPath {
   '/checkout': typeof SiteCheckoutRoute
   '/contact': typeof SiteContactRoute
   '/faqs': typeof SiteFaqsRoute
+  '/gallery': typeof SiteGalleryRoute
   '/privacy': typeof SitePrivacyRoute
   '/products': typeof SiteProductsRoute
   '/shipping': typeof SiteShippingRoute
@@ -192,6 +205,7 @@ export interface FileRoutesByFullPath {
   '/admin/content': typeof AdminContentRoute
   '/admin/dashboard': typeof AdminDashboardRoute
   '/admin/discounts': typeof AdminDiscountsRoute
+  '/admin/gallery': typeof AdminGalleryRoute
   '/admin/login': typeof AdminLoginRoute
   '/admin/navigation': typeof AdminNavigationRoute
   '/admin/orders': typeof AdminOrdersRoute
@@ -209,6 +223,7 @@ export interface FileRoutesByTo {
   '/checkout': typeof SiteCheckoutRoute
   '/contact': typeof SiteContactRoute
   '/faqs': typeof SiteFaqsRoute
+  '/gallery': typeof SiteGalleryRoute
   '/privacy': typeof SitePrivacyRoute
   '/products': typeof SiteProductsRoute
   '/shipping': typeof SiteShippingRoute
@@ -219,6 +234,7 @@ export interface FileRoutesByTo {
   '/admin/content': typeof AdminContentRoute
   '/admin/dashboard': typeof AdminDashboardRoute
   '/admin/discounts': typeof AdminDiscountsRoute
+  '/admin/gallery': typeof AdminGalleryRoute
   '/admin/login': typeof AdminLoginRoute
   '/admin/navigation': typeof AdminNavigationRoute
   '/admin/orders': typeof AdminOrdersRoute
@@ -239,6 +255,7 @@ export interface FileRoutesById {
   '/_site/checkout': typeof SiteCheckoutRoute
   '/_site/contact': typeof SiteContactRoute
   '/_site/faqs': typeof SiteFaqsRoute
+  '/_site/gallery': typeof SiteGalleryRoute
   '/_site/privacy': typeof SitePrivacyRoute
   '/_site/products': typeof SiteProductsRoute
   '/_site/shipping': typeof SiteShippingRoute
@@ -249,6 +266,7 @@ export interface FileRoutesById {
   '/admin/content': typeof AdminContentRoute
   '/admin/dashboard': typeof AdminDashboardRoute
   '/admin/discounts': typeof AdminDiscountsRoute
+  '/admin/gallery': typeof AdminGalleryRoute
   '/admin/login': typeof AdminLoginRoute
   '/admin/navigation': typeof AdminNavigationRoute
   '/admin/orders': typeof AdminOrdersRoute
@@ -270,6 +288,7 @@ export interface FileRouteTypes {
     | '/checkout'
     | '/contact'
     | '/faqs'
+    | '/gallery'
     | '/privacy'
     | '/products'
     | '/shipping'
@@ -280,6 +299,7 @@ export interface FileRouteTypes {
     | '/admin/content'
     | '/admin/dashboard'
     | '/admin/discounts'
+    | '/admin/gallery'
     | '/admin/login'
     | '/admin/navigation'
     | '/admin/orders'
@@ -297,6 +317,7 @@ export interface FileRouteTypes {
     | '/checkout'
     | '/contact'
     | '/faqs'
+    | '/gallery'
     | '/privacy'
     | '/products'
     | '/shipping'
@@ -307,6 +328,7 @@ export interface FileRouteTypes {
     | '/admin/content'
     | '/admin/dashboard'
     | '/admin/discounts'
+    | '/admin/gallery'
     | '/admin/login'
     | '/admin/navigation'
     | '/admin/orders'
@@ -326,6 +348,7 @@ export interface FileRouteTypes {
     | '/_site/checkout'
     | '/_site/contact'
     | '/_site/faqs'
+    | '/_site/gallery'
     | '/_site/privacy'
     | '/_site/products'
     | '/_site/shipping'
@@ -336,6 +359,7 @@ export interface FileRouteTypes {
     | '/admin/content'
     | '/admin/dashboard'
     | '/admin/discounts'
+    | '/admin/gallery'
     | '/admin/login'
     | '/admin/navigation'
     | '/admin/orders'
@@ -423,6 +447,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminLoginRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/gallery': {
+      id: '/admin/gallery'
+      path: '/gallery'
+      fullPath: '/admin/gallery'
+      preLoaderRoute: typeof AdminGalleryRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/discounts': {
       id: '/admin/discounts'
       path: '/discounts'
@@ -493,6 +524,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SitePrivacyRouteImport
       parentRoute: typeof SiteRoute
     }
+    '/_site/gallery': {
+      id: '/_site/gallery'
+      path: '/gallery'
+      fullPath: '/gallery'
+      preLoaderRoute: typeof SiteGalleryRouteImport
+      parentRoute: typeof SiteRoute
+    }
     '/_site/faqs': {
       id: '/_site/faqs'
       path: '/faqs'
@@ -553,6 +591,7 @@ interface SiteRouteChildren {
   SiteCheckoutRoute: typeof SiteCheckoutRoute
   SiteContactRoute: typeof SiteContactRoute
   SiteFaqsRoute: typeof SiteFaqsRoute
+  SiteGalleryRoute: typeof SiteGalleryRoute
   SitePrivacyRoute: typeof SitePrivacyRoute
   SiteProductsRoute: typeof SiteProductsRoute
   SiteShippingRoute: typeof SiteShippingRoute
@@ -568,6 +607,7 @@ const SiteRouteChildren: SiteRouteChildren = {
   SiteCheckoutRoute: SiteCheckoutRoute,
   SiteContactRoute: SiteContactRoute,
   SiteFaqsRoute: SiteFaqsRoute,
+  SiteGalleryRoute: SiteGalleryRoute,
   SitePrivacyRoute: SitePrivacyRoute,
   SiteProductsRoute: SiteProductsRoute,
   SiteShippingRoute: SiteShippingRoute,
@@ -584,6 +624,7 @@ interface AdminRouteChildren {
   AdminContentRoute: typeof AdminContentRoute
   AdminDashboardRoute: typeof AdminDashboardRoute
   AdminDiscountsRoute: typeof AdminDiscountsRoute
+  AdminGalleryRoute: typeof AdminGalleryRoute
   AdminLoginRoute: typeof AdminLoginRoute
   AdminNavigationRoute: typeof AdminNavigationRoute
   AdminOrdersRoute: typeof AdminOrdersRoute
@@ -600,6 +641,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminContentRoute: AdminContentRoute,
   AdminDashboardRoute: AdminDashboardRoute,
   AdminDiscountsRoute: AdminDiscountsRoute,
+  AdminGalleryRoute: AdminGalleryRoute,
   AdminLoginRoute: AdminLoginRoute,
   AdminNavigationRoute: AdminNavigationRoute,
   AdminOrdersRoute: AdminOrdersRoute,

@@ -1,7 +1,5 @@
 import { motion } from "framer-motion";
-import aboutImg from "@/assets/about.jpg";
-import collectionEss from "@/assets/collection-essentials.jpg";
-import { useSite } from "@/lib/site";
+import { useSite, resolveImage } from "@/lib/site";
 
 export function About() {
   const { settings } = useSite();
@@ -29,19 +27,15 @@ export function About() {
           </p>
 
           <div className="mt-8 sm:mt-10 grid grid-cols-3 gap-3 sm:gap-4">
-            {[
-              ["Organic", "100% cotton"],
-              ["Limited", "Small batches"],
-              ["Ethical", "Fair sourced"],
-            ].map(([t, d]) => (
-              <div key={t} className="rounded-2xl glass p-3 sm:p-4">
-                <div className="font-display text-base sm:text-xl text-cocoa">{t}</div>
-                <div className="mt-1 text-[10px] sm:text-xs text-muted-foreground">{d}</div>
+            {a.features.map((f) => (
+              <div key={f.title} className="rounded-2xl glass p-3 sm:p-4">
+                <div className="font-display text-base sm:text-xl text-cocoa">{f.title}</div>
+                <div className="mt-1 text-[10px] sm:text-xs text-muted-foreground">{f.subtitle}</div>
               </div>
             ))}
           </div>
         </motion.div>
-
+ 
         <motion.div
           initial={{ opacity: 0, x: 40 }}
           whileInView={{ opacity: 1, x: 0 }}
@@ -52,7 +46,7 @@ export function About() {
           <motion.img
             animate={{ y: [0, -14, 0] }}
             transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-            src={aboutImg}
+            src={resolveImage(a.images.main)}
             alt="ChristFitz community"
             loading="lazy"
             className="absolute right-0 top-0 h-[20rem] sm:h-[26rem] w-[72%] rounded-3xl object-cover shadow-luxe"
@@ -60,15 +54,15 @@ export function About() {
           <motion.img
             animate={{ y: [0, 14, 0] }}
             transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
-            src={collectionEss}
+            src={resolveImage(a.images.secondary)}
             alt="Cream hoodie"
             loading="lazy"
             className="absolute bottom-0 left-0 h-[16rem] sm:h-[20rem] w-[55%] rounded-3xl object-cover shadow-luxe ring-4 sm:ring-8 ring-cream"
           />
           <div className="absolute bottom-4 sm:bottom-6 right-4 sm:right-6 rounded-2xl glass p-4 sm:p-5 max-w-[14rem] shadow-soft">
-            <div className="font-display text-2xl sm:text-3xl text-cocoa">Est. 2024</div>
+            <div className="font-display text-2xl sm:text-3xl text-cocoa">{a.stat.label}</div>
             <p className="mt-1 text-[10px] sm:text-xs text-muted-foreground">
-              Built by believers, worn by the bold.
+              {a.stat.text}
             </p>
           </div>
         </motion.div>
