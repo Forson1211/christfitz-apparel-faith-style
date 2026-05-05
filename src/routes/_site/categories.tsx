@@ -19,8 +19,7 @@ function CategoriesPage() {
         <p className="text-xs uppercase tracking-[0.3em] text-coffee">— Curated Drops</p>
         <h1 className="mt-3 font-display text-5xl sm:text-7xl">Collections</h1>
       </div>
-      <Collections />
-      <Products />
+      <Collections limit={0} />
     </>
   );
 }

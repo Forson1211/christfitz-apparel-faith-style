@@ -1,8 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { motion } from "framer-motion";
-import { Plus, Tag, Trash2, Copy, X } from "lucide-react";
-import { useState } from "react";
+import { Plus, Tag, Trash2, Copy, X, RefreshCw } from "lucide-react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/admin/discounts")({
   component: DiscountsAdmin,
@@ -13,90 +14,98 @@ type Discount = {
   code: string;
   type: "percent" | "fixed";
   value: number;
-  minOrder: number;
+  min_order: number;
   uses: number;
-  maxUses: number;
+  max_uses: number;
   active: boolean;
-  expires: string;
+  expires_at: string | null;
 };
 
-const INITIAL: Discount[] = [
-  {
-    id: "1",
-    code: "FAITH20",
-    type: "percent",
-    value: 20,
-    minOrder: 50,
-    uses: 48,
-    maxUses: 100,
-    active: true,
-    expires: "2026-12-31",
-  },
-  {
-    id: "2",
-    code: "GRACE10",
-    type: "fixed",
-    value: 10,
-    minOrder: 0,
-    uses: 12,
-    maxUses: 50,
-    active: true,
-    expires: "2026-06-30",
-  },
-  {
-    id: "3",
-    code: "FIRSTBLESSING",
-    type: "percent",
-    value: 15,
-    minOrder: 0,
-    uses: 200,
-    maxUses: 200,
-    active: false,
-    expires: "2026-03-01",
-  },
-];
-
 function DiscountsAdmin() {
-  const [discounts, setDiscounts] = useState<Discount[]>(INITIAL);
+  const [discounts, setDiscounts] = useState<Discount[]>([]);
+  const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({
     code: "",
     type: "percent" as "percent" | "fixed",
     value: 10,
-    minOrder: 0,
-    maxUses: 100,
+    min_order: 0,
+    max_uses: 100,
     active: true,
-    expires: "",
+    expires_at: "",
   });
 
-  const addDiscount = () => {
+  const fetchDiscounts = async () => {
+    setLoading(true);
+    const { data, error } = await (supabase as any)
+      .from("discounts")
+      .select("*")
+      .order("created_at", { ascending: false });
+    
+    if (error) toast.error("Failed to load discounts: " + error.message);
+    else setDiscounts((data ?? []) as Discount[]);
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    fetchDiscounts();
+  }, []);
+
+  const addDiscount = async () => {
     if (!form.code.trim()) return toast.error("Code is required");
     if (discounts.find((d) => d.code === form.code.toUpperCase()))
       return toast.error("Code already exists");
-    setDiscounts([
-      ...discounts,
-      { ...form, id: Date.now().toString(), code: form.code.toUpperCase(), uses: 0 },
-    ]);
-    setShowForm(false);
-    setForm({
-      code: "",
-      type: "percent",
-      value: 10,
-      minOrder: 0,
-      maxUses: 100,
-      active: true,
-      expires: "",
-    });
-    toast.success("Discount code created!");
+
+    const newDiscount = {
+      code: form.code.toUpperCase(),
+      type: form.type,
+      value: form.value,
+      min_order: form.min_order,
+      max_uses: form.max_uses,
+      active: form.active,
+      expires_at: form.expires_at || null,
+      uses: 0
+    };
+
+    const { error } = await (supabase as any).from("discounts").insert([newDiscount]);
+    
+    if (error) {
+      toast.error("Failed to create discount: " + error.message);
+    } else {
+      toast.success("Discount code created!");
+      setShowForm(false);
+      setForm({
+        code: "",
+        type: "percent",
+        value: 10,
+        min_order: 0,
+        max_uses: 100,
+        active: true,
+        expires_at: "",
+      });
+      fetchDiscounts();
+    }
   };
 
-  const toggleActive = (id: string) => {
-    setDiscounts(discounts.map((d) => (d.id === id ? { ...d, active: !d.active } : d)));
+  const toggleActive = async (id: string, current: boolean) => {
+    const { error } = await (supabase as any)
+      .from("discounts")
+      .update({ active: !current })
+      .eq("id", id);
+    
+    if (error) toast.error(error.message);
+    else fetchDiscounts();
   };
 
-  const remove = (id: string) => {
-    setDiscounts(discounts.filter((d) => d.id !== id));
-    toast.success("Removed");
+  const remove = async (id: string) => {
+    if (!window.confirm("Are you sure?")) return;
+    const { error } = await (supabase as any).from("discounts").delete().eq("id", id);
+    
+    if (error) toast.error(error.message);
+    else {
+      toast.success("Removed");
+      fetchDiscounts();
+    }
   };
 
   return (
@@ -111,12 +120,20 @@ function DiscountsAdmin() {
             Create and manage promotional codes for your store.
           </p>
         </motion.div>
-        <button
-          onClick={() => setShowForm(true)}
-          className="rounded-xl bg-cocoa text-cream px-4 py-2 text-xs font-bold shadow-sm hover:scale-[1.03] transition flex items-center gap-2 self-start md:self-auto"
-        >
-          <Plus className="h-4 w-4" /> New Code
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={fetchDiscounts}
+            className="rounded-xl glass px-4 py-2 text-xs font-bold text-cocoa border border-white/40 flex items-center gap-2 hover:bg-white/50 transition"
+          >
+            <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} /> Refresh
+          </button>
+          <button
+            onClick={() => setShowForm(true)}
+            className="rounded-xl bg-cocoa text-cream px-4 py-2 text-xs font-bold shadow-sm hover:scale-[1.03] transition flex items-center gap-2"
+          >
+            <Plus className="h-4 w-4" /> New Code
+          </button>
+        </div>
       </div>
 
       <div className="grid grid-cols-3 gap-4">
@@ -132,7 +149,7 @@ function DiscountsAdmin() {
             transition={{ delay: i * 0.08 }}
             className="rounded-2xl glass shadow-sm border border-white/40 p-5 text-center"
           >
-            <div className="text-3xl font-display font-bold text-cocoa">{value}</div>
+            <div className="text-3xl font-display font-bold text-cocoa">{loading ? "—" : value}</div>
             <div className="text-[10px] uppercase tracking-widest text-cocoa/50 font-bold mt-1">
               {label}
             </div>
@@ -183,25 +200,27 @@ function DiscountsAdmin() {
                     {d.type === "percent" ? `${d.value}%` : `₵${d.value}`} off
                   </td>
                   <td className="px-6 py-4 text-cocoa/70">
-                    {d.minOrder > 0 ? `₵${d.minOrder}` : "None"}
+                    {d.min_order > 0 ? `₵${d.min_order}` : "None"}
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-2">
                       <span className="text-cocoa/70">
-                        {d.uses}/{d.maxUses}
+                        {d.uses}/{d.max_uses}
                       </span>
                       <div className="w-16 h-1.5 bg-cocoa/10 rounded-full overflow-hidden">
                         <div
                           className="h-full bg-cocoa rounded-full"
-                          style={{ width: `${Math.min(100, (d.uses / d.maxUses) * 100)}%` }}
+                          style={{ width: `${Math.min(100, (d.uses / d.max_uses) * 100)}%` }}
                         />
                       </div>
                     </div>
                   </td>
-                  <td className="px-6 py-4 text-cocoa/70">{d.expires || "Never"}</td>
+                  <td className="px-6 py-4 text-cocoa/70">
+                    {d.expires_at ? new Date(d.expires_at).toLocaleDateString() : "Never"}
+                  </td>
                   <td className="px-6 py-4">
                     <button
-                      onClick={() => toggleActive(d.id)}
+                      onClick={() => toggleActive(d.id, d.active)}
                       className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider transition ${d.active ? "bg-green-500/10 text-green-600 hover:bg-red-500/10 hover:text-red-600" : "bg-cocoa/5 text-cocoa/40 hover:bg-green-500/10 hover:text-green-600"}`}
                     >
                       {d.active ? "Active" : "Inactive"}
@@ -217,6 +236,13 @@ function DiscountsAdmin() {
                   </td>
                 </tr>
               ))}
+              {!loading && discounts.length === 0 && (
+                <tr>
+                  <td colSpan={7} className="px-6 py-12 text-center text-cocoa/40">
+                    No discount codes found. Create your first one above.
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
@@ -282,8 +308,8 @@ function DiscountsAdmin() {
                   <input
                     type="number"
                     min={0}
-                    value={form.minOrder}
-                    onChange={(e) => setForm({ ...form, minOrder: Number(e.target.value) })}
+                    value={form.min_order}
+                    onChange={(e) => setForm({ ...form, min_order: Number(e.target.value) })}
                     className="w-full rounded-xl border border-cocoa/15 bg-white px-4 py-2.5 text-sm outline-none focus:border-coffee transition"
                   />
                 </div>
@@ -294,8 +320,8 @@ function DiscountsAdmin() {
                   <input
                     type="number"
                     min={1}
-                    value={form.maxUses}
-                    onChange={(e) => setForm({ ...form, maxUses: Number(e.target.value) })}
+                    value={form.max_uses}
+                    onChange={(e) => setForm({ ...form, max_uses: Number(e.target.value) })}
                     className="w-full rounded-xl border border-cocoa/15 bg-white px-4 py-2.5 text-sm outline-none focus:border-coffee transition"
                   />
                 </div>
@@ -306,8 +332,8 @@ function DiscountsAdmin() {
                 </label>
                 <input
                   type="date"
-                  value={form.expires}
-                  onChange={(e) => setForm({ ...form, expires: e.target.value })}
+                  value={form.expires_at}
+                  onChange={(e) => setForm({ ...form, expires_at: e.target.value })}
                   className="w-full rounded-xl border border-cocoa/15 bg-white px-4 py-2.5 text-sm outline-none focus:border-coffee transition"
                 />
               </div>

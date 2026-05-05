@@ -22,8 +22,8 @@ envContent.split("\n").forEach((line) => {
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 async function check() {
-  const { data, error } = await supabase.from("content").select("*").limit(5);
-  console.log("CONTENT ROWS:");
+  const { data, error } = await supabase.from("categories").select("*").order("position");
+  console.log("CATEGORIES ROWS:");
   console.log(JSON.stringify(data, null, 2));
   if (error) console.error("ERROR:", error);
 }

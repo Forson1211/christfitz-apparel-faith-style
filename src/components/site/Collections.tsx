@@ -10,8 +10,14 @@ import { resolveImage } from "@/lib/assetMap";
 const fallbackImgs = [tees, essentials, premium];
 const tags = ["Daily wear", "Bestseller", "Limited"];
 
-export function Collections() {
-  const { categories, products } = useSite();
+export function Collections({ limit = 3 }: { limit?: number }) {
+  const { categories, products, settings } = useSite();
+  const content = settings.collections || {
+    title: "Collections built to inspire.",
+    subtitle: "Signature lines, each crafted with intention. Soft hands, bold spirit."
+  };
+
+  const displayedCategories = limit ? categories.slice(0, limit) : categories;
 
   return (
     <section id="collections" className="relative py-20 sm:py-28 md:py-36">
@@ -26,16 +32,26 @@ export function Collections() {
           <div>
             <p className="text-xs uppercase tracking-[0.3em] text-coffee">— Curated Drops</p>
             <h2 className="mt-3 font-display text-3xl sm:text-5xl md:text-6xl whitespace-nowrap sm:whitespace-normal">
-              Collections built to inspire.
+              {content.title}
             </h2>
           </div>
-          <p className="max-w-sm text-muted-foreground">
-            Three signature lines, each crafted with intention. Soft hands, bold spirit.
-          </p>
+          <div className="flex flex-col items-start sm:items-end gap-4">
+            <p className="max-w-sm text-muted-foreground sm:text-right">
+              {content.subtitle}
+            </p>
+            {limit && categories.length > limit && (
+              <Link
+                to="/categories"
+                className="text-xs font-bold uppercase tracking-widest text-coffee border-b border-coffee/20 pb-1 hover:border-coffee transition-colors"
+              >
+                View all collections
+              </Link>
+            )}
+          </div>
         </motion.div>
 
-        <div className="mt-12 sm:mt-16 grid gap-5 sm:gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
-          {categories.slice(0, 3).map((cat, i) => {
+        <div className="mt-12 sm:mt-16 grid gap-5 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+          {displayedCategories.map((cat, i) => {
             const count = products.filter((p) => p.category === cat.name).length;
             const img = cat.image_url
               ? resolveImage(cat.image_url)

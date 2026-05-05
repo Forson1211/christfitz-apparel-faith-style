@@ -117,7 +117,9 @@ function AdminContent() {
   const [footer, setFooter] = useState(settings.footer);
   const [brand, setBrand] = useState(settings.brand);
   const [instagram, setInstagram] = useState(settings.instagram);
+  const [collections, setCollections] = useState(settings.collections || { title: "Collections built to inspire.", subtitle: "Three signature lines, each crafted with intention. Soft hands, bold spirit." });
   const [contact, setContact] = useState(settings.contact);
+  const [announcement, setAnnouncement] = useState(settings.announcement);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -126,7 +128,9 @@ function AdminContent() {
     setFooter(settings.footer);
     setBrand(settings.brand);
     setInstagram(settings.instagram);
+    setCollections(settings.collections || { title: "Collections built to inspire.", subtitle: "Three signature lines, each crafted with intention. Soft hands, bold spirit." });
     setContact(settings.contact);
+    setAnnouncement(settings.announcement);
   }, [settings]);
 
   // ── Save site setting ────────────────────────────────────────────────────
@@ -242,6 +246,29 @@ function AdminContent() {
         />
       </Section>
 
+      {/* Announcement */}
+      <Section title="Global Announcement" onSave={() => saveKey("announcement", announcement)}>
+        <div className="flex items-center gap-3 p-4 rounded-2xl bg-cocoa/5 border border-cocoa/10 mb-4">
+          <input
+            type="checkbox"
+            checked={announcement?.enabled}
+            onChange={(e) => setAnnouncement({ ...announcement, enabled: e.target.checked })}
+            className="h-4 w-4 accent-cocoa"
+          />
+          <span className="text-sm font-medium text-cocoa">Enable announcement bar</span>
+        </div>
+        <Input
+          label="Announcement Text (Show your discount code here!)"
+          value={announcement?.text || ""}
+          onChange={(v) => setAnnouncement({ ...announcement, text: v })}
+        />
+        <Input
+          label="Target Link"
+          value={announcement?.href || ""}
+          onChange={(v) => setAnnouncement({ ...announcement, href: v })}
+        />
+      </Section>
+
       {/* Hero */}
       <Section title="Hero" onSave={() => saveKey("hero", hero)}>
         <div className="flex items-center gap-4 p-4 rounded-2xl bg-cocoa/5 border border-cocoa/10 mb-4">
@@ -335,6 +362,24 @@ function AdminContent() {
             />
           </div>
         </div>
+      </Section>
+    
+      {/* Collections */}
+      <Section title="Collections Section (Home)" onSave={() => saveKey("collections", collections)}>
+        <Input
+          label="Section Title"
+          value={collections.title}
+          onChange={(v) => setCollections({ ...collections, title: v })}
+        />
+        <Input
+          label="Section Subtitle"
+          value={collections.subtitle}
+          onChange={(v) => setCollections({ ...collections, subtitle: v })}
+          textarea
+        />
+        <p className="mt-4 text-[10px] uppercase tracking-widest text-cocoa/40 font-bold italic">
+          * Go to the "Collections" tab in the sidebar to manage individual collection images and names.
+        </p>
       </Section>
 
       {/* About */}

@@ -1,6 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useSite } from "@/lib/site";
 import { motion } from "framer-motion";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import {
   TrendingUp,
   Users,
@@ -9,82 +11,138 @@ import {
   ArrowUpRight,
   ArrowDownRight,
   BarChart3,
+  RefreshCw,
 } from "lucide-react";
 
 export const Route = createFileRoute("/admin/analytics")({
   component: Analytics,
 });
 
-function Analytics() {
-  const { products, categories } = useSite();
+type Order = {
+  id: string;
+  total: number;
+  status: string;
+  created_at: string;
+  items: any[];
+};
 
+function Analytics() {
+  const { products, userCount, refresh: refreshSite } = useSite();
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchAnalyticsData = async () => {
+    setLoading(true);
+    const { data: orderData } = await supabase
+      .from("orders")
+      .select("id, total, status, created_at, items")
+      .order("created_at", { ascending: false });
+    
+    if (orderData) setOrders(orderData as Order[]);
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    fetchAnalyticsData();
+  }, []);
+
+  // 1. Calculate KPI Metrics
+  const fulfilledOrders = orders.filter(o => o.status === 'fulfilled');
+  const totalRevenue = fulfilledOrders.reduce((sum, o) => sum + o.total, 0);
+  const totalOrders = orders.length;
+  const avgOrderValue = totalOrders > 0 ? totalRevenue / fulfilledOrders.length : 0;
+  
+  // Synthetic trend logic (comparing to 30 days ago)
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+  
+  const recentOrders = fulfilledOrders.filter(o => new Date(o.created_at) > thirtyDaysAgo);
+  const recentRevenue = recentOrders.reduce((sum, o) => sum + o.total, 0);
+  
   const kpis = [
     {
       label: "Total Revenue",
-      value: "₵42,850",
-      change: "+12.5%",
+      value: `₵${totalRevenue.toLocaleString()}`,
+      change: recentRevenue > 0 ? `₵${recentRevenue.toLocaleString()} last 30d` : "No recent sales",
       trend: "up",
-      sub: "vs last month",
+      sub: "Total fulfilled revenue",
       Icon: TrendingUp,
     },
     {
       label: "Total Orders",
-      value: "318",
-      change: "+8.3%",
+      value: totalOrders.toString(),
+      change: orders.filter(o => new Date(o.created_at) > thirtyDaysAgo).length.toString(),
       trend: "up",
-      sub: "vs last month",
+      sub: "orders in last 30 days",
       Icon: ShoppingCart,
     },
     {
-      label: "Unique Visitors",
-      value: "8,240",
-      change: "+18.2%",
+      label: "Registered Users",
+      value: userCount.toLocaleString(),
+      change: "+100%",
       trend: "up",
-      sub: "vs last month",
+      sub: "total community members",
       Icon: Users,
     },
     {
       label: "Avg. Order Value",
-      value: "₵134.75",
-      change: "-2.1%",
-      trend: "down",
-      sub: "vs last month",
+      value: `₵${avgOrderValue.toFixed(2)}`,
+      change: "Stable",
+      trend: "up",
+      sub: "per fulfilled order",
       Icon: MousePointer2,
     },
   ];
 
-  const weeklyRevenue = [
-    { day: "Mon", revenue: 3200, orders: 24 },
-    { day: "Tue", revenue: 4100, orders: 30 },
-    { day: "Wed", revenue: 2800, orders: 21 },
-    { day: "Thu", revenue: 5200, orders: 38 },
-    { day: "Fri", revenue: 6800, orders: 51 },
-    { day: "Sat", revenue: 7900, orders: 59 },
-    { day: "Sun", revenue: 5100, orders: 38 },
-  ];
+  // 2. Weekly Revenue Breakdown
+  const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  const weeklyRevenue = days.map((day, idx) => {
+    const dayOrders = fulfilledOrders.filter(o => new Date(o.created_at).getDay() === idx);
+    const revenue = dayOrders.reduce((sum, o) => sum + o.total, 0);
+    return { day, revenue, orders: dayOrders.length };
+  });
 
-  const maxRevenue = Math.max(...weeklyRevenue.map((d) => d.revenue));
+  const maxRevenue = Math.max(...weeklyRevenue.map((d) => d.revenue), 100);
 
-  const categoryBreakdown = [
-    { name: "Hoodies", pct: 48, revenue: "₵20,568", color: "bg-cocoa" },
-    { name: "T-Shirts", pct: 31, revenue: "₵13,283", color: "bg-coffee" },
-    { name: "Accessories", pct: 21, revenue: "₵8,998", color: "bg-gold" },
-  ];
+  // 3. Category Breakdown
+  const categoryStats = products.reduce((acc: any, p) => {
+    const pSales = orders.reduce((sum, o) => {
+      const item = o.items?.find((i: any) => i.id === p.id);
+      return sum + (item?.quantity || 0);
+    }, 0);
+    
+    if (!acc[p.category]) acc[p.category] = { revenue: 0, count: 0 };
+    acc[p.category].revenue += pSales * p.price;
+    acc[p.category].count += pSales;
+    return acc;
+  }, {});
 
-  const topProducts = products.slice(0, 5).map((p, i) => ({
-    ...p,
-    sales: [128, 96, 74, 61, 48][i] ?? 20,
-    revenue: `₵${(p.price * ([128, 96, 74, 61, 48][i] ?? 20)).toLocaleString()}`,
-    pct: [100, 75, 58, 48, 38][i] ?? 30,
-  }));
+  const categoryBreakdown = Object.entries(categoryStats).map(([name, data]: [string, any]) => {
+    const pct = totalRevenue > 0 ? Math.round((data.revenue / totalRevenue) * 100) : 0;
+    return { 
+      name, 
+      pct, 
+      revenue: `₵${data.revenue.toLocaleString()}`,
+      color: name === "Hoodies" ? "bg-cocoa" : name === "T-Shirts" ? "bg-coffee" : "bg-gold"
+    };
+  }).sort((a, b) => b.pct - a.pct).slice(0, 3);
 
-  const trafficSources = [
-    { source: "Organic Search", sessions: 3240, pct: 39 },
-    { source: "Direct", sessions: 2180, pct: 26 },
-    { source: "Social Media", sessions: 1650, pct: 20 },
-    { source: "Referral", sessions: 820, pct: 10 },
-    { source: "Email", sessions: 350, pct: 5 },
-  ];
+  // 4. Top Products
+  const topProducts = products
+    .map(p => {
+      const sales = orders.reduce((sum, o) => {
+        const item = o.items?.find((i: any) => i.id === p.id);
+        return sum + (item?.quantity || 0);
+      }, 0);
+      return { ...p, sales, totalRevenue: sales * p.price };
+    })
+    .sort((a, b) => b.totalRevenue - a.totalRevenue)
+    .slice(0, 5)
+    .map((p, i, arr) => ({
+      ...p,
+      revenue: `₵${p.totalRevenue.toLocaleString()}`,
+      pct: arr[0].totalRevenue > 0 ? Math.round((p.totalRevenue / arr[0].totalRevenue) * 100) : 0
+    }));
 
   return (
     <div className="w-full space-y-6 pb-10">
@@ -96,7 +154,7 @@ function Analytics() {
           </p>
           <h1 className="mt-1 font-display text-4xl font-bold">Analytics</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Deep insights into your store's performance and growth.
+            Live insights from your store's database.
           </p>
         </motion.div>
         <motion.div
@@ -104,14 +162,13 @@ function Analytics() {
           animate={{ opacity: 1, scale: 1 }}
           className="flex gap-2"
         >
-          {["7D", "30D", "90D", "1Y"].map((p, i) => (
-            <button
-              key={p}
-              className={`rounded-xl px-4 py-2 text-xs font-bold transition border ${i === 1 ? "bg-cocoa text-cream border-cocoa" : "glass border-white/40 text-cocoa/70 hover:text-cocoa"}`}
-            >
-              {p}
-            </button>
-          ))}
+          <button 
+            onClick={() => { fetchAnalyticsData(); refreshSite(); }}
+            className="rounded-xl glass px-4 py-2 text-xs font-bold border border-white/40 text-cocoa/70 hover:text-cocoa flex items-center gap-2"
+          >
+            <RefreshCw className={`h-3 w-3 ${loading ? "animate-spin" : ""}`} />
+            Refresh Data
+          </button>
         </motion.div>
       </div>
 
@@ -141,7 +198,7 @@ function Analytics() {
               </div>
             </div>
             <div className="mt-4">
-              <div className="text-2xl font-display font-bold text-cocoa">{value}</div>
+              <div className="text-2xl font-display font-bold text-cocoa">{loading ? "..." : value}</div>
               <div className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold mt-0.5">
                 {label}
               </div>
@@ -161,9 +218,9 @@ function Analytics() {
         >
           <div className="p-6 border-b border-cocoa/5 flex items-center justify-between bg-white/20">
             <div>
-              <h2 className="font-display text-lg font-bold">Weekly Revenue</h2>
+              <h2 className="font-display text-lg font-bold">Revenue by Day</h2>
               <p className="text-xs text-muted-foreground mt-1">
-                Daily revenue for the past 7 days
+                Total fulfilled revenue grouped by day of week
               </p>
             </div>
             <BarChart3 className="h-5 w-5 text-cocoa/30" />
@@ -173,11 +230,11 @@ function Analytics() {
               {weeklyRevenue.map((d, i) => (
                 <div key={d.day} className="flex-1 flex flex-col items-center gap-2 group">
                   <div className="text-[10px] font-bold text-cocoa/0 group-hover:text-cocoa/60 transition-colors">
-                    ₵{(d.revenue / 1000).toFixed(1)}k
+                    ₵{d.revenue.toLocaleString()}
                   </div>
                   <div
                     className="w-full rounded-t-xl bg-cocoa/10 group-hover:bg-cocoa transition-colors relative overflow-hidden"
-                    style={{ height: `${(d.revenue / maxRevenue) * 100}%` }}
+                    style={{ height: `${Math.max((d.revenue / maxRevenue) * 100, 5)}%` }}
                   >
                     <div className="absolute inset-0 bg-gradient-to-t from-cocoa/80 to-coffee/60 opacity-0 group-hover:opacity-100 transition-opacity" />
                   </div>
@@ -198,10 +255,10 @@ function Analytics() {
         >
           <div className="p-6 border-b border-cocoa/5 bg-white/20">
             <h2 className="font-display text-lg font-bold">Sales by Category</h2>
-            <p className="text-xs text-muted-foreground mt-1">Revenue share per category</p>
+            <p className="text-xs text-muted-foreground mt-1">Revenue share per category (Live)</p>
           </div>
           <div className="p-6 space-y-5">
-            {categoryBreakdown.map((cat) => (
+            {categoryBreakdown.length > 0 ? categoryBreakdown.map((cat) => (
               <div key={cat.name}>
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm font-bold text-cocoa">{cat.name}</span>
@@ -219,12 +276,14 @@ function Analytics() {
                   />
                 </div>
               </div>
-            ))}
+            )) : (
+              <div className="text-center py-10 text-xs text-muted-foreground">No sales data yet</div>
+            )}
           </div>
         </motion.section>
       </div>
 
-      {/* Top Products + Traffic Sources */}
+      {/* Top Products */}
       <div className="grid lg:grid-cols-2 gap-6">
         <motion.section
           initial={{ opacity: 0, y: 20 }}
@@ -235,11 +294,11 @@ function Analytics() {
           <div className="p-6 border-b border-cocoa/5 flex items-center justify-between bg-white/20">
             <div>
               <h2 className="font-display text-lg font-bold">Top Products</h2>
-              <p className="text-xs text-muted-foreground mt-1">Best performing by revenue</p>
+              <p className="text-xs text-muted-foreground mt-1">Best performing by real revenue</p>
             </div>
           </div>
           <div className="divide-y divide-cocoa/5">
-            {topProducts.map((p, i) => (
+            {topProducts.filter(p => p.sales > 0).length > 0 ? topProducts.filter(p => p.sales > 0).map((p, i) => (
               <div
                 key={p.id}
                 className="p-4 flex items-center gap-4 hover:bg-white/30 transition-colors"
@@ -263,7 +322,9 @@ function Analytics() {
                   <div className="text-[10px] text-cocoa/50">{p.sales} sold</div>
                 </div>
               </div>
-            ))}
+            )) : (
+              <div className="p-10 text-center text-xs text-muted-foreground">Waiting for your first sale...</div>
+            )}
           </div>
         </motion.section>
 
@@ -275,33 +336,24 @@ function Analytics() {
         >
           <div className="p-6 border-b border-cocoa/5 flex items-center justify-between bg-white/20">
             <div>
-              <h2 className="font-display text-lg font-bold">Traffic Sources</h2>
-              <p className="text-xs text-muted-foreground mt-1">Where your visitors come from</p>
+              <h2 className="font-display text-lg font-bold">Store Activity</h2>
+              <p className="text-xs text-muted-foreground mt-1">Recent order statuses</p>
             </div>
           </div>
           <div className="p-6 space-y-4">
-            {trafficSources.map((s, i) => (
-              <div key={s.source}>
-                <div className="flex items-center justify-between mb-1.5">
-                  <span className="text-sm font-medium text-cocoa">{s.source}</span>
-                  <div className="text-right">
-                    <span className="text-xs font-bold text-cocoa">{s.pct}%</span>
-                    <span className="text-[10px] text-cocoa/50 ml-2">
-                      {s.sessions.toLocaleString()} sessions
-                    </span>
-                  </div>
+            {orders.slice(0, 5).map((o, i) => (
+              <div key={o.id} className="flex items-center justify-between p-3 rounded-xl bg-white/30 border border-white/20">
+                <div className="flex items-center gap-3">
+                  <div className={`h-2 w-2 rounded-full ${o.status === 'fulfilled' ? 'bg-green-500' : 'bg-gold'}`} />
+                  <div className="text-xs font-bold text-cocoa">Order #{o.id.slice(0, 8)}</div>
                 </div>
-                <div className="h-1.5 rounded-full bg-cocoa/5 overflow-hidden">
-                  <motion.div
-                    initial={{ width: 0 }}
-                    animate={{ width: `${s.pct}%` }}
-                    transition={{ delay: 0.65 + i * 0.05, duration: 0.7 }}
-                    className="h-full rounded-full"
-                    style={{ background: `hsl(${20 + i * 12}, 40%, ${30 + i * 10}%)` }}
-                  />
-                </div>
+                <div className="text-[10px] text-cocoa/50 font-bold uppercase tracking-widest">{o.status}</div>
+                <div className="text-xs font-bold text-cocoa">₵{o.total.toLocaleString()}</div>
               </div>
             ))}
+            {orders.length === 0 && (
+              <div className="text-center py-10 text-xs text-muted-foreground">No recent activity</div>
+            )}
           </div>
         </motion.section>
       </div>

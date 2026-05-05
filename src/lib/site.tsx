@@ -1,8 +1,8 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "./auth";
-import { resolveImage } from "./assetMap";
-export { resolveImage };
+import { resolveImage, optimizeImage } from "./assetMap";
+export { resolveImage, optimizeImage };
 
 export interface DBProduct {
   id: string;
@@ -89,6 +89,15 @@ export interface SiteSettings {
       youtube: string;
     };
   };
+  announcement: {
+    enabled: boolean;
+    text: string;
+    href: string;
+  };
+  collections: {
+    title: string;
+    subtitle: string;
+  };
 }
 
 export const defaultSettings: SiteSettings = {
@@ -156,6 +165,15 @@ export const defaultSettings: SiteSettings = {
       youtube: "https://youtube.com",
     },
   },
+  announcement: {
+    enabled: true,
+    text: "Use code FAITH20 for 20% off your first order! ✨",
+    href: "/products",
+  },
+  collections: {
+    title: "Collections built to inspire.",
+    subtitle: "Signature lines, each crafted with intention. Soft hands, bold spirit."
+  },
 };
 
 interface SiteContextValue {
@@ -164,6 +182,7 @@ interface SiteContextValue {
   categories: DBCategory[];
   navLinks: DBNavLink[];
   userCount: number;
+  orderCount: number;
   loading: boolean;
   refresh: () => Promise<void>;
 }
@@ -234,6 +253,10 @@ export function SiteProvider({ children }: { children: ReactNode }) {
     const cached = localStorage.getItem("cf_user_count");
     return cached ? Number(cached) : 0;
   });
+  const [orderCount, setOrderCount] = useState<number>(() => {
+    const cached = localStorage.getItem("cf_order_count");
+    return cached ? Number(cached) : 0;
+  });
   const [loading, setLoading] = useState(true);
 
   const refresh = async () => {
@@ -251,6 +274,7 @@ export function SiteProvider({ children }: { children: ReactNode }) {
         supabase.from("categories").select("*").order("position"),
         supabase.from("nav_links").select("*").order("position"),
         supabase.from("profiles").select("*", { count: "exact", head: true }),
+        supabase.from("orders").select("*", { count: "exact", head: true }),
       ]);
 
       // 1. Process Settings
@@ -320,6 +344,13 @@ export function SiteProvider({ children }: { children: ReactNode }) {
         localStorage.setItem("cf_user_count", String(uResult.value.count));
       }
 
+      // 6. Process Order Count
+      const oResult = results[5];
+      if (oResult.status === "fulfilled" && oResult.value.count !== null) {
+        setOrderCount(oResult.value.count);
+        localStorage.setItem("cf_order_count", String(oResult.value.count));
+      }
+
       // Schedule background refresh in 5 minutes to keep it fresh without hammering DB
       setTimeout(refresh, 300000);
     } catch (err) {
@@ -383,7 +414,7 @@ export function SiteProvider({ children }: { children: ReactNode }) {
   }, [settings.favicon.url]);
 
   return (
-    <SiteContext.Provider value={{ settings, products, categories, navLinks, userCount, loading, refresh }}>
+    <SiteContext.Provider value={{ settings, products, categories, navLinks, userCount, orderCount, loading, refresh }}>
       {children}
     </SiteContext.Provider>
   );
@@ -397,5 +428,5 @@ export function useSite() {
 
 // Helper for product cards/cart that need a usable image URL
 export function productImage(p: DBProduct): string {
-  return resolveImage(p.image_url);
+  return optimizeImage(p.image_url, 'md');
 }

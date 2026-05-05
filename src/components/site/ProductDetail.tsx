@@ -4,6 +4,10 @@ import { useEffect, useState } from "react";
 import { useCart } from "@/lib/cart";
 import type { DBProduct } from "@/lib/site";
 import { productImage } from "@/lib/site";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/lib/auth";
+import { toast } from "sonner";
+import { Send } from "lucide-react";
 
 interface Props {
   product: DBProduct | null;
@@ -61,19 +65,19 @@ export function ProductDetail({ product, onClose }: Props) {
               <X className="h-4 w-4" />
             </button>
 
-            <div className="grid max-h-[90vh] grid-cols-1 overflow-y-auto md:grid-cols-2">
-              <div className="relative aspect-square bg-sand/40 md:aspect-auto">
+            <div className="flex max-h-[90vh] flex-col md:flex-row">
+              <div className="relative aspect-square w-full shrink-0 bg-sand/40 p-4 md:w-1/2 md:aspect-auto md:h-[90vh] md:p-8">
                 <img
                   src={productImage(product)}
                   alt={product.name}
-                  className="h-full w-full object-cover"
+                  className="h-full w-full object-contain drop-shadow-sm"
                 />
                 <span className="absolute left-4 top-4 rounded-full glass px-3 py-1 text-[10px] uppercase tracking-widest text-cocoa">
                   {product.category}
                 </span>
               </div>
 
-              <div className="flex flex-col gap-5 p-6 sm:p-9">
+              <div className="flex w-full flex-col gap-5 overflow-y-auto p-6 md:w-1/2 sm:p-9">
                 <div>
                   {product.verse && (
                     <p className="text-xs uppercase tracking-[0.3em] text-coffee">
@@ -187,11 +191,164 @@ export function ProductDetail({ product, onClose }: Props) {
                     </ul>
                   </div>
                 )}
+                {/* Reviews */}
+                <div className="mt-4 border-t border-cocoa/10 pt-6">
+                  <ProductReviews productId={product.id} />
+                </div>
               </div>
             </div>
           </motion.div>
         </motion.div>
       )}
     </AnimatePresence>
+  );
+}
+
+function ProductReviews({ productId }: { productId: string }) {
+  const { user } = useAuth();
+  const [reviews, setReviews] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [rating, setRating] = useState(5);
+  const [comment, setComment] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [canReview, setCanReview] = useState(false);
+
+  useEffect(() => {
+    if (!user) return;
+    const checkPurchase = async () => {
+      const { data } = await supabase
+        .from("orders")
+        .select("items")
+        .eq("user_id", user.id);
+
+      if (data) {
+        const hasPurchased = data.some(order => {
+          const items = order.items as any[];
+          return Array.isArray(items) && items.some((item: any) => item.id === productId);
+        });
+        setCanReview(hasPurchased);
+      }
+    };
+    checkPurchase();
+  }, [user, productId]);
+
+  const fetchReviews = async () => {
+    setLoading(true);
+    const { data, error } = await (supabase as any)
+      .from("product_reviews")
+      .select("*, profiles(full_name, avatar_url)")
+      .eq("product_id", productId)
+      .order("created_at", { ascending: false });
+
+    if (data) setReviews(data);
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    fetchReviews();
+  }, [productId]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user) return toast.error("Please sign in to leave a review");
+    
+    setSubmitting(true);
+    const { error } = await (supabase as any).from("product_reviews").insert({
+      product_id: productId,
+      user_id: user.id,
+      rating,
+      comment,
+    });
+
+    setSubmitting(false);
+    if (error) {
+      if (error.code === '23505') {
+        toast.error("You have already reviewed this product.");
+      } else {
+        toast.error(error.message);
+      }
+    } else {
+      toast.success("Review submitted!");
+      setComment("");
+      setRating(5);
+      fetchReviews();
+    }
+  };
+
+  return (
+    <div>
+      <h3 className="text-sm font-display uppercase tracking-widest text-cocoa">Reviews</h3>
+      
+      {/* List reviews */}
+      <div className="mt-4 space-y-4 max-h-[300px] overflow-y-auto pr-2">
+        {loading ? (
+          <p className="text-xs text-muted-foreground">Loading reviews...</p>
+        ) : reviews.length === 0 ? (
+          <p className="text-xs text-muted-foreground">No reviews yet. Be the first!</p>
+        ) : (
+          reviews.map((r) => (
+            <div key={r.id} className="rounded-xl bg-cocoa/5 p-4 text-sm text-cocoa">
+              <div className="flex items-center justify-between">
+                <span className="font-bold">{r.profiles?.full_name || "Anonymous"}</span>
+                <div className="flex">
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <Star
+                      key={i}
+                      className={`h-3 w-3 ${i < r.rating ? "fill-gold text-gold" : "text-cocoa/20"}`}
+                    />
+                  ))}
+                </div>
+              </div>
+              {r.comment && <p className="mt-2 text-sm text-muted-foreground">{r.comment}</p>}
+            </div>
+          ))
+        )}
+      </div>
+
+      {/* Leave a review form */}
+      {user ? (
+        canReview ? (
+          <form onSubmit={handleSubmit} className="mt-6 space-y-3 rounded-xl bg-sand/50 p-4">
+            <h4 className="text-xs font-bold uppercase tracking-widest text-cocoa">Leave a review</h4>
+            <div className="flex gap-1">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <button
+                  type="button"
+                  key={star}
+                  onClick={() => setRating(star)}
+                  className="focus:outline-none transition-transform hover:scale-110"
+                >
+                  <Star className={`h-5 w-5 ${star <= rating ? "fill-gold text-gold" : "text-cocoa/20"}`} />
+                </button>
+              ))}
+            </div>
+            <textarea
+              value={comment}
+              onChange={(e) => setComment(e.target.value)}
+              placeholder="What did you think of this product?"
+              className="w-full rounded-xl border border-cocoa/10 bg-cream p-3 text-sm text-cocoa outline-none focus:border-cocoa/40"
+              rows={3}
+              required
+            />
+            <button
+              type="submit"
+              disabled={submitting}
+              className="flex w-full items-center justify-center gap-2 rounded-xl bg-cocoa py-3 text-xs font-bold text-cream transition hover:bg-coffee disabled:opacity-50"
+            >
+              <Send className="h-3 w-3" />
+              {submitting ? "Submitting..." : "Submit Review"}
+            </button>
+          </form>
+        ) : (
+          <p className="mt-6 text-xs text-muted-foreground rounded-xl bg-sand/50 p-4 text-center">
+            You must purchase this product to leave a review.
+          </p>
+        )
+      ) : (
+        <p className="mt-6 text-xs text-muted-foreground rounded-xl bg-sand/50 p-4 text-center">
+          Sign in to leave a review.
+        </p>
+      )}
+    </div>
   );
 }

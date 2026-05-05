@@ -41,19 +41,19 @@ export function Newsletter() {
               }}
               className="mt-10 flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-2 sm:rounded-full sm:glass-dark sm:p-2"
             >
-              <div className="flex-1 rounded-2xl glass-dark sm:bg-transparent sm:backdrop-blur-none sm:rounded-none sm:border-none">
+              <div className="flex-1 rounded-full glass-dark sm:bg-white/5 sm:backdrop-blur-md">
                 <input
                   type="email"
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="your@email.com"
-                  className="w-full bg-transparent px-6 py-4 sm:py-3 text-cream placeholder:text-cream/50 outline-none"
+                  className="w-full rounded-full bg-transparent px-6 py-4 sm:py-3 text-cream placeholder:text-cream/50 outline-none"
                 />
               </div>
               <button
                 type="submit"
-                className="group relative inline-flex items-center justify-center gap-2 overflow-hidden rounded-2xl bg-cream px-8 py-4 sm:py-3 text-sm font-bold text-cocoa transition-all hover:scale-[1.02] sm:rounded-full sm:font-medium"
+                className="group relative inline-flex items-center justify-center gap-2 overflow-hidden rounded-full bg-cream px-8 py-4 sm:py-3 text-sm font-bold text-cocoa transition-all hover:scale-[1.02] sm:font-medium"
               >
                 <span className="relative z-10 flex items-center gap-2">
                   {sent ? "Welcome 🤍" : "Subscribe"}

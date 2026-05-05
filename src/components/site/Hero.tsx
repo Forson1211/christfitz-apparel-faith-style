@@ -2,27 +2,28 @@ import { motion } from "framer-motion";
 import { ArrowRight, Users, Shirt, Star } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { FloatingOrbs } from "./FloatingOrbs";
-import { useSite, resolveImage } from "@/lib/site";
+import { useSite, resolveImage, optimizeImage } from "@/lib/site";
 import { useContent } from "@/hooks/useContent";
 
 export function Hero() {
-  const { settings, products, userCount } = useSite();
+  const { settings, products, userCount, loading: siteLoading } = useSite();
   const h = settings.hero;
   const { items, loading } = useContent("hero");
   const heroBackground = items.length > 0 ? items[0].url : "";
   const isLoadingInitial = loading && items.length === 0;
 
-  // Calculate live stats
-  const believersCount = (h.stats?.believersBase || 0) + userCount;
+  // Calculate live stats — show real user count only
   const formatNumber = (num: number) => {
     if (num >= 1000) return (num / 1000).toFixed(0) + "K+";
-    return num + "+";
+    return num.toString();
   };
 
-  const premiumDesigns = products.length;
-  const avgRating = products.length > 0 
+  const premiumDesigns = products.filter(p => p.active).length;
+  const avgRating = products.length > 0
     ? (products.reduce((acc, p) => acc + p.rating, 0) / products.length).toFixed(1)
     : "5.0";
+
+  const statsLoading = siteLoading && userCount === 0 && products.length === 0;
 
   return (
     <section className="relative min-h-[auto] lg:min-h-screen w-full overflow-hidden text-cream">
@@ -38,7 +39,7 @@ export function Hero() {
         ) : heroBackground ? (
           <img
             key={heroBackground}
-            src={resolveImage(heroBackground)}
+            src={optimizeImage(heroBackground, 'hero')}
             alt="Model wearing ChristFitz oversized tee"
             className="h-full w-full object-cover object-top sm:object-center"
             loading="eager"
@@ -126,12 +127,16 @@ export function Hero() {
           <div className="grid grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 gap-2.5 sm:gap-4">
             {/* Top Wide Card */}
             <div className="col-span-2 group relative overflow-hidden rounded-2xl sm:rounded-[2.5rem] bg-white/5 backdrop-blur-md border border-white/10 p-3 sm:p-8 transition-all hover:bg-white/10">
-              <div className="flex items-center gap-3 sm:gap-6">
+                <div className="flex items-center gap-3 sm:gap-6">
                 <div className="flex h-8 w-8 sm:h-16 sm:w-16 items-center justify-center rounded-lg sm:rounded-2xl bg-gradient-to-br from-gold to-gold/60 shadow-lg shadow-gold/20">
                   <Users className="h-4 w-4 sm:h-8 sm:w-8 text-cocoa" />
                 </div>
                 <div className="text-left">
-                  <div className="font-display text-lg sm:text-5xl leading-none">{formatNumber(believersCount)}</div>
+                  <div className="font-display text-lg sm:text-5xl leading-none">
+                    {statsLoading ? (
+                      <span className="inline-block w-20 h-8 rounded-lg bg-white/10 animate-pulse" />
+                    ) : formatNumber(userCount)}
+                  </div>
                   <div className="text-[6px] sm:text-xs uppercase tracking-[0.2em] text-cream/50 mt-0.5 sm:mt-2">
                     {h.stats?.believersLabel || "Believers Reached"}
                   </div>
@@ -152,7 +157,11 @@ export function Hero() {
               <div className="mb-2 sm:mb-5 inline-flex h-6 w-6 sm:h-12 sm:w-12 items-center justify-center rounded-lg bg-white/5 text-gold group-hover:bg-gold group-hover:text-cocoa transition-colors">
                 <Shirt className="h-3 w-3 sm:h-6 sm:w-6" />
               </div>
-              <div className="font-display text-lg sm:text-4xl leading-none">{premiumDesigns}+</div>
+              <div className="font-display text-lg sm:text-4xl leading-none">
+                {statsLoading ? (
+                  <span className="inline-block w-10 h-6 rounded-lg bg-white/10 animate-pulse" />
+                ) : `${premiumDesigns}+`}
+              </div>
               <div className="text-[6px] uppercase tracking-widest text-cream/40 mt-1 sm:mt-2">
                 {h.stats?.designsLabel || "Premium Designs"}
               </div>
@@ -163,7 +172,11 @@ export function Hero() {
               <div className="mb-2 sm:mb-5 inline-flex h-6 w-6 sm:h-12 sm:w-12 items-center justify-center rounded-lg bg-white/5 text-gold group-hover:bg-gold group-hover:text-cocoa transition-colors">
                 <Star className="h-3 w-3 sm:h-6 sm:w-6" />
               </div>
-              <div className="font-display text-lg sm:text-4xl leading-none">{avgRating}★</div>
+              <div className="font-display text-lg sm:text-4xl leading-none">
+                {statsLoading ? (
+                  <span className="inline-block w-14 h-6 rounded-lg bg-white/10 animate-pulse" />
+                ) : `${avgRating}★`}
+              </div>
               <div className="text-[6px] uppercase tracking-widest text-cream/40 mt-1 sm:mt-2">
                 {h.stats?.ratingLabel || "Community Rating"}
               </div>

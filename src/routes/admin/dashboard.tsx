@@ -216,7 +216,7 @@ function Dashboard() {
           <div>
             <div className="text-xl font-display font-bold text-cocoa">{categories.length}</div>
             <div className="text-[10px] uppercase tracking-widest text-cocoa/50 font-bold">
-              Categories
+              Collections
             </div>
           </div>
         </Link>

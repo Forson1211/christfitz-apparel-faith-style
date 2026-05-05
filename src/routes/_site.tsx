@@ -4,6 +4,7 @@ import { Footer } from "@/components/site/Footer";
 import { useAuth } from "@/lib/auth";
 import { useSite } from "@/lib/site";
 import { LoadingScreen } from "@/components/site/LoadingScreen";
+import { AnnouncementBar } from "@/components/site/AnnouncementBar";
 
 export const Route = createFileRoute("/_site")({
   component: SiteLayout,
@@ -18,7 +19,12 @@ function SiteLayout() {
   return (
     <div className="relative min-h-screen overflow-x-hidden bg-background text-foreground">
       <LoadingScreen />
-      {!isAuthPage && <Navbar />}
+      {!isAuthPage && (
+        <>
+          <AnnouncementBar />
+          <Navbar />
+        </>
+      )}
       <Outlet />
       {!isAuthPage && <Footer />}
     </div>

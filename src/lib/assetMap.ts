@@ -30,11 +30,20 @@ const map: Record<string, string> = {
   "collection-premium.jpg": premium,
 };
 
-export function resolveImage(url: string | null | undefined): string {
+export type ImageTransform = {
+  width?: number;
+  height?: number;
+  quality?: number;
+  format?: 'origin' | 'webp';
+  resize?: 'cover' | 'contain' | 'fill';
+};
+
+export function resolveImage(url: string | null | undefined, transform?: ImageTransform): string {
   if (!url) return p1;
   
   // 1. Handle absolute URLs (http, https, data)
   if (url.startsWith("http://") || url.startsWith("https://") || url.startsWith("data:")) {
+    // If it's a supabase URL, we can still transform it if it's in the render format
     return url;
   }
 
@@ -43,10 +52,35 @@ export function resolveImage(url: string | null | undefined): string {
 
   // 3. Handle Supabase storage paths (e.g. "hero/bg.jpg")
   if (url.includes("/") && !url.startsWith("/")) {
-    return `https://txhovpomafiomlfbegpx.supabase.co/storage/v1/object/public/site-assets/${url}`;
+    const baseUrl = `https://txhovpomafiomlfbegpx.supabase.co/storage/v1/object/public/site-assets/${url}`;
+    
+    if (transform) {
+      const renderUrl = `https://txhovpomafiomlfbegpx.supabase.co/storage/v1/render/image/public/site-assets/${url}`;
+      const params = new URLSearchParams();
+      if (transform.width) params.set('width', transform.width.toString());
+      if (transform.height) params.set('height', transform.height.toString());
+      if (transform.quality) params.set('quality', transform.quality.toString());
+      if (transform.format) params.set('format', transform.format);
+      if (transform.resize) params.set('resize', transform.resize);
+      
+      return `${renderUrl}?${params.toString()}`;
+    }
+    
+    return baseUrl;
   }
 
   // 4. Fallback to local path
   return url;
+}
+
+export function optimizeImage(url: string | null | undefined, size: 'sm' | 'md' | 'lg' | 'hero' = 'md'): string {
+  const transforms: Record<string, ImageTransform> = {
+    sm: { width: 200, quality: 70, format: 'webp' },
+    md: { width: 500, quality: 80, format: 'webp' },
+    lg: { width: 1000, quality: 85, format: 'webp' },
+    hero: { width: 1920, quality: 90, format: 'webp' }
+  };
+  
+  return resolveImage(url, transforms[size]);
 }
 

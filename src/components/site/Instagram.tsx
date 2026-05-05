@@ -7,7 +7,7 @@ import {
   Upload,
 } from "lucide-react";
 import { useContent } from "@/hooks/useContent";
-import { useSite, resolveImage } from "@/lib/site";
+import { useSite, resolveImage, optimizeImage } from "@/lib/site";
 import { Link } from "@tanstack/react-router";
 
 /**
@@ -81,8 +81,9 @@ export function InstagramGallery({ limit }: { limit?: number }) {
                       className="relative h-full w-full overflow-hidden rounded-[20px] sm:rounded-3xl bg-cocoa/5 shadow-sm transition-all hover:shadow-2xl border border-cocoa/5"
                     >
                       <img
-                        src={resolveImage(item.url)}
+                        src={optimizeImage(item.url, (pos % 8 === 0 || pos % 8 === 3) ? 'lg' : 'md')}
                         alt={`Gallery Piece ${i + 1}`}
+                        loading="lazy"
                         className="h-full w-full object-cover transition-transform duration-1000 group-hover:scale-110"
                       />
 

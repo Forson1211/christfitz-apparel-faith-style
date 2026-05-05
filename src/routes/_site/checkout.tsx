@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { ArrowLeft, CreditCard, Truck, CheckCircle2, ShieldCheck, Phone } from "lucide-react";
+import { ArrowLeft, CreditCard, Truck, CheckCircle2, ShieldCheck, Phone, Tag, X } from "lucide-react";
 import { useCart } from "@/lib/cart";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
@@ -14,15 +14,26 @@ export const Route = createFileRoute("/_site/checkout")({
 });
 
 function CheckoutPage() {
-  const { items, subtotal, clear } = useCart();
+  const { 
+    items, 
+    subtotal, 
+    total: cartTotal, 
+    discount, 
+    discountAmount, 
+    applyDiscount, 
+    removeDiscount, 
+    clear 
+  } = useCart();
   const { user } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState(1); // 1: Shipping, 2: Payment, 3: Success
   const [attempt, setAttempt] = useState(0);
+  const [promoCode, setPromoCode] = useState("");
+  const [isApplying, setIsApplying] = useState(false);
 
   const shipping = subtotal > 100 || subtotal === 0 ? 0 : 8;
-  const total = subtotal + shipping;
+  const finalTotal = cartTotal + shipping;
 
   const [formData, setFormData] = useState({
     firstName: "",
@@ -34,6 +45,14 @@ function CheckoutPage() {
     paymentMethod: "momo",
   });
 
+  const handleApplyDiscount = async () => {
+    if (!promoCode.trim()) return;
+    setIsApplying(true);
+    await applyDiscount(promoCode);
+    setIsApplying(false);
+    setPromoCode("");
+  };
+
   const onSuccess = async (reference: any) => {
     setLoading(true);
     try {
@@ -41,7 +60,7 @@ function CheckoutPage() {
         user_id: user?.id || null,
         customer_name: `${formData.firstName} ${formData.lastName}`,
         customer_email: formData.email,
-        total: total,
+        total: finalTotal,
         items: items.map((item) => ({
           id: item.id,
           name: item.name,
@@ -55,12 +74,24 @@ function CheckoutPage() {
           phone: formData.phone,
         },
         status: "paid",
-        metadata: { paystack_reference: reference.reference }
+        metadata: { 
+          paystack_reference: reference.reference,
+          applied_discount: discount?.code || null,
+          discount_amount: discountAmount
+        }
       };
 
       const { error } = await supabase.from("orders" as any).insert([orderData]);
 
       if (error) throw error;
+
+      // Increment discount usage if applicable
+      if (discount) {
+        const { data: dData } = await (supabase as any).from("discounts").select("uses").eq("id", discount.id).single();
+        if (dData) {
+          await (supabase as any).from("discounts").update({ uses: dData.uses + 1 }).eq("id", discount.id);
+        }
+      }
 
       clear(); // Clear cart
       setStep(3); // Move to success step
@@ -81,9 +112,9 @@ function CheckoutPage() {
 
   const paystackProps = {
     email: formData.email,
-    amount: Math.round(total * 100),
+    amount: Math.round(finalTotal * 100),
     publicKey: "pk_test_b449552cd6346656d517050eb2ec50cdcf768593",
-    text: loading ? "Processing..." : `Place Order (₵${total.toFixed(2)})`,
+    text: loading ? "Processing..." : `Place Order (₵${finalTotal.toFixed(2)})`,
     onSuccess: (ref: any) => onSuccess(ref),
     onClose: () => onClose(),
     reference: `CF-${Date.now()}-${attempt}`,
@@ -336,7 +367,7 @@ function CheckoutPage() {
           <div className="h-fit space-y-6 lg:sticky lg:top-32">
             <div className="rounded-3xl glass p-8">
               <h2 className="font-display text-2xl mb-6">Order Summary</h2>
-              <div className="space-y-4 mb-8 max-h-[300px] overflow-auto pr-2">
+              <div className="space-y-4 mb-8 max-h-[300px] overflow-auto pr-2 border-b border-cocoa/10 pb-6">
                 {items.map((item) => (
                   <div key={item.id} className="flex gap-4">
                     <div className="h-16 w-16 shrink-0 overflow-hidden rounded-xl bg-cocoa/5">
@@ -359,13 +390,58 @@ function CheckoutPage() {
                 ))}
               </div>
 
-              <div className="space-y-3 border-t border-cocoa/10 pt-6">
+              {/* Discount Code Section */}
+              {!discount ? (
+                <div className="mb-8">
+                  <div className="flex gap-2">
+                    <div className="relative flex-1">
+                      <Tag className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-cocoa/40" />
+                      <input 
+                        type="text"
+                        placeholder="Promo Code"
+                        value={promoCode}
+                        onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
+                        className="w-full rounded-xl border border-cocoa/10 bg-white/50 pl-9 pr-4 py-2.5 text-xs font-medium outline-none focus:border-cocoa/30 transition"
+                      />
+                    </div>
+                    <button
+                      onClick={handleApplyDiscount}
+                      disabled={!promoCode.trim() || isApplying}
+                      className="rounded-xl bg-cocoa px-4 py-2.5 text-[10px] font-bold text-cream hover:bg-coffee transition disabled:opacity-50"
+                    >
+                      {isApplying ? "..." : "Apply"}
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="mb-8 p-3 rounded-xl bg-green-500/5 border border-green-500/10 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="h-6 w-6 rounded-full bg-green-500/10 text-green-600 flex items-center justify-center">
+                      <Tag className="h-3 w-3" />
+                    </div>
+                    <span className="text-xs font-bold text-cocoa">{discount.code} applied</span>
+                  </div>
+                  <button onClick={removeDiscount} className="text-cocoa/40 hover:text-red-500 transition">
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+              )}
+
+              <div className="space-y-3">
                 <div className="flex justify-between text-sm text-cocoa/60">
                   <span>Subtotal</span>
                   <span className="tabular-nums font-medium text-cocoa">
                     ₵{subtotal.toFixed(2)}
                   </span>
                 </div>
+                {discount && (
+                  <div className="flex justify-between text-sm text-green-600">
+                    <span>Discount ({discount.code})</span>
+                    <span className="tabular-nums font-medium">
+                      -₵{discountAmount.toFixed(2)}
+                    </span>
+                  </div>
+                )}
                 <div className="flex justify-between text-sm text-cocoa/60">
                   <span>Shipping</span>
                   <span className="tabular-nums font-medium text-cocoa">
@@ -374,7 +450,7 @@ function CheckoutPage() {
                 </div>
                 <div className="flex justify-between text-xl font-display pt-3 border-t border-cocoa/10">
                   <span>Total</span>
-                  <span className="tabular-nums">₵{total.toFixed(2)}</span>
+                  <span className="tabular-nums">₵{finalTotal.toFixed(2)}</span>
                 </div>
               </div>
 

@@ -131,7 +131,7 @@ function AdminProducts() {
             <tr>
               <th className="p-4 w-16">Image</th>
               <th className="p-4">Name</th>
-              <th className="p-4">Category</th>
+              <th className="p-4">Collection</th>
               <th className="p-4">Price</th>
               <th className="p-4">Active</th>
               <th className="p-4"></th>
@@ -204,7 +204,7 @@ function AdminProducts() {
                   className="input"
                 />
               </Field>
-              <Field label="Category">
+              <Field label="Collection">
                 <select
                   value={editing.category ?? ""}
                   onChange={(e) => setEditing({ ...editing, category: e.target.value })}
