@@ -542,8 +542,8 @@ function Account() {
                 className="p-8 sm:p-10 space-y-5 bg-white/40 backdrop-blur-sm"
               >
                 {mode === "signup" && (
-                  <>
-                    <div className="space-y-1.5">
+                  <div className="grid sm:grid-cols-2 gap-4">
+                    <div className="space-y-1">
                       <label className="text-[10px] uppercase tracking-widest text-cocoa/50 font-bold px-1">
                         Full Name
                       </label>
@@ -553,26 +553,26 @@ function Account() {
                         placeholder="John Doe"
                         value={name}
                         onChange={(e) => setName(e.target.value)}
-                        className="w-full rounded-2xl border-2 border-cocoa/5 bg-cocoa/5 px-5 py-3.5 text-sm transition-all focus:border-gold/50 focus:bg-white focus:outline-none"
+                        className="w-full rounded-xl border-2 border-cocoa/5 bg-cocoa/5 px-5 py-3 text-base transition-all focus:border-gold/50 focus:bg-white focus:outline-none"
                       />
                     </div>
-                    <div className="space-y-1.5">
+                    <div className="space-y-1">
                       <label className="text-[10px] uppercase tracking-widest text-cocoa/50 font-bold px-1">
                         Telephone
                       </label>
                       <input
                         type="tel"
                         required
-                        placeholder="+1 (555) 000-0000"
+                        placeholder="+233 ..."
                         value={phone}
                         onChange={(e) => setPhone(e.target.value)}
-                        className="w-full rounded-2xl border-2 border-cocoa/5 bg-cocoa/5 px-5 py-3.5 text-sm transition-all focus:border-gold/50 focus:bg-white focus:outline-none"
+                        className="w-full rounded-xl border-2 border-cocoa/5 bg-cocoa/5 px-5 py-3 text-base transition-all focus:border-gold/50 focus:bg-white focus:outline-none"
                       />
                     </div>
-                  </>
+                  </div>
                 )}
 
-                <div className="space-y-1.5">
+                <div className="space-y-1">
                   <label className="text-[10px] uppercase tracking-widest text-cocoa/50 font-bold px-1">
                     {mode === "signin" ? "Name or Email" : "Email Address"}
                   </label>
@@ -582,11 +582,11 @@ function Account() {
                     placeholder={mode === "signin" ? "Name or Email" : "you@example.com"}
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full rounded-2xl border-2 border-cocoa/5 bg-cocoa/5 px-5 py-3.5 text-sm transition-all focus:border-gold/50 focus:bg-white focus:outline-none"
+                    className="w-full rounded-xl border-2 border-cocoa/5 bg-cocoa/5 px-5 py-3 text-base transition-all focus:border-gold/50 focus:bg-white focus:outline-none"
                   />
                 </div>
 
-                <div className="space-y-1.5">
+                <div className="space-y-1">
                   <label className="text-[10px] uppercase tracking-widest text-cocoa/50 font-bold px-1">
                     Password
                   </label>
@@ -597,7 +597,7 @@ function Account() {
                       placeholder="••••••••"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="w-full rounded-2xl border-2 border-cocoa/5 bg-cocoa/5 pl-5 pr-12 py-3.5 text-sm transition-all focus:border-gold/50 focus:bg-white focus:outline-none"
+                      className="w-full rounded-xl border-2 border-cocoa/5 bg-cocoa/5 pl-5 pr-12 py-3 text-base transition-all focus:border-gold/50 focus:bg-white focus:outline-none"
                     />
                     <button
                       type="button"
@@ -612,7 +612,7 @@ function Account() {
                 <button
                   disabled={busy}
                   type="submit"
-                  className="group relative w-full overflow-hidden rounded-2xl bg-cocoa py-4 text-sm font-semibold text-cream shadow-soft transition-all hover:scale-[1.02] disabled:opacity-50"
+                  className="group relative w-full overflow-hidden rounded-xl bg-cocoa py-3.5 text-sm font-semibold text-cream shadow-soft transition-all hover:scale-[1.01] disabled:opacity-50 mt-2"
                 >
                   <span className="relative z-10 flex items-center justify-center gap-2">
                     {busy ? "Processing..." : mode === "signin" ? "Sign In" : "Create Account"}

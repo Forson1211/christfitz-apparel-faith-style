@@ -17,7 +17,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { motion } from "framer-motion";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -31,6 +31,7 @@ type Order = {
   total: number;
   status: string;
   created_at: string;
+  items: any;
 };
 type Profile = { id: string; full_name: string | null; email: string | null; updated_at: string };
 
@@ -45,9 +46,9 @@ function Dashboard() {
     const [ordersRes, profilesRes] = await Promise.all([
       supabase
         .from("orders")
-        .select("id, customer_name, total, status, created_at")
+        .select("id, customer_name, total, status, created_at, items")
         .order("created_at", { ascending: false })
-        .limit(50),
+        .limit(10000),
       supabase
         .from("profiles")
         .select("id, full_name, email, updated_at")
@@ -134,18 +135,113 @@ function Dashboard() {
     },
   ];
 
-  const topProducts = products.slice(0, 3).map((p) => {
-    // Basic dynamic simulation based on price and rating for now since we don't have a complex order_items join
-    const estSales = Math.floor(Math.random() * 20) + p.reviews;
-    return {
-      ...p,
-      sales: estSales,
-      growth: "Active",
-    };
-  });
+  // Real Top Sellers calculation
+  const productSalesCount = useMemo(() => {
+    const counts: Record<string, number> = {};
+    const validOrders = orders.filter(o => o.status === "fulfilled" || o.status === "pending");
+    validOrders.forEach(o => {
+      if (Array.isArray(o.items)) {
+        o.items.forEach((item: any) => {
+          if (item.id && item.quantity) {
+            counts[item.id] = (counts[item.id] || 0) + item.quantity;
+          }
+        });
+      }
+    });
+    return counts;
+  }, [orders]);
 
-  // Simulating a chart path
-  const chartPoints = "0,80 20,60 40,70 60,30 80,45 100,10 120,40 140,25 160,55 180,20 200,50";
+  const topProducts = useMemo(() => {
+    return products
+      .map(p => ({
+        ...p,
+        sales: productSalesCount[p.id] || 0,
+        growth: productSalesCount[p.id] > 0 ? "Active" : "No Sales",
+      }))
+      .sort((a, b) => b.sales - a.sales)
+      .slice(0, 3);
+  }, [products, productSalesCount]);
+
+  const [timeRange, setTimeRange] = useState<"this_month" | "last_month" | "3_months" | "all_time">("this_month");
+  const [chartMetric, setChartMetric] = useState<"revenue" | "orders">("revenue");
+
+  // Determine date range and aggregation
+  const today = new Date();
+  let startDate = new Date();
+  let endDate = new Date();
+  let aggregateBy: "day" | "month" = "day";
+
+  if (timeRange === "this_month") {
+    startDate = new Date(today.getFullYear(), today.getMonth(), 1);
+    endDate = new Date(today.getFullYear(), today.getMonth() + 1, 0); // Last day of this month
+  } else if (timeRange === "last_month") {
+    startDate = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+    endDate = new Date(today.getFullYear(), today.getMonth(), 0); // Last day of previous month
+  } else if (timeRange === "3_months") {
+    startDate = new Date(today.getFullYear(), today.getMonth() - 3, today.getDate());
+    endDate = today;
+  } else if (timeRange === "all_time") {
+    if (orders.length > 0) {
+      const earliest = new Date(orders[orders.length - 1].created_at); // Sorted desc, so last is earliest
+      startDate = new Date(earliest.getFullYear(), earliest.getMonth(), 1);
+    } else {
+      startDate = new Date(today.getFullYear(), today.getMonth() - 6, 1);
+    }
+    endDate = today;
+    aggregateBy = "month";
+  }
+
+  // Generate data points
+  let chartData: { label: string; date: Date; val: number }[] = [];
+  
+  if (aggregateBy === "day") {
+    const daysDiff = Math.round((endDate.getTime() - startDate.getTime()) / (1000 * 3600 * 24)) + 1;
+    chartData = Array.from({ length: Math.max(1, daysDiff) }, (_, i) => {
+      const d = new Date(startDate);
+      d.setDate(startDate.getDate() + i);
+      const dayStr = d.toISOString().slice(0, 10);
+      const validOrders = orders.filter((o) => {
+        const oDay = new Date(o.created_at).toISOString().slice(0, 10);
+        return oDay === dayStr && (o.status === "fulfilled" || o.status === "pending");
+      });
+      const val = chartMetric === "revenue" ? validOrders.reduce((s, o) => s + Number(o.total), 0) : validOrders.length;
+      return { label: d.toLocaleDateString("en-US", { month: "short", day: "numeric" }), date: d, val };
+    });
+  } else {
+    // Aggregate by month
+    const monthsDiff = (endDate.getFullYear() - startDate.getFullYear()) * 12 + (endDate.getMonth() - startDate.getMonth()) + 1;
+    chartData = Array.from({ length: Math.max(1, monthsDiff) }, (_, i) => {
+      const d = new Date(startDate.getFullYear(), startDate.getMonth() + i, 1);
+      const monthStr = d.toISOString().slice(0, 7); // YYYY-MM
+      const validOrders = orders.filter((o) => {
+        const oMonth = new Date(o.created_at).toISOString().slice(0, 7);
+        return oMonth === monthStr && (o.status === "fulfilled" || o.status === "pending");
+      });
+      const val = chartMetric === "revenue" ? validOrders.reduce((s, o) => s + Number(o.total), 0) : validOrders.length;
+      return { label: d.toLocaleDateString("en-US", { month: "short", year: "2-digit" }), date: d, val };
+    });
+  }
+
+  const maxVal = Math.max(...chartData.map((d) => d.val), 1);
+  const chartWidth = 200;
+  const chartHeight = 100;
+  const chartPoints = chartData
+    .map((d, i) => {
+      const x = (i / Math.max(1, chartData.length - 1)) * chartWidth;
+      const y = chartHeight - (d.val / maxVal) * (chartHeight - 10);
+      return `${x.toFixed(1)},${y.toFixed(1)}`;
+    })
+    .join(" ");
+
+  const numLabels = 5;
+  const chartLabels = chartData.length <= numLabels 
+    ? chartData.map(d => d.label)
+    : Array.from({ length: numLabels }, (_, i) => {
+        const idx = Math.floor(i * (chartData.length - 1) / (numLabels - 1));
+        return chartData[idx].label;
+      });
+
+  const chartHasData = chartData.some((d) => d.val > 0);
 
   return (
     <div className="w-full space-y-6 pb-10">
@@ -296,13 +392,31 @@ function Dashboard() {
             <div>
               <h2 className="font-display text-lg font-bold">Sales Performance</h2>
               <p className="text-xs text-muted-foreground mt-1">
-                Revenue growth over the past 2 weeks
+                {chartHasData 
+                  ? `${chartMetric === "revenue" ? "Revenue" : "Orders"} for ${timeRange.replace('_', ' ')}` 
+                  : `No ${chartMetric} data yet`}
               </p>
             </div>
-            <select className="bg-transparent text-xs font-bold uppercase tracking-widest text-coffee outline-none cursor-pointer">
-              <option>Revenue</option>
-              <option>Orders</option>
-            </select>
+            <div className="flex items-center gap-3">
+              <select 
+                value={chartMetric}
+                onChange={(e) => setChartMetric(e.target.value as "revenue" | "orders")}
+                className="bg-transparent text-xs font-bold uppercase tracking-widest text-coffee outline-none cursor-pointer border-b border-cocoa/20 pb-0.5"
+              >
+                <option value="revenue">Revenue</option>
+                <option value="orders">Orders</option>
+              </select>
+              <select 
+                value={timeRange}
+                onChange={(e) => setTimeRange(e.target.value as any)}
+                className="bg-transparent text-xs font-bold uppercase tracking-widest text-coffee outline-none cursor-pointer border-b border-cocoa/20 pb-0.5"
+              >
+                <option value="this_month">This Month</option>
+                <option value="last_month">Last Month</option>
+                <option value="3_months">Last 3 Months</option>
+                <option value="all_time">All Time</option>
+              </select>
+            </div>
           </div>
 
           <div className="flex-1 p-6 flex flex-col justify-end min-h-[250px] relative">
@@ -340,11 +454,9 @@ function Dashboard() {
             </svg>
 
             <div className="flex justify-between mt-4 text-[10px] font-bold uppercase tracking-widest text-cocoa/40">
-              <span>Apr 14</span>
-              <span>Apr 18</span>
-              <span>Apr 22</span>
-              <span>Apr 26</span>
-              <span>Today</span>
+              {chartLabels.map((label, i) => (
+                <span key={i}>{label}</span>
+              ))}
             </div>
           </div>
         </motion.section>
@@ -364,7 +476,7 @@ function Dashboard() {
           </div>
 
           <div className="space-y-4 flex-1">
-            {topProducts.map((p, i) => (
+            {topProducts.map((p: any, i: number) => (
               <div key={p.id} className="flex items-center gap-3 group cursor-pointer">
                 <div className="relative h-12 w-12 shrink-0 rounded-xl overflow-hidden bg-cream/10 border border-white/10 group-hover:scale-105 transition-transform">
                   <img src={productImage(p)} alt={p.name} className="h-full w-full object-cover" />

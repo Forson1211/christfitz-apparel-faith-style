@@ -1,7 +1,10 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Plus, Minus, Trash2, ShoppingBag, ArrowRight } from "lucide-react";
 import { useCart } from "@/lib/cart";
+import { useAuth } from "@/lib/auth";
+import { AuthModal } from "@/components/site/AuthModal";
 
 export const Route = createFileRoute("/_site/cart")({
   head: () => ({
@@ -15,10 +18,22 @@ export const Route = createFileRoute("/_site/cart")({
 
 function CartPage() {
   const { items, updateQuantity, removeItem, subtotal, clear } = useCart();
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  
   const shipping = subtotal > 100 || subtotal === 0 ? 0 : 8;
   const total = subtotal + shipping;
 
+  const handleCheckout = (e: React.MouseEvent) => {
+    if (!user) {
+      e.preventDefault();
+      setIsAuthModalOpen(true);
+    }
+  };
+
   return (
+    <>
     <section className="pt-36 pb-28">
       <div className="mx-auto max-w-6xl px-6">
         <div className="text-center">
@@ -141,6 +156,7 @@ function CartPage() {
               </div>
               <Link
                 to="/checkout"
+                onClick={handleCheckout}
                 className="mt-7 inline-flex w-full items-center justify-center gap-2 rounded-full bg-cream px-6 py-4 text-sm font-medium text-cocoa transition hover:scale-[1.02]"
               >
                 Checkout
@@ -154,5 +170,11 @@ function CartPage() {
         )}
       </div>
     </section>
+    <AuthModal 
+      isOpen={isAuthModalOpen} 
+      onClose={() => setIsAuthModalOpen(false)}
+      onSuccess={() => navigate({ to: "/checkout" })}
+    />
+    </>
   );
 }

@@ -1,9 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { motion } from "framer-motion";
-import { Plus, Tag, Trash2, Copy, X, RefreshCw } from "lucide-react";
+import { Plus, Tag, Trash2, Copy, X, RefreshCw, Edit, Calendar } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { AnnouncementBar } from "@/components/site/AnnouncementBar";
+import { useSite } from "@/lib/site";
 
 export const Route = createFileRoute("/admin/discounts")({
   component: DiscountsAdmin,
@@ -22,10 +24,13 @@ type Discount = {
 };
 
 function DiscountsAdmin() {
+  const { settings, refresh } = useSite();
   const [discounts, setDiscounts] = useState<Discount[]>([]);
+  const [announcement, setAnnouncement] = useState(settings.announcement);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({
+    id: "",
     code: "",
     type: "percent" as "percent" | "fixed",
     value: 10,
@@ -34,6 +39,19 @@ function DiscountsAdmin() {
     active: true,
     expires_at: "",
   });
+
+  const resetForm = () => {
+    setForm({
+      id: "",
+      code: "",
+      type: "percent",
+      value: 10,
+      min_order: 0,
+      max_uses: 100,
+      active: true,
+      expires_at: "",
+    });
+  };
 
   const fetchDiscounts = async () => {
     setLoading(true);
@@ -51,12 +69,34 @@ function DiscountsAdmin() {
     fetchDiscounts();
   }, []);
 
-  const addDiscount = async () => {
-    if (!form.code.trim()) return toast.error("Code is required");
-    if (discounts.find((d) => d.code === form.code.toUpperCase()))
-      return toast.error("Code already exists");
+  useEffect(() => {
+    setAnnouncement(settings.announcement);
+  }, [settings.announcement]);
 
-    const newDiscount = {
+  const saveKey = async (key: string, value: any) => {
+    const { error } = await supabase.rpc("save_site_setting", {
+      p_key: key,
+      p_value: value,
+    });
+
+    if (error) {
+      console.error(`Error saving ${key}:`, error);
+      toast.error("Save failed: " + error.message);
+      return;
+    }
+
+    toast.success("Announcement updated");
+    refresh();
+  };
+
+  const saveDiscount = async () => {
+    if (!form.code.trim()) return toast.error("Code is required");
+    
+    // Check for duplicates (excluding current item if editing)
+    const existing = discounts.find((d) => d.code === form.code.toUpperCase() && d.id !== form.id);
+    if (existing) return toast.error("Code already exists");
+
+    const payload = {
       code: form.code.toUpperCase(),
       type: form.type,
       value: form.value,
@@ -64,25 +104,28 @@ function DiscountsAdmin() {
       max_uses: form.max_uses,
       active: form.active,
       expires_at: form.expires_at || null,
-      uses: 0
     };
 
-    const { error } = await (supabase as any).from("discounts").insert([newDiscount]);
+    let error;
+    if (form.id) {
+      const { error: updateError } = await (supabase as any)
+        .from("discounts")
+        .update(payload)
+        .eq("id", form.id);
+      error = updateError;
+    } else {
+      const { error: insertError } = await (supabase as any)
+        .from("discounts")
+        .insert([{ ...payload, uses: 0 }]);
+      error = insertError;
+    }
     
     if (error) {
-      toast.error("Failed to create discount: " + error.message);
+      toast.error("Failed to save: " + error.message);
     } else {
-      toast.success("Discount code created!");
+      toast.success(form.id ? "Discount updated!" : "Discount created!");
       setShowForm(false);
-      setForm({
-        code: "",
-        type: "percent",
-        value: 10,
-        min_order: 0,
-        max_uses: 100,
-        active: true,
-        expires_at: "",
-      });
+      resetForm();
       fetchDiscounts();
     }
   };
@@ -128,7 +171,10 @@ function DiscountsAdmin() {
             <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} /> Refresh
           </button>
           <button
-            onClick={() => setShowForm(true)}
+            onClick={() => {
+              resetForm();
+              setShowForm(true);
+            }}
             className="rounded-xl bg-cocoa text-cream px-4 py-2 text-xs font-bold shadow-sm hover:scale-[1.03] transition flex items-center gap-2"
           >
             <Plus className="h-4 w-4" /> New Code
@@ -156,6 +202,31 @@ function DiscountsAdmin() {
           </motion.div>
         ))}
       </div>
+
+      {/* Global Announcement Settings */}
+      <Section title="Global Announcement" onSave={() => saveKey("announcement", announcement)}>
+        <div className="flex items-center gap-3 p-4 rounded-2xl bg-cocoa/5 border border-cocoa/10 mb-4">
+          <input
+            type="checkbox"
+            checked={announcement?.enabled}
+            onChange={(e) => setAnnouncement({ ...announcement, enabled: e.target.checked })}
+            className="h-4 w-4 accent-cocoa"
+          />
+          <span className="text-sm font-medium text-cocoa">Enable announcement bar storefront</span>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <Input
+            label="Announcement Text (Tip: Use [CODE] for live code)"
+            value={announcement?.text || ""}
+            onChange={(v) => setAnnouncement({ ...announcement, text: v })}
+          />
+          <Input
+            label="Target Link"
+            value={announcement?.href || ""}
+            onChange={(v) => setAnnouncement({ ...announcement, href: v })}
+          />
+        </div>
+      </Section>
 
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -219,20 +290,54 @@ function DiscountsAdmin() {
                     {d.expires_at ? new Date(d.expires_at).toLocaleDateString() : "Never"}
                   </td>
                   <td className="px-6 py-4">
-                    <button
-                      onClick={() => toggleActive(d.id, d.active)}
-                      className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider transition ${d.active ? "bg-green-500/10 text-green-600 hover:bg-red-500/10 hover:text-red-600" : "bg-cocoa/5 text-cocoa/40 hover:bg-green-500/10 hover:text-green-600"}`}
-                    >
-                      {d.active ? "Active" : "Inactive"}
-                    </button>
+                    {(() => {
+                      const isExpired = d.expires_at && new Date(d.expires_at) < new Date();
+                      if (isExpired) {
+                        return (
+                          <span className="px-3 py-1 rounded-full bg-red-500/10 text-red-600 text-[10px] font-bold uppercase tracking-wider">
+                            Expired
+                          </span>
+                        );
+                      }
+                      return (
+                        <button
+                          onClick={() => toggleActive(d.id, d.active)}
+                          className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider transition ${d.active ? "bg-green-500/10 text-green-600 hover:bg-red-500/10 hover:text-red-600" : "bg-cocoa/5 text-cocoa/40 hover:bg-green-500/10 hover:text-green-600"}`}
+                        >
+                          {d.active ? "Active" : "Inactive"}
+                        </button>
+                      );
+                    })()}
                   </td>
-                  <td className="px-6 py-4 text-center">
-                    <button
-                      onClick={() => remove(d.id)}
-                      className="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
+                  <td className="px-6 py-4">
+                    <div className="flex items-center justify-center gap-2">
+                      <button
+                        onClick={() => {
+                          setForm({
+                            id: d.id,
+                            code: d.code,
+                            type: d.type,
+                            value: d.value,
+                            min_order: d.min_order,
+                            max_uses: d.max_uses,
+                            active: d.active,
+                            expires_at: d.expires_at ? d.expires_at.split('T')[0] : "",
+                          });
+                          setShowForm(true);
+                        }}
+                        className="p-2 text-cocoa/40 hover:text-cocoa hover:bg-cocoa/5 rounded-lg transition"
+                        title="Edit"
+                      >
+                        <Edit className="h-4 w-4" />
+                      </button>
+                      <button
+                        onClick={() => remove(d.id)}
+                        className="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition"
+                        title="Delete"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -256,7 +361,7 @@ function DiscountsAdmin() {
             className="w-full max-w-md rounded-2xl bg-cream border border-white/40 shadow-2xl overflow-hidden"
           >
             <div className="p-6 bg-cocoa text-cream flex items-center justify-between">
-              <h2 className="font-display text-xl font-bold">New Discount Code</h2>
+              <h2 className="font-display text-xl font-bold">{form.id ? 'Edit Discount Code' : 'New Discount Code'}</h2>
               <button onClick={() => setShowForm(false)} className="p-1 hover:text-gold transition">
                 <X className="h-5 w-5" />
               </button>
@@ -354,16 +459,78 @@ function DiscountsAdmin() {
                   Cancel
                 </button>
                 <button
-                  onClick={addDiscount}
+                  onClick={saveDiscount}
                   className="flex-1 py-3 rounded-xl bg-cocoa text-cream text-sm font-bold hover:bg-coffee transition"
                 >
-                  Create Code
+                  {form.id ? 'Save Changes' : 'Create Code'}
                 </button>
               </div>
             </div>
           </motion.div>
         </div>
       )}
+      
+      {/* Live Preview of the Announcement Bar */}
+      <div className="fixed bottom-6 right-6 z-[101] pointer-events-none">
+        <div className="bg-cocoa text-cream text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full mb-2 shadow-lg border border-white/20 inline-block">
+          Live Storefront Preview
+        </div>
+      </div>
+      <div className="relative z-[100]">
+        <AnnouncementBar forceVisible={true} />
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Shared UI primitives
+// ─────────────────────────────────────────────────────────────────────────────
+function Section({ title, onSave, children }: any) {
+  return (
+    <div className="rounded-3xl glass p-6 space-y-3">
+      <div className="flex items-center justify-between">
+        <h2 className="font-display text-xl">{title}</h2>
+        <button
+          onClick={onSave}
+          className="rounded-full bg-cocoa px-5 py-2 text-sm text-cream hover:bg-coffee"
+        >
+          Save
+        </button>
+      </div>
+      {children}
+    </div>
+  );
+}
+
+function Input({
+  label,
+  value,
+  onChange,
+  textarea,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  textarea?: boolean;
+}) {
+  const cls =
+    "w-full rounded-2xl border border-cocoa/15 bg-cream/60 px-4 py-2.5 outline-none focus:border-coffee";
+  return (
+    <div>
+      <label className="text-xs uppercase tracking-widest text-cocoa/60">{label}</label>
+      <div className="mt-1.5">
+        {textarea ? (
+          <textarea
+            rows={3}
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            className={cls}
+          />
+        ) : (
+          <input value={value} onChange={(e) => onChange(e.target.value)} className={cls} />
+        )}
+      </div>
     </div>
   );
 }

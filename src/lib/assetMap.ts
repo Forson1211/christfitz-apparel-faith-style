@@ -56,11 +56,12 @@ export function resolveImage(url: string | null | undefined, transform?: ImageTr
 
   // 3. Handle Supabase storage paths (e.g. "hero/bg.jpg")
   if (url.includes("/") && !url.startsWith("/")) {
-    const baseUrl = `https://txhovpomafiomlfbegpx.supabase.co/storage/v1/object/public/site-assets/${url}`;
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    const baseUrl = `${supabaseUrl}/storage/v1/object/public/site-assets/${url}`;
 
     // Skip transformations for videos
     if (transform && !isVideo) {
-      const renderUrl = `https://txhovpomafiomlfbegpx.supabase.co/storage/v1/render/image/public/site-assets/${url}`;
+      const renderUrl = `${supabaseUrl}/storage/v1/render/image/public/site-assets/${url}`;
       const params = new URLSearchParams();
       if (transform.width) params.set("width", transform.width.toString());
       if (transform.height) params.set("height", transform.height.toString());

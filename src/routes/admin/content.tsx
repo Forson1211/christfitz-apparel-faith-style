@@ -248,28 +248,6 @@ function AdminContent() {
         />
       </Section>
 
-      {/* Announcement */}
-      <Section title="Global Announcement" onSave={() => saveKey("announcement", announcement)}>
-        <div className="flex items-center gap-3 p-4 rounded-2xl bg-cocoa/5 border border-cocoa/10 mb-4">
-          <input
-            type="checkbox"
-            checked={announcement?.enabled}
-            onChange={(e) => setAnnouncement({ ...announcement, enabled: e.target.checked })}
-            className="h-4 w-4 accent-cocoa"
-          />
-          <span className="text-sm font-medium text-cocoa">Enable announcement bar</span>
-        </div>
-        <Input
-          label="Announcement Text (Show your discount code here!)"
-          value={announcement?.text || ""}
-          onChange={(v) => setAnnouncement({ ...announcement, text: v })}
-        />
-        <Input
-          label="Target Link"
-          value={announcement?.href || ""}
-          onChange={(v) => setAnnouncement({ ...announcement, href: v })}
-        />
-      </Section>
 
       {/* Hero */}
       <Section title="Hero" onSave={() => saveKey("hero", hero)}>
