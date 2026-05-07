@@ -6,6 +6,7 @@ import { AuthProvider, useAuth } from "@/lib/auth";
 import { CartDrawer } from "@/components/site/CartDrawer";
 import { ScrollButton } from "@/components/site/ScrollButton";
 import { CursorGlow } from "@/components/site/CursorGlow";
+import { CookieConsent } from "@/components/site/CookieConsent";
 import { Toaster } from "@/components/ui/sonner";
 
 function NotFoundComponent() {
@@ -68,6 +69,7 @@ function AppContent() {
       <Outlet />
       {!hideExtras && <CartDrawer />}
       {!hideExtras && <ScrollButton />}
+      {!hideExtras && <CookieConsent />}
     </>
   );
 }

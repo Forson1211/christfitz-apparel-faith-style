@@ -10,7 +10,7 @@ import { useContent, type ContentItem } from "@/hooks/useContent";
 // ImageUpload — extended to save the uploaded file to the content table
 // and return the full ContentItem to the parent for instant UI update.
 // ─────────────────────────────────────────────────────────────────────────────
-interface ImageUploadProps {
+interface MediaUploadProps {
   /** Called with the public URL after a successful upload */
   onUpload: (url: string) => void;
   /** Optionally called with the full DB row for optimistic state updates */
@@ -20,12 +20,12 @@ interface ImageUploadProps {
   category?: string;
 }
 
-function ImageUpload({
+function MediaUpload({
   onUpload,
   onContentItem,
   saveToDb,
   category = "general",
-}: ImageUploadProps) {
+}: MediaUploadProps) {
   const [uploading, setUploading] = useState(false);
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -42,7 +42,7 @@ function ImageUpload({
     const localUrl = URL.createObjectURL(file);
     onUpload(localUrl);
 
-    // 1. Upload to Supabase Storage (existing logic preserved)
+    // 1. Upload to Supabase Storage
     const { error: storageError } = await supabase.storage
       .from("site-assets")
       .upload(filePath, file);
@@ -58,17 +58,18 @@ function ImageUpload({
       data: { publicUrl },
     } = supabase.storage.from("site-assets").getPublicUrl(filePath);
 
-    // 3. Save to content table — returns the inserted row
+    // 3. Save to content table
+    const fileType = file.type.startsWith("video") ? "video" : "image";
     const inserted = await saveToDb({
       name: file.name,
       url: publicUrl,
       filePath,
-      type: file.type.startsWith("image") ? "image" : "video",
+      type: fileType,
       category,
       metadata: { size: file.size, mime: file.type },
     });
 
-    // 4. Notify parent with URL (always) and with the full row (when available)
+    // 4. Notify parent
     URL.revokeObjectURL(localUrl);
     onUpload(publicUrl);
     if (inserted && onContentItem) {
@@ -76,7 +77,7 @@ function ImageUpload({
     }
 
     setUploading(false);
-    toast.success("Image uploaded!");
+    toast.success(`${fileType.charAt(0).toUpperCase() + fileType.slice(1)} uploaded!`);
   };
 
   return (
@@ -84,13 +85,14 @@ function ImageUpload({
       <input
         type="file"
         className="hidden"
-        accept="image/*"
+        accept="image/*,video/*"
         onChange={handleUpload}
         disabled={uploading}
       />
       <div
-        className={`grid h-12 w-12 place-items-center rounded-xl border border-dashed border-cocoa/30 hover:bg-cocoa/5 transition ${uploading ? "animate-pulse" : ""
-          }`}
+        className={`grid h-12 w-12 place-items-center rounded-xl border border-dashed border-cocoa/30 hover:bg-cocoa/5 transition ${
+          uploading ? "animate-pulse" : ""
+        }`}
       >
         <Upload className="h-4 w-4 text-cocoa/40" />
       </div>
@@ -272,7 +274,7 @@ function AdminContent() {
       {/* Hero */}
       <Section title="Hero" onSave={() => saveKey("hero", hero)}>
         <div className="flex items-center gap-4 p-4 rounded-2xl bg-cocoa/5 border border-cocoa/10 mb-4">
-          <ImageUpload
+          <MediaUpload
             category="hero"
             saveToDb={heroContent.saveToDb}
             onUpload={(url) => setHero({ ...hero, background: url })}
@@ -284,16 +286,27 @@ function AdminContent() {
             {isLoadingInitial ? (
               <div className="h-full w-full bg-cocoa/10 animate-pulse" />
             ) : heroBackground ? (
-              <img
-                key={heroBackground}
-                src={resolveImage(heroBackground)}
-                alt="Hero Preview"
-                className="h-full w-full object-cover"
-                onError={(e) => {
-                  console.error("Hero image failed to load:", e.currentTarget.src);
-                  e.currentTarget.style.display = "none";
-                }}
-              />
+              heroBackground.toLowerCase().endsWith(".mp4") ||
+              heroBackground.toLowerCase().endsWith(".webm") ||
+              heroBackground.toLowerCase().endsWith(".mov") ? (
+                <video
+                  src={heroBackground}
+                  className="h-full w-full object-cover"
+                  muted
+                  playsInline
+                />
+              ) : (
+                <img
+                  key={heroBackground}
+                  src={resolveImage(heroBackground)}
+                  alt="Hero Preview"
+                  className="h-full w-full object-cover"
+                  onError={(e) => {
+                    console.error("Hero image failed to load:", e.currentTarget.src);
+                    e.currentTarget.style.display = "none";
+                  }}
+                />
+              )
             ) : (
               <div className="h-full w-full flex items-center justify-center text-[10px] text-cocoa/40 text-center leading-tight">
                 No DB Image
@@ -407,13 +420,27 @@ function AdminContent() {
             <div className="space-y-3">
               <label className="text-[10px] uppercase tracking-widest text-cocoa/40 font-bold">Main Community Image</label>
               <div className="flex items-center gap-4 p-4 rounded-2xl bg-cocoa/5 border border-cocoa/10">
-                <ImageUpload
+                <MediaUpload
                   category="about"
                   saveToDb={aboutContent.saveToDb}
                   onUpload={(url) => setAbout({ ...about, images: { ...about.images, main: url } })}
                 />
                 <div className="h-20 w-20 overflow-hidden rounded-xl bg-cocoa/20 border border-cocoa/10">
-                  <img src={resolveImage(about.images.main)} className="h-full w-full object-cover" />
+                  {about.images.main.toLowerCase().endsWith(".mp4") ||
+                  about.images.main.toLowerCase().endsWith(".webm") ||
+                  about.images.main.toLowerCase().endsWith(".mov") ? (
+                    <video
+                      src={about.images.main}
+                      className="h-full w-full object-cover"
+                      muted
+                      playsInline
+                    />
+                  ) : (
+                    <img
+                      src={resolveImage(about.images.main)}
+                      className="h-full w-full object-cover"
+                    />
+                  )}
                 </div>
               </div>
             </div>
@@ -421,13 +448,27 @@ function AdminContent() {
             <div className="space-y-3">
               <label className="text-[10px] uppercase tracking-widest text-cocoa/40 font-bold">Secondary Product Image</label>
               <div className="flex items-center gap-4 p-4 rounded-2xl bg-cocoa/5 border border-cocoa/10">
-                <ImageUpload
+                <MediaUpload
                   category="about"
                   saveToDb={aboutContent.saveToDb}
                   onUpload={(url) => setAbout({ ...about, images: { ...about.images, secondary: url } })}
                 />
                 <div className="h-20 w-20 overflow-hidden rounded-xl bg-cocoa/20 border border-cocoa/10">
-                  <img src={resolveImage(about.images.secondary)} className="h-full w-full object-cover" />
+                  {about.images.secondary.toLowerCase().endsWith(".mp4") ||
+                  about.images.secondary.toLowerCase().endsWith(".webm") ||
+                  about.images.secondary.toLowerCase().endsWith(".mov") ? (
+                    <video
+                      src={about.images.secondary}
+                      className="h-full w-full object-cover"
+                      muted
+                      playsInline
+                    />
+                  ) : (
+                    <img
+                      src={resolveImage(about.images.secondary)}
+                      className="h-full w-full object-cover"
+                    />
+                  )}
                 </div>
               </div>
             </div>

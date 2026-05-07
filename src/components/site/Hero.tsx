@@ -37,19 +37,33 @@ export function Hero() {
         {isLoadingInitial ? (
           <div className="h-full w-full bg-cocoa/10 animate-pulse" />
         ) : heroBackground ? (
-          <img
-            key={heroBackground}
-            src={optimizeImage(heroBackground, 'hero')}
-            alt="Model wearing ChristFitz oversized tee"
-            className="h-full w-full object-cover object-top sm:object-center"
-            loading="eager"
-            // @ts-ignore
-            fetchpriority="high"
-            onError={(e) => {
-              console.error("Hero background failed to load:", e.currentTarget.src);
-              e.currentTarget.style.display = "none";
-            }}
-          />
+          heroBackground.toLowerCase().endsWith(".mp4") ||
+          heroBackground.toLowerCase().endsWith(".webm") ||
+          heroBackground.toLowerCase().endsWith(".mov") ? (
+            <video
+              key={heroBackground}
+              src={heroBackground}
+              autoPlay
+              muted
+              loop
+              playsInline
+              className="h-full w-full object-cover object-top sm:object-center"
+            />
+          ) : (
+            <img
+              key={heroBackground}
+              src={optimizeImage(heroBackground, "hero")}
+              alt="Model wearing ChristFitz oversized tee"
+              className="h-full w-full object-cover object-top sm:object-center"
+              loading="eager"
+              // @ts-ignore
+              fetchpriority="high"
+              onError={(e) => {
+                console.error("Hero background failed to load:", e.currentTarget.src);
+                e.currentTarget.style.display = "none";
+              }}
+            />
+          )
         ) : (
           <div className="h-full w-full bg-cocoa/10" />
         )}

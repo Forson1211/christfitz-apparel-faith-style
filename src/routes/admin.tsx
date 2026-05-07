@@ -23,6 +23,7 @@ import {
   Tag,
   MessageSquare,
   UserCircle,
+  Mail,
 } from "lucide-react";
 import { useSite, resolveImage } from "@/lib/site";
 import { useEffect, useState } from "react";
@@ -39,6 +40,7 @@ const items = [
   { to: "/admin/products", label: "Products", Icon: Package },
   { to: "/admin/categories", label: "Collections", Icon: FolderTree },
   { to: "/admin/users", label: "Customers", Icon: Users },
+  { to: "/admin/subscribers", label: "Subscribers", Icon: Mail },
   { to: "/admin/gallery", label: "Gallery", Icon: ImageIcon },
   { to: "/admin/discounts", label: "Discounts", Icon: Tag },
   { to: "/admin/content", label: "Content", Icon: Type },
